@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using LitJson;
@@ -10,17 +9,18 @@ using LitJson;
  * The class has a static method JSONStringToDictionary() to convert server response into usable data structure.
  **/
 
-public class HttpRequest : MonoBehaviour
+public sealed class HttpRequest
 {
-    private string mIPAdress;   //server IP address
-    private string mCommand;    //current API command
-    private string mResponse;   //last received response
-    private bool mReady;        //is last request response ready?
-    private Dictionary<string, string> mHeader = new Dictionary<string, string>();  //POST headers
-    private Dictionary<string, string> mData = new Dictionary<string, string>();    //JSON data for POST
+    string mIPAdress;   //server IP address
+    string mCommand;    //current API command
+    WWW mRequest;       //WWW object to send requests
+    RequestType mType;  //GET or POST
+    Dictionary<string, string> mHeader = new Dictionary<string, string>();  //POST headers
+    Dictionary<string, string> mData = new Dictionary<string, string>();    //JSON data buffer for POST
+    enum RequestType { GET, POST };
+    List<KeyValuePair<string, RequestType>> mCommandsValues = new List<KeyValuePair<string, RequestType>>();
 
-    public enum Commands {POST_C_EXECUTE = 0, POST_C_STATUS, POST_STATE, POST_CHECK_UPDATE, GET_INFO};  //enumeration of all API commands
-    private string[] mCommandsValues = {"/osc/commands/execute", "/osc/commands/status", "/osc/state", "/osc/checkForUpdates", "/osc/info"}; //string values for API commands
+    public enum Commands { POST_C_EXECUTE = 0, POST_C_STATUS, POST_STATE, POST_CHECK_UPDATE, GET_INFO };  //enumeration of all API commands
 
     /**
      * Convert a string containing valid JSON into a dictionary like structure.
@@ -32,14 +32,21 @@ public class HttpRequest : MonoBehaviour
     }
 
     /**
-     * Unity start method used to setup object
+     * Constructor
      **/
-    void Start()
+    public HttpRequest()
     {
+        string[] tmpCommandString = { "/osc/commands/execute", "/osc/commands/status", "/osc/state", "/osc/checkForUpdates", "/osc/info" };
+        RequestType[] tmpCommandType = { RequestType.POST, RequestType.POST, RequestType.POST, RequestType.POST, RequestType.GET };
+
+        for(int i = 0; i < tmpCommandString.Length; ++i)
+        {
+            KeyValuePair<string, RequestType> tmp = new KeyValuePair<string, RequestType>(tmpCommandString[i], tmpCommandType[i]);
+            mCommandsValues.Add(tmp);
+        }
+
         mHeader.Add("Content-Type", "application/json");
         mIPAdress = "192.168.1.1";
-        mReady = false;
-        ChangeCommand(Commands.POST_C_EXECUTE);
     }
 
     /**
@@ -48,13 +55,13 @@ public class HttpRequest : MonoBehaviour
      **/
     public void ChangeCommand(Commands newCommand)
     {
-        mCommand = mCommandsValues[(int)newCommand];
+        mCommand = mCommandsValues[(int)newCommand].Key;
+        mType = mCommandsValues[(int)newCommand].Value;
     }
 
     /**
-     * Add a JSON key/value couple to next request.
-     * If you don't add JSON next request will be a GET request, otherwise it will be a POST request.
-     * So add dummy JSON if you want to do a POST request without parameter.
+     * Add a JSON key/value couple to next request
+     * Request should be of type POST
      **/
     public void AddJSONData(string name, string value)
     {
@@ -67,26 +74,22 @@ public class HttpRequest : MonoBehaviour
      **/
     public void Execute()
     {
-        mReady = false;
-        WWW api;
         try
         {
             // Construct POST string if needed
-            if(mData.Count > 0)
+            if(mType == RequestType.POST)
             {
                 // Send POST request and start waiting for response
                 byte[] postData = System.Text.Encoding.UTF8.GetBytes(ConstructPOSTString().ToCharArray());
-                api = new WWW(mIPAdress + mCommand, postData, mHeader);
+                mRequest = new WWW(mIPAdress + mCommand, postData, mHeader);
 
-                // Reset data
+                // Reset data buffer
                 mData.Clear();
             }
             else //GET request
             {
-                api = new WWW(mIPAdress + mCommand);
+                mRequest = new WWW(mIPAdress + mCommand);
             }
-            
-            StartCoroutine(WaitForWWW(api));
         }
         catch (UnityException ex)
         {
@@ -95,35 +98,22 @@ public class HttpRequest : MonoBehaviour
     }
 
     /**
-     * Return the HTTP response of last request as string
+     * Return the HTTP response of last request made or error message on error
      * Return null if the response isn't ready
-     * A request should have been executed before calling this method
+     * A request should have been executed before calling this method !
      **/
     public string GetHTTPResponse()
     {
-        if (mReady)
+        if (mRequest != null && mRequest.isDone)
         {
-            mReady = false;
-            return mResponse;
+            string r = mRequest.error;
+            if(r == null)
+                r = mRequest.text;
+            mRequest = null;
+            return r;
         }
         else
             return null;         
-    }
-
-    /**
-     * Unity coroutine to wait for server response
-     **/
-    private IEnumerator WaitForWWW(WWW www)
-    {
-        yield return www;
-
-        string txt = "";
-        if (string.IsNullOrEmpty(www.error))
-            txt = www.text;  //text of success
-        else
-            txt = www.error;  //error
-        mResponse = txt;
-        mReady = true;
     }
 
     /**
@@ -141,16 +131,4 @@ public class HttpRequest : MonoBehaviour
 
         return postData;
     }
-
-    /* DEBUG */
-    private void Update()
-    {
-        string r = GetHTTPResponse();
-        if(r != null)
-        {
-            JsonData d = JSONStringToDictionary(r);
-            Debug.Log(d["fingerprint"]);
-        }  
-    }
-    /* DEBUG */
 }
