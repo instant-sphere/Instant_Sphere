@@ -16,7 +16,7 @@ public sealed class HttpRequest
     WWW mRequest;       //WWW object to send requests
     RequestType mType;  //GET or POST
     Dictionary<string, string> mHeader = new Dictionary<string, string>();  //POST headers
-    Dictionary<string, string> mData = new Dictionary<string, string>();    //JSON data buffer for POST
+    string mData = "";    //JSON data buffer for POST
     enum RequestType { GET, POST };
     List<KeyValuePair<string, RequestType>> mCommandsValues = new List<KeyValuePair<string, RequestType>>();
 
@@ -46,7 +46,7 @@ public sealed class HttpRequest
         }
 
         mHeader.Add("Content-Type", "application/json");
-        mIPAdress = "192.168.1.1";
+        mIPAdress = "http://192.168.1.1";
     }
 
     /**
@@ -60,12 +60,12 @@ public sealed class HttpRequest
     }
 
     /**
-     * Add a JSON key/value couple to next request
+     * Set JSON data for next request
      * Request should be of type POST
      **/
-    public void AddJSONData(string name, string value)
+    public void SetJSONData(string json)
     {
-        mData.Add(name, value);
+        mData = json;
     }
 
     /**
@@ -80,11 +80,11 @@ public sealed class HttpRequest
             if(mType == RequestType.POST)
             {
                 // Send POST request and start waiting for response
-                byte[] postData = System.Text.Encoding.UTF8.GetBytes(ConstructPOSTString().ToCharArray());
+                byte[] postData = System.Text.Encoding.UTF8.GetBytes(mData.ToCharArray());
                 mRequest = new WWW(mIPAdress + mCommand, postData, mHeader);
 
                 // Reset data buffer
-                mData.Clear();
+                mData = "";
             }
             else //GET request
             {
@@ -97,6 +97,14 @@ public sealed class HttpRequest
         }
     }
 
+    /*
+     * Return true if a request has been made and its result is ready
+     **/
+    public bool IsTerminated()
+    {
+        return mRequest != null && mRequest.isDone;
+    }
+
     /**
      * Return the HTTP response of last request made or error message on error
      * Return null if the response isn't ready
@@ -104,7 +112,7 @@ public sealed class HttpRequest
      **/
     public string GetHTTPResponse()
     {
-        if (mRequest != null && mRequest.isDone)
+        if (IsTerminated())
         {
             string r = mRequest.error;
             if(r == null)
@@ -114,21 +122,5 @@ public sealed class HttpRequest
         }
         else
             return null;         
-    }
-
-    /**
-     * Construct the POST string from the key/value pairs
-     **/
-    private string ConstructPOSTString()
-    {
-        string postData = "{";
-        foreach (KeyValuePair<string, string> KV in mData)
-        {
-            postData += "\"" + KV.Key + "\" : \"" + KV.Value + "\",";
-        }
-        postData = postData.TrimEnd(',');
-        postData += "}";
-
-        return postData;
     }
 }
