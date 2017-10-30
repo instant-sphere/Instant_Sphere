@@ -13,14 +13,15 @@ public sealed class HttpRequest
 {
     string mIPAdress;   //server IP address
     string mCommand;    //current API command
-    WWW mRequest;       //WWW object to send requests
+    public WWW mRequest;       //WWW object to send requests
     RequestType mType;  //GET or POST
+    bool mLastRequestSuccessful;
     Dictionary<string, string> mHeader = new Dictionary<string, string>();  //POST headers
     string mData = "";    //JSON data buffer for POST
     enum RequestType { GET, POST };
     List<KeyValuePair<string, RequestType>> mCommandsValues = new List<KeyValuePair<string, RequestType>>();
 
-    public enum Commands { POST_C_EXECUTE = 0, POST_C_STATUS, POST_STATE, POST_CHECK_UPDATE, GET_INFO };  //enumeration of all API commands
+    public enum Commands { POST_C_EXECUTE = 0, POST_C_STATUS, POST_STATE, POST_CHECK_UPDATE, GET_INFO, GET_URI };  //enumeration of all API commands
 
     /**
      * Convert a string containing valid JSON into a dictionary like structure.
@@ -36,8 +37,8 @@ public sealed class HttpRequest
      **/
     public HttpRequest()
     {
-        string[] tmpCommandString = { "/osc/commands/execute", "/osc/commands/status", "/osc/state", "/osc/checkForUpdates", "/osc/info" };
-        RequestType[] tmpCommandType = { RequestType.POST, RequestType.POST, RequestType.POST, RequestType.POST, RequestType.GET };
+        string[] tmpCommandString = { "/osc/commands/execute", "/osc/commands/status", "/osc/state", "/osc/checkForUpdates", "/osc/info", "/"};
+        RequestType[] tmpCommandType = { RequestType.POST, RequestType.POST, RequestType.POST, RequestType.POST, RequestType.GET, RequestType.GET };
 
         for(int i = 0; i < tmpCommandString.Length; ++i)
         {
@@ -57,6 +58,12 @@ public sealed class HttpRequest
     {
         mCommand = mCommandsValues[(int)newCommand].Key;
         mType = mCommandsValues[(int)newCommand].Value;
+    }
+
+    public void ChangeCommand(string URI)
+    {
+        ChangeCommand(Commands.GET_URI);
+        mCommand += URI;
     }
 
     /**
@@ -88,6 +95,7 @@ public sealed class HttpRequest
             }
             else //GET request
             {
+                Debug.Log(mIPAdress + mCommand);
                 mRequest = new WWW(mIPAdress + mCommand);
             }
         }
@@ -105,6 +113,11 @@ public sealed class HttpRequest
         return mRequest != null && mRequest.isDone;
     }
 
+    public bool IsSuccessful()
+    {
+        return mLastRequestSuccessful;
+    }
+
     /**
      * Return the HTTP response of last request made or error message on error
      * Return null if the response isn't ready
@@ -115,12 +128,27 @@ public sealed class HttpRequest
         if (IsTerminated())
         {
             string r = mRequest.error;
+            mLastRequestSuccessful = false;
             if(r == null)
+            {
                 r = mRequest.text;
-            mRequest = null;
+                mLastRequestSuccessful = true;
+            }
+               
             return r;
         }
         else
             return null;         
+    }
+
+    public Texture2D GetTextureResponse()
+    {
+        if(IsTerminated())
+        {
+            Texture2D t = new Texture2D(0, 0);
+            mRequest.LoadImageIntoTexture(t);
+            return t;
+        }
+        return null;
     }
 }

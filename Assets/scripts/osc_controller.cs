@@ -5,17 +5,18 @@ using UnityEngine;
 using UnityEngine.UI;
 using LitJson;
 using System.Text;
+using UnityEngine.Networking;
 
 public class osc_controller : MonoBehaviour {
 
     HttpRequest mHTTP = new HttpRequest();
     Queue<MethodInfo> mExecutionQueue = new Queue<MethodInfo>();
     string mSessionId;
+    string mCurrentOperationId;
+    string mFileURI;
     bool mBusy = false;
     enum OSCStates { DISCONNECTED, IDLE, TAKE_PHOTO, DOWNLOAD_PHOTO, DELETE_PHOTO };
     OSCStates mCurrentState = OSCStates.DISCONNECTED;
-
-    public Text debugger; 
 
     // Use this for initialization
     void Start ()
@@ -23,7 +24,10 @@ public class osc_controller : MonoBehaviour {
         //mExecutionQueue.Enqueue(this.GetType().GetMethod("AskCameraInfo"));
         mExecutionQueue.Enqueue(this.GetType().GetMethod("AskStartSession"));
         mExecutionQueue.Enqueue(this.GetType().GetMethod("AskTakePicture"));
-	}
+
+//         MeshRenderer mesh_renderer = mSphere.GetComponent<MeshRenderer>();
+//         mesh_renderer.material.mainTexture = Resources.Load("test") as Texture;
+    }
 	
 	// Update is called once per frame
 	void Update ()
@@ -36,10 +40,13 @@ public class osc_controller : MonoBehaviour {
         else if(mBusy && mHTTP.IsTerminated())
         {
             string s = mHTTP.GetHTTPResponse();
-            ResponseHandler(s);
+            if(mHTTP.IsSuccessful())
+            {
+                ResponseHandler(s);
+            }
+                
             mBusy = false;
 
-            debugger.text = s;
             Debug.Log(s);
         }
     }
@@ -68,15 +75,22 @@ public class osc_controller : MonoBehaviour {
             case OSCStates.TAKE_PHOTO:
                 string state = jdata["state"].ToString();
                 if (state == "inProgress")
-                    mExecutionQueue.Enqueue(this.GetType().GetMethod("AskProgressStatus"));
-                else if(state == "done")
                 {
-                    string URI = jdata["results"]["fileUrl"].ToString();
-                    //TODO ask for download
+                    mCurrentOperationId = jdata["id"].ToString();
+                    mExecutionQueue.Enqueue(this.GetType().GetMethod("AskProgressStatus")); 
+                }
+                else if (state == "done")
+                {
+                    mFileURI = jdata["results"]["fileUri"].ToString();
+                    mExecutionQueue.Enqueue(this.GetType().GetMethod("AskDownloadPhoto"));
                     mCurrentState = OSCStates.DOWNLOAD_PHOTO;
                 }
                 break;
             case OSCStates.DOWNLOAD_PHOTO:
+                //byte[] bin = System.Text.Encoding.ASCII.GetBytes(result);
+
+                //display.texture = mHTTP.GetTextureResponse();
+                
                 break;
             case OSCStates.DELETE_PHOTO:
                 break;
@@ -135,12 +149,28 @@ public class osc_controller : MonoBehaviour {
         return sb.ToString();
     }
 
-    /*public byte[] TakePhoto()
+    public void AskProgressStatus()
     {
-        byte[] img = { 1, 2, 3 };
+        mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_STATUS);
+        mHTTP.SetJSONData(ConstructProgressStatusJSONString());
+        mHTTP.Execute();
+    }
 
+    private string ConstructProgressStatusJSONString()
+    {
+        StringBuilder sb = new StringBuilder();
+        JsonWriter json = new JsonWriter(sb);
+        json.WriteObjectStart();
+        json.WritePropertyName("id");
+        json.Write(mCurrentOperationId);
+        json.WriteObjectEnd();
 
+        return sb.ToString();
+    }
 
-        return img;
-    }*/
+    public void AskDownloadPhoto()
+    {
+        mHTTP.ChangeCommand(mFileURI);
+        mHTTP.Execute();
+    }
 }
