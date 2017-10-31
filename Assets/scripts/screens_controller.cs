@@ -31,7 +31,7 @@ public class screens_controller : MonoBehaviour
         public IEnumerator Count(int start, Action<int> update)
         {
             mCountingDown = true;
-            for (int i = 3; i >= 0; i--)
+            for (int i = start; i >= 0; i--)
             {
                 update(i);
                 yield return new WaitForSeconds(1.0f);
