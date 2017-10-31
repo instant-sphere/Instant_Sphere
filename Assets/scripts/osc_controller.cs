@@ -7,7 +7,8 @@ using LitJson;
 using System.Text;
 using UnityEngine.Networking;
 
-public class osc_controller : MonoBehaviour {
+public class osc_controller : MonoBehaviour
+{
 
     HttpRequest mHTTP = new HttpRequest();
     Queue<MethodInfo> mExecutionQueue = new Queue<MethodInfo>();
@@ -23,7 +24,7 @@ public class osc_controller : MonoBehaviour {
     {
         //mExecutionQueue.Enqueue(this.GetType().GetMethod("AskCameraInfo"));
         mExecutionQueue.Enqueue(this.GetType().GetMethod("AskStartSession"));
-        mExecutionQueue.Enqueue(this.GetType().GetMethod("AskTakePicture"));
+        //mExecutionQueue.Enqueue(this.GetType().GetMethod("AskTakePicture"));
 
 //         MeshRenderer mesh_renderer = mSphere.GetComponent<MeshRenderer>();
 //         mesh_renderer.material.mainTexture = Resources.Load("test") as Texture;
