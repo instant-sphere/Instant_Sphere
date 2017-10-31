@@ -1,29 +1,63 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class screens_controller : MonoBehaviour
 {
     [SerializeField]
     List<Canvas> mScreens;
 
+    [SerializeField]
+    Text mCountDown;
+
     enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, DISPLAY_PHOTO, SHARE_PHOTO };
     ScreensStates mCurrentState = ScreensStates.WELCOME;
-    
+
     enum InterfaceButtons { TAKE_PHOTO = 0, ABORT, RETRY, OK, BACK };
     bool[] mButtonsActivated = new bool[5];
 
     [SerializeField]
     osc_controller mOSCController;
 
+    CounterDown mCounter = new CounterDown();
+
+    private class CounterDown
+    {
+        bool mCountingDown = false;
+        bool mCountDownEnded = false;
+
+        public IEnumerator Count(int start, Action<int> update)
+        {
+            mCountingDown = true;
+            for (int i = 3; i >= 0; i--)
+            {
+                update(i);
+                yield return new WaitForSeconds(1.0f);
+            }
+            mCountDownEnded = true;
+        }
+
+        public bool IsCounting()
+        {
+            return mCountingDown;
+        }
+
+        public bool IsCounterFinished()
+        {
+            return mCountDownEnded;
+        }
+    }
+
     // Use this for initialization
-    void Start ()
+    void Start()
     {
         UpdateScreen();
-	}
-	
-	// Update is called once per frame
-	void Update ()
+    }
+
+    // Update is called once per frame
+    void Update()
     {
         switch (mCurrentState)
         {
@@ -36,7 +70,7 @@ public class screens_controller : MonoBehaviour
                 break;
 
             case ScreensStates.READY_TAKE_PHOTO:
-                if(IsButtonDown(InterfaceButtons.TAKE_PHOTO))
+                if (IsButtonDown(InterfaceButtons.TAKE_PHOTO))
                 {
                     mCurrentState = ScreensStates.TAKING_PHOTO;
                     UpdateScreen();
@@ -44,16 +78,46 @@ public class screens_controller : MonoBehaviour
                 break;
 
             case ScreensStates.TAKING_PHOTO:
+                if (!mCounter.IsCounting())
+                {
+                    StartCoroutine(mCounter.Count(3, UpdateCountDownText));
+                }
+                else if(mCounter.IsCounterFinished())
+                {
+                    mCurrentState = ScreensStates.DISPLAY_PHOTO;
+                    mCounter = new CounterDown();
+                    UpdateScreen();
+                }
                 break;
             case ScreensStates.DISPLAY_PHOTO:
+                if(IsButtonDown(InterfaceButtons.ABORT))
+                {
+                    mCurrentState = ScreensStates.WELCOME;
+                }
+                else if(IsButtonDown(InterfaceButtons.RETRY))
+                {
+                    mCurrentState = ScreensStates.READY_TAKE_PHOTO;
+                }
+                else if(IsButtonDown(InterfaceButtons.OK))
+                {
+                    mCurrentState = ScreensStates.SHARE_PHOTO;
+                }
+                UpdateScreen();
                 break;
             case ScreensStates.SHARE_PHOTO:
-                break;
-            default:
+                if(IsButtonDown(InterfaceButtons.BACK))
+                {
+                    mCurrentState = ScreensStates.DISPLAY_PHOTO;
+                }
                 break;
         }
 
         ResetButtons();
+    }
+
+    private void UpdateCountDownText(int v)
+    {
+        mCountDown.text = v.ToString();
     }
 
     private void UpdateScreen()
