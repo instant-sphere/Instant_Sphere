@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class screens_controller : MonoBehaviour
+public sealed class screens_controller : MonoBehaviour
 {
     /* Unity components set in inspector */
     public List<Canvas> mScreens;
@@ -29,7 +29,8 @@ public class screens_controller : MonoBehaviour
         bool mCountingDown = false;
         bool mCountDownEnded = false;
 
-        /* Start counting from start to 0 second. Calls update(i) each time */
+        /* Start counting from start to 0 second. Calls update(i) each time 
+         This is a coroutine */
         public IEnumerator Count(int start, Action<int> update)
         {
             mCountingDown = true;
@@ -55,76 +56,105 @@ public class screens_controller : MonoBehaviour
     }
 
 
-    // Use this for initialization
+    /* Use this for initialization */
     void Start()
     {
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
         mCurrentState = ScreensStates.WELCOME;
         mCamera.AutomaticRotation();
         UpdateScreen();
     }
 
-    // Update is called once per frame
+    /* Update is called once per frame */
     void Update()
     {
         /* Handle user interactions */
+        ManageStates();
+        ResetButtons();
+    }
+
+    /* Manages screens using internal state */
+    private void ManageStates()
+    {
         switch (mCurrentState)
         {
             case ScreensStates.WELCOME:
-                if (Input.touchCount > 0 || Input.GetMouseButton(0))
-                {
-                    mCurrentState = ScreensStates.READY_TAKE_PHOTO;
-                    mCamera.ManualRotation();
-                    UpdateScreen();
-                }
+                ManageWelcomeScreen();
                 break;
-
             case ScreensStates.READY_TAKE_PHOTO:
-                if (IsButtonDown(InterfaceButtons.TAKE_PHOTO))
-                {
-                    mCurrentState = ScreensStates.TAKING_PHOTO;
-                    UpdateScreen();
-                }
+                ManageReadyTakePhotoScreen();
                 break;
-
             case ScreensStates.TAKING_PHOTO:
-                if (!mCounter.IsCounting())
-                {
-                    StartCoroutine(mCounter.Count(3, UpdateCountDownText));
-                }
-                else if(mCounter.IsCounterFinished())
-                {
-                    mCurrentState = ScreensStates.DISPLAY_PHOTO;
-                    mCounter = new CounterDown();
-                    UpdateScreen();
-                }
+                ManageTakingPhotoScreen();
                 break;
             case ScreensStates.DISPLAY_PHOTO:
-                if (IsButtonDown(InterfaceButtons.ABORT))
-                {
-                    mCurrentState = ScreensStates.WELCOME;
-                    mCamera.AutomaticRotation();
-                }
-                else if (IsButtonDown(InterfaceButtons.RETRY))
-                {
-                    mCurrentState = ScreensStates.READY_TAKE_PHOTO;
-                }
-                else if (IsButtonDown(InterfaceButtons.OK))
-                {
-                    mCurrentState = ScreensStates.SHARE_PHOTO;
-                }
-                else
-                    break;
-                UpdateScreen();
+                ManageDisplayScreen();
                 break;
             case ScreensStates.SHARE_PHOTO:
-                if(IsButtonDown(InterfaceButtons.BACK))
-                {
-                    mCurrentState = ScreensStates.DISPLAY_PHOTO;
-                }
+                ManageShareScreen();
                 break;
         }
+    }
 
-        ResetButtons();
+    private void ManageWelcomeScreen()
+    {
+        if (Input.touchCount > 0 || Input.GetMouseButton(0))
+        {
+            mCurrentState = ScreensStates.READY_TAKE_PHOTO;
+            mCamera.ManualRotation();
+            UpdateScreen();
+        }
+    }
+
+    private void ManageReadyTakePhotoScreen()
+    {
+        if (IsButtonDown(InterfaceButtons.TAKE_PHOTO))
+        {
+            mCurrentState = ScreensStates.TAKING_PHOTO;
+            UpdateScreen();
+        }
+    }
+
+    private void ManageTakingPhotoScreen()
+    {
+        if (!mCounter.IsCounting())
+        {
+            StartCoroutine(mCounter.Count(3, UpdateCountDownText));
+        }
+        else if (mCounter.IsCounterFinished())
+        {
+            mCurrentState = ScreensStates.DISPLAY_PHOTO;
+            mCounter = new CounterDown();
+            UpdateScreen();
+        }
+    }
+
+    private void ManageDisplayScreen()
+    {
+        if (IsButtonDown(InterfaceButtons.ABORT))
+        {
+            mCurrentState = ScreensStates.WELCOME;
+            mCamera.AutomaticRotation();
+        }
+        else if (IsButtonDown(InterfaceButtons.RETRY))
+        {
+            mCurrentState = ScreensStates.READY_TAKE_PHOTO;
+        }
+        else if (IsButtonDown(InterfaceButtons.OK))
+        {
+            mCurrentState = ScreensStates.SHARE_PHOTO;
+        }
+        else
+            return;
+        UpdateScreen();
+    }
+
+    private void ManageShareScreen()
+    {
+        if (IsButtonDown(InterfaceButtons.BACK))
+        {
+            mCurrentState = ScreensStates.DISPLAY_PHOTO;
+        }
     }
 
     /* Changes counter text on screen and set it to v */
