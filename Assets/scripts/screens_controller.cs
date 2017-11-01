@@ -154,6 +154,7 @@ public sealed class screens_controller : MonoBehaviour
         if (IsButtonDown(InterfaceButtons.BACK))
         {
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
+            UpdateScreen();
         }
     }
 
