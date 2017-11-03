@@ -55,6 +55,12 @@ public sealed class screens_controller : MonoBehaviour
         }
     }
 
+    /* Changes counter text on screen and set it to v */
+    private void UpdateCountDownText(int v)
+    {
+        mCountDown.text = v.ToString();
+    }
+
 
     /* Use this for initialization */
     void Start()
@@ -156,13 +162,7 @@ public sealed class screens_controller : MonoBehaviour
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }
-    }
-
-    /* Changes counter text on screen and set it to v */
-    private void UpdateCountDownText(int v)
-    {
-        mCountDown.text = v.ToString();
-    }
+    } 
 
     /* Flips canvas according to current state */
     private void UpdateScreen()
