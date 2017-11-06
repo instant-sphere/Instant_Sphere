@@ -53,6 +53,8 @@ public sealed class HttpRequest
     /**
      * Use this to change the current API command target
      * ie: ChangeCommand(Commands.POST_STATE);
+     * Or to set the URI to download a file
+     * ie: ChangeCommand("image023.JPG");
      **/
     public void ChangeCommand(Commands newCommand)
     {
@@ -95,7 +97,6 @@ public sealed class HttpRequest
             }
             else //GET request
             {
-                Debug.Log(mIPAdress + mCommand);
                 mRequest = new WWW(mIPAdress + mCommand);
             }
         }
@@ -148,6 +149,15 @@ public sealed class HttpRequest
             Texture2D t = new Texture2D(0, 0);
             mRequest.LoadImageIntoTexture(t);
             return t;
+        }
+        return null;
+    }
+
+    public byte[] GetRawResponse()
+    {
+        if (IsTerminated())
+        {
+            return mRequest.bytes;
         }
         return null;
     }

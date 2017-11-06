@@ -24,10 +24,21 @@ public class osc_controller : MonoBehaviour
     {
         //mExecutionQueue.Enqueue(this.GetType().GetMethod("AskCameraInfo"));
         mExecutionQueue.Enqueue(this.GetType().GetMethod("AskStartSession"));
-        //mExecutionQueue.Enqueue(this.GetType().GetMethod("AskTakePicture"));
+        mExecutionQueue.Enqueue(this.GetType().GetMethod("AskTakePicture"));
 
-//         MeshRenderer mesh_renderer = mSphere.GetComponent<MeshRenderer>();
-//         mesh_renderer.material.mainTexture = Resources.Load("test") as Texture;
+        Texture2D t = Resources.Load("downloaded_image") as Texture2D;
+
+        /*Cubemap cmap = new Cubemap(t.height, TextureFormat.RGB24, false);
+        cmap.SetPixels(t.GetPixels(), CubemapFace.PositiveX);
+        cmap.filterMode = FilterMode.Trilinear;
+        cmap.Apply();*/
+
+        Material m = new Material(Shader.Find("Skybox/Equirectangular"));
+        m.SetTexture("_Tex", t);
+        
+        RenderSettings.skybox = m;
+        //         MeshRenderer mesh_renderer = mSphere.GetComponent<MeshRenderer>();
+        //         mesh_renderer.material.mainTexture = Resources.Load("test") as Texture;
     }
 	
 	// Update is called once per frame
@@ -88,6 +99,19 @@ public class osc_controller : MonoBehaviour
                 }
                 break;
             case OSCStates.DOWNLOAD_PHOTO:
+                byte[] image = mHTTP.GetRawResponse();
+                if(mHTTP.GetRawResponse() != null)
+                {
+                    Debug.Log("Writing");
+                    System.IO.File.WriteAllBytes("data.jpg", image);
+                    
+                    
+                    //RenderSettings.skybox.SetTexture("_Front", mHTTP.GetTextureResponse());
+                    //backgroundPhoto.SetTexture("_Front", mHTTP.GetTextureResponse());
+                    //backgroundPhoto.LoadImage(image);
+                    mCurrentState = OSCStates.IDLE;
+                }
+                
                 //byte[] bin = System.Text.Encoding.ASCII.GetBytes(result);
 
                 //display.texture = mHTTP.GetTextureResponse();
