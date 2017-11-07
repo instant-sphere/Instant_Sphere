@@ -13,12 +13,14 @@ public sealed class screens_controller : MonoBehaviour
     public osc_controller mOSCController;
 
     /* One state per screen */
-    enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, DISPLAY_PHOTO, SHARE_PHOTO };
+    enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, SHARE_PHOTO };
     ScreensStates mCurrentState;
 
     /* Interface buttons */
     enum InterfaceButtons { TAKE_PHOTO = 0, ABORT, RETRY, OK, BACK };
     bool[] mButtonsActivated = new bool[5];
+
+    bool mIsOSCReady = false;
 
     /* Count down used when taking a photo */
     CounterDown mCounter = new CounterDown();
@@ -93,6 +95,9 @@ public sealed class screens_controller : MonoBehaviour
             case ScreensStates.TAKING_PHOTO:
                 ManageTakingPhotoScreen();
                 break;
+            case ScreensStates.WAITING:
+                ManageWaitingScreen();
+                break;
             case ScreensStates.DISPLAY_PHOTO:
                 ManageDisplayScreen();
                 break;
@@ -129,21 +134,35 @@ public sealed class screens_controller : MonoBehaviour
         }
         else if (mCounter.IsCounterFinished())
         {
-            mCurrentState = ScreensStates.DISPLAY_PHOTO;
+            mIsOSCReady = false;
+            mOSCController.StartCapture(TriggerOSCReady);
+            mCurrentState = ScreensStates.WAITING;
             mCounter = new CounterDown();
             UpdateScreen();
         }
+    }
+
+    //TODO wait for photo to be downloaded with some animation.
+    private void ManageWaitingScreen()
+    {
+        if(mIsOSCReady)
+        {
+            mCurrentState = ScreensStates.DISPLAY_PHOTO;
+            UpdateScreen();
+        } 
     }
 
     private void ManageDisplayScreen()
     {
         if (IsButtonDown(InterfaceButtons.ABORT))
         {
+            mOSCController.resetSkybox();
             mCurrentState = ScreensStates.WELCOME;
             mCamera.AutomaticRotation();
         }
         else if (IsButtonDown(InterfaceButtons.RETRY))
         {
+            mOSCController.resetSkybox(); //TODO set to preview
             mCurrentState = ScreensStates.READY_TAKE_PHOTO;
         }
         else if (IsButtonDown(InterfaceButtons.OK))
@@ -216,5 +235,10 @@ public sealed class screens_controller : MonoBehaviour
     private bool IsButtonDown(InterfaceButtons b)
     {
         return mButtonsActivated[(int)b];
+    }
+
+    public void TriggerOSCReady()
+    {
+        mIsOSCReady = true;
     }
 }

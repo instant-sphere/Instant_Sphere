@@ -4,41 +4,51 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using LitJson;
+using System;
 using System.Text;
 using UnityEngine.Networking;
 
-public class osc_controller : MonoBehaviour
+public sealed class osc_controller : MonoBehaviour
 {
 
     HttpRequest mHTTP = new HttpRequest();
     Queue<MethodInfo> mExecutionQueue = new Queue<MethodInfo>();
-    string mSessionId;
+    string mSessionId;  //When starting only
     string mCurrentOperationId;
-    string mFileURI;
+    string mFileURL;
     bool mBusy = false;
     enum OSCStates { DISCONNECTED, IDLE, TAKE_PHOTO, DOWNLOAD_PHOTO, DELETE_PHOTO };
-    OSCStates mCurrentState = OSCStates.DISCONNECTED;
+    OSCStates mCurrentState;
+    Action mCallBack = null;
+    Material mDefaultSkybox;
+
+    enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE};
+    string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskCameraInfo", "AskDeletePhoto"};
 
     // Use this for initialization
     void Start ()
     {
-        //mExecutionQueue.Enqueue(this.GetType().GetMethod("AskCameraInfo"));
-        mExecutionQueue.Enqueue(this.GetType().GetMethod("AskStartSession"));
-        mExecutionQueue.Enqueue(this.GetType().GetMethod("AskTakePicture"));
+        mDefaultSkybox = RenderSettings.skybox;
+        mCurrentState = OSCStates.DISCONNECTED;
+        EnqueueAction(OSCActions.START_SESSION);
+    }
 
-        Texture2D t = Resources.Load("downloaded_image") as Texture2D;
+    public void StartCapture(Action callback)
+    {
+        EnqueueAction(OSCActions.TAKE_PICTURE);
+        mCallBack = callback;
+    }
 
-        /*Cubemap cmap = new Cubemap(t.height, TextureFormat.RGB24, false);
-        cmap.SetPixels(t.GetPixels(), CubemapFace.PositiveX);
-        cmap.filterMode = FilterMode.Trilinear;
-        cmap.Apply();*/
+    public void resetSkybox()
+    {
+        RenderSettings.skybox = mDefaultSkybox;
+    }
 
-        Material m = new Material(Shader.Find("Skybox/Equirectangular"));
-        m.SetTexture("_Tex", t);
-        
-        RenderSettings.skybox = m;
-        //         MeshRenderer mesh_renderer = mSphere.GetComponent<MeshRenderer>();
-        //         mesh_renderer.material.mainTexture = Resources.Load("test") as Texture;
+    private void EnqueueAction(OSCActions action)
+    {
+        string methodName = mActionsMethodName[(int)action];
+        MethodInfo mi = this.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
+        mExecutionQueue.Enqueue(mi);
     }
 	
 	// Update is called once per frame
@@ -79,22 +89,23 @@ public class osc_controller : MonoBehaviour
         {
             case OSCStates.DISCONNECTED:    // It's a sessionStart reply
                 mSessionId = jdata["results"]["sessionId"].ToString();
+                EnqueueAction(OSCActions.UPGRADE_API);
+                EnqueueAction(OSCActions.SET_OPTIONS);
                 mCurrentState = OSCStates.IDLE;
                 break;
             case OSCStates.IDLE:
-                // We shouldn't received a response from server when idle
                 break;
             case OSCStates.TAKE_PHOTO:
                 string state = jdata["state"].ToString();
                 if (state == "inProgress")
                 {
                     mCurrentOperationId = jdata["id"].ToString();
-                    mExecutionQueue.Enqueue(this.GetType().GetMethod("AskProgressStatus")); 
+                    EnqueueAction(OSCActions.PROGRESS_STATUS);
                 }
                 else if (state == "done")
                 {
-                    mFileURI = jdata["results"]["fileUri"].ToString();
-                    mExecutionQueue.Enqueue(this.GetType().GetMethod("AskDownloadPhoto"));
+                    mFileURL = jdata["results"]["fileUrl"].ToString();
+                    EnqueueAction(OSCActions.DOWNLOAD);
                     mCurrentState = OSCStates.DOWNLOAD_PHOTO;
                 }
                 break;
@@ -102,35 +113,47 @@ public class osc_controller : MonoBehaviour
                 byte[] image = mHTTP.GetRawResponse();
                 if(mHTTP.GetRawResponse() != null)
                 {
-                    Debug.Log("Writing");
-                    System.IO.File.WriteAllBytes("data.jpg", image);
-                    
-                    
-                    //RenderSettings.skybox.SetTexture("_Front", mHTTP.GetTextureResponse());
-                    //backgroundPhoto.SetTexture("_Front", mHTTP.GetTextureResponse());
-                    //backgroundPhoto.LoadImage(image);
-                    mCurrentState = OSCStates.IDLE;
-                }
-                
-                //byte[] bin = System.Text.Encoding.ASCII.GetBytes(result);
+                    if(!System.IO.Directory.Exists("/sdcard/AEI"))
+                        System.IO.Directory.CreateDirectory("/sdcard/AEI");
+                    System.IO.File.WriteAllBytes("/sdcard/AEI/downloaded_image.jpg", image);
 
-                //display.texture = mHTTP.GetTextureResponse();
-                
+                    byte[] loadedPicture = System.IO.File.ReadAllBytes("/sdcard/AEI/downloaded_image.jpg");
+                    Texture2D t = new Texture2D(2, 2);
+                    t.LoadImage(loadedPicture);
+
+                    // TODO : convert equirectangular to cubemap and don't create a new skybox from the shader "Skybox/Equirectangular"
+                    /*Cubemap cmap = new Cubemap(t.height, TextureFormat.RGB24, false);
+                    cmap.SetPixels(t.GetPixels(), CubemapFace.PositiveX);
+                    cmap.filterMode = FilterMode.Trilinear;
+                    cmap.Apply();*/
+
+                    Material m = new Material(Shader.Find("Skybox/Equirectangular"));
+                    m.SetTexture("_Tex", t);
+
+                    RenderSettings.skybox = m;
+
+                    EnqueueAction(OSCActions.DELETE);
+                    mCurrentState = OSCStates.DELETE_PHOTO;
+                }                
                 break;
             case OSCStates.DELETE_PHOTO:
-                break;
-            default:
+                if (mCallBack != null)
+                {
+                    mCallBack();
+                    mCallBack = null;
+                }
+                mCurrentState = OSCStates.IDLE;
                 break;
         }
     }
 
-    public void AskCameraInfo()
+    private void AskCameraInfo()
     {
         mHTTP.ChangeCommand(HttpRequest.Commands.GET_INFO);
         mHTTP.Execute();
     }
 
-    public void AskStartSession()
+    private void AskStartSession()
     {
         mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_EXECUTE);
         mHTTP.SetJSONData(ConstructStartSessionJSONString());
@@ -149,7 +172,72 @@ public class osc_controller : MonoBehaviour
         return sb.ToString();
     }
 
-    public void AskTakePicture()
+    private void AskUpgradeAPI()
+    {
+        mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_EXECUTE);
+        mHTTP.SetJSONData(ConstructUpgradeAPIJSONString());
+        mHTTP.Execute();
+    }
+
+    private string ConstructUpgradeAPIJSONString()
+    {
+        StringBuilder sb = new StringBuilder();
+        JsonWriter json = new JsonWriter(sb);
+        json.WriteObjectStart();
+        json.WritePropertyName("name");
+        json.Write("camera.setOptions");
+        json.WritePropertyName("parameters");
+        json.WriteObjectStart();
+        json.WritePropertyName("sessionId");
+        json.Write(mSessionId);
+        json.WritePropertyName("options");
+        json.WriteObjectStart();
+        json.WritePropertyName("clientVersion");
+        json.Write(2);
+        json.WriteObjectEnd();
+        json.WriteObjectEnd();
+        json.WriteObjectEnd();
+
+        return sb.ToString();
+    }
+
+    private void AskSetOptions()
+    {
+        mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_EXECUTE);
+        mHTTP.SetJSONData(ConstructSetOptionsJSONString());
+        mHTTP.Execute();
+    }
+
+    private string ConstructSetOptionsJSONString()
+    {
+        StringBuilder sb = new StringBuilder();
+        JsonWriter json = new JsonWriter(sb);
+        json.WriteObjectStart();
+        json.WritePropertyName("name");
+        json.Write("camera.setOptions");
+        json.WritePropertyName("parameters");
+        json.WriteObjectStart();
+        json.WritePropertyName("options");
+        json.WriteObjectStart();
+        json.WritePropertyName("offDelay");
+        json.Write(65535);
+        json.WritePropertyName("fileFormat");
+        json.WriteObjectStart();
+        json.WritePropertyName("type");
+        json.Write("jpeg");
+        json.WritePropertyName("width");
+        json.Write(5376);
+        json.WritePropertyName("height");
+        json.Write(2688);
+        json.WriteObjectEnd();
+        json.WriteObjectEnd();
+        json.WriteObjectEnd();
+        json.WriteObjectEnd();
+
+        return sb.ToString();
+    }
+
+    private void AskTakePicture()
     {
         mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_EXECUTE);
         mHTTP.SetJSONData(ConstructTakePictureJSONString());
@@ -166,15 +254,13 @@ public class osc_controller : MonoBehaviour
         json.Write("camera.takePicture");
         json.WritePropertyName("parameters");
         json.WriteObjectStart();
-        json.WritePropertyName("sessionId");
-        json.Write(mSessionId);
         json.WriteObjectEnd();
         json.WriteObjectEnd();
 
         return sb.ToString();
     }
 
-    public void AskProgressStatus()
+    private void AskProgressStatus()
     {
         mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_STATUS);
         mHTTP.SetJSONData(ConstructProgressStatusJSONString());
@@ -193,9 +279,35 @@ public class osc_controller : MonoBehaviour
         return sb.ToString();
     }
 
-    public void AskDownloadPhoto()
+    private void AskDownloadPhoto()
     {
-        mHTTP.ChangeCommand(mFileURI);
+        mHTTP.ChangeCommand(mFileURL);
         mHTTP.Execute();
+    }
+
+    private void AskDeletePhoto()
+    {
+        mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_EXECUTE);
+        mHTTP.SetJSONData(ConstructDeletePhotoJSONString());
+        mHTTP.Execute();
+    }
+
+    private string ConstructDeletePhotoJSONString()
+    {
+        StringBuilder sb = new StringBuilder();
+        JsonWriter json = new JsonWriter(sb);
+        json.WriteObjectStart();
+        json.WritePropertyName("name");
+        json.Write("camera.delete");
+        json.WritePropertyName("parameters");
+        json.WriteObjectStart();
+        json.WritePropertyName("fileUrls");
+        json.WriteArrayStart();
+        json.Write(mFileURL);
+        json.WriteArrayEnd();
+        json.WriteObjectEnd();
+        json.WriteObjectEnd();
+
+        return sb.ToString();
     }
 }

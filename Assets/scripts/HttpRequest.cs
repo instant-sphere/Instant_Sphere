@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using LitJson;
+using System.Text.RegularExpressions;
 
 /**
  * Execute POST or GET request to the camera HTTP server.
@@ -37,7 +38,7 @@ public sealed class HttpRequest
      **/
     public HttpRequest()
     {
-        string[] tmpCommandString = { "/osc/commands/execute", "/osc/commands/status", "/osc/state", "/osc/checkForUpdates", "/osc/info", "/"};
+        string[] tmpCommandString = { "/osc/commands/execute", "/osc/commands/status", "/osc/state", "/osc/checkForUpdates", "/osc/info", ""};
         RequestType[] tmpCommandType = { RequestType.POST, RequestType.POST, RequestType.POST, RequestType.POST, RequestType.GET, RequestType.GET };
 
         for(int i = 0; i < tmpCommandString.Length; ++i)
@@ -62,10 +63,11 @@ public sealed class HttpRequest
         mType = mCommandsValues[(int)newCommand].Value;
     }
 
-    public void ChangeCommand(string URI)
+    public void ChangeCommand(string URL)
     {
         ChangeCommand(Commands.GET_URI);
-        mCommand += URI;
+        string withoutIP = Regex.Match(URL, @"" + mIPAdress + "(.+)", RegexOptions.Singleline).Groups[1].Value;
+        mCommand += withoutIP;
     }
 
     /**
@@ -140,17 +142,6 @@ public sealed class HttpRequest
         }
         else
             return null;         
-    }
-
-    public Texture2D GetTextureResponse()
-    {
-        if(IsTerminated())
-        {
-            Texture2D t = new Texture2D(0, 0);
-            mRequest.LoadImageIntoTexture(t);
-            return t;
-        }
-        return null;
     }
 
     public byte[] GetRawResponse()
