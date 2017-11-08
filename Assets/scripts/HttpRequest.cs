@@ -1,12 +1,10 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using LitJson;
 using System.Text.RegularExpressions;
 
 /**
  * Execute POST or GET request to the camera HTTP server.
- * You have to add all JSON request parameters using AddJSONData() method.
  * The class has a static method JSONStringToDictionary() to convert server response into usable data structure.
  **/
 
