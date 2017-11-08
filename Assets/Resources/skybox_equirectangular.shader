@@ -1,4 +1,6 @@
-﻿Shader "Skybox/Equirectangular" {
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "Skybox/Equirectangular" {
 	Properties{
 		_Tint("Tint Color", Color) = (.5, .5, .5, .5)
 		[Gamma] _Exposure("Exposure", Range(0, 8)) = 1.0
@@ -45,7 +47,7 @@
 	v2f vert(appdata_t v)
 	{
 		v2f o;
-		o.vertex = mul(UNITY_MATRIX_MVP, RotateAroundYInDegrees(v.vertex, _Rotation));
+		o.vertex = UnityObjectToClipPos(RotateAroundYInDegrees(v.vertex, _Rotation));
 		o.texcoord = v.vertex.xyz;
 		return o;
 	}
