@@ -3,7 +3,8 @@
 /**
  * This class control camera rotations for both automatic and manual mode
  **/
-public class rotateCamera : MonoBehaviour {
+public class rotateCamera : MonoBehaviour
+{
     float mTurnSpeed = 10.0f;
     Vector2 mDelta;
     bool mIsAutomaticRotationEnable = false;
@@ -23,7 +24,7 @@ public class rotateCamera : MonoBehaviour {
 
         //This is made in order to avoid rotation on Z, just typing 0 on Zcoord isn’t enough
         //so the container is rotated around Y and the camera around X separately
-        container.Rotate(new Vector3(0.0f, - mDelta.x, 0.0f) * Time.deltaTime * mTurnSpeed);
+        container.Rotate(new Vector3(0.0f, -mDelta.x, 0.0f) * Time.deltaTime * mTurnSpeed);
         transform.Rotate(new Vector3(mDelta.y, 0.0f, 0.0f) * Time.deltaTime * mTurnSpeed);
 
         mDelta = Vector2.zero;
@@ -35,15 +36,12 @@ public class rotateCamera : MonoBehaviour {
         Vector2 d = Vector2.zero;
         d.x = threshold;
         float actualRotation = transform.rotation.eulerAngles.x;
-        
-        if (actualRotation != 0.0f)
-            if (actualRotation > threshold || (360.0f - actualRotation) > threshold)
-                if (actualRotation > 180.0f)
-                    d.y = threshold;
-                else
-                    d.y = -threshold;
+
+        if (actualRotation > threshold || (360.0f - actualRotation) > threshold)
+            if (actualRotation > 180.0f)
+                d.y = threshold;
             else
-               d.y = -actualRotation;
+                d.y = -threshold;
         return d;
     }
 
