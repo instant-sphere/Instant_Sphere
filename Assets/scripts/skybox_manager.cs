@@ -4,17 +4,17 @@ public sealed class skybox_manager : MonoBehaviour
 {
     Material mDefaultSkybox;
 
-	// Use this for initialization
-	private void Start ()
+    // Use this for initialization
+    private void Start()
     {
         mDefaultSkybox = RenderSettings.skybox;
-	}
-	
-	// Update is called once per frame
-	private void Update ()
+    }
+
+    // Update is called once per frame
+    private void Update()
     {
-		
-	}
+
+    }
 
     public void DefineNewSkybox(byte[] data)
     {

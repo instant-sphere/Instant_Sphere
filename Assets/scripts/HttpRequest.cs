@@ -40,7 +40,7 @@ public sealed class HttpRequest
         string[] tmpCommandString = { "/osc/commands/execute", "/osc/commands/status", "/osc/state", "/osc/checkForUpdates", "/osc/info", "" };
         RequestType[] tmpCommandType = { RequestType.POST, RequestType.POST, RequestType.POST, RequestType.POST, RequestType.GET, RequestType.GET };
 
-        for(int i = 0; i < tmpCommandString.Length; ++i)
+        for (int i = 0; i < tmpCommandString.Length; ++i)
         {
             KeyValuePair<string, RequestType> tmp = new KeyValuePair<string, RequestType>(tmpCommandString[i], tmpCommandType[i]);
             mCommandsValues.Add(tmp);
@@ -87,7 +87,7 @@ public sealed class HttpRequest
         try
         {
             // Construct POST string if needed
-            if(mType == RequestType.POST)
+            if (mType == RequestType.POST)
             {
                 // Send POST request and start waiting for response
                 byte[] postData = System.Text.Encoding.UTF8.GetBytes(mData.ToCharArray());
@@ -138,18 +138,18 @@ public sealed class HttpRequest
         {
             string r = mRequest.error;
             mLastRequestSuccessful = false;
-            if(r == null)
+            if (r == null)
             {
                 r = mRequest.text;
                 mLastRequestSuccessful = true;
             }
-               
+
             return r;
         }
         else
-            return null;         
+            return null;
     }
-    
+
     /**
      * Return the raw HTTP response as byte array
      * Useful for binary data
