@@ -1,28 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using LitJson;
 using System.Text.RegularExpressions;
+using LitJson;
 
 /**
- * Execute POST or GET request to the camera HTTP server.
+ * Execute POST or GET requests on the camera HTTP server.
  * The class has a static method JSONStringToDictionary() to convert server response into usable data structure.
  **/
-
 public sealed class HttpRequest
 {
-    string mIPAdress;   //server IP address
-    string mCommand;    //current API command
-    public WWW mRequest;       //WWW object to send requests
-    RequestType mType;  //GET or POST
+    string mIPAdress;       //server IP address
+    string mCommand;        //current API command
+    WWW mRequest;           //WWW object to send requests
+    RequestType mType;      //GET or POST type
     bool mLastRequestSuccessful;
     Dictionary<string, string> mHeader = new Dictionary<string, string>();  //POST headers
-    string mData = "";    //JSON data buffer for POST
-    enum RequestType { GET, POST };
-    List<KeyValuePair<string, RequestType>> mCommandsValues = new List<KeyValuePair<string, RequestType>>();
+    string mData = "";      //JSON data buffer for POST requests
 
-    public enum Commands { POST_C_EXECUTE = 0, POST_C_STATUS, POST_STATE, POST_CHECK_UPDATE, GET_INFO, GET_URI };  //enumeration of all API commands
+    enum RequestType { GET, POST };
+    List<KeyValuePair<string, RequestType>> mCommandsValues = new List<KeyValuePair<string, RequestType>>();    //hold API command string and request type, this list is indexed by 'Commands' enum
+
+    public enum Commands { POST_C_EXECUTE = 0, POST_C_STATUS, POST_STATE, POST_CHECK_UPDATE, GET_INFO, GET_URL };  //enumeration of all API commands
 
     /**
+     * Static method
      * Convert a string containing valid JSON into a dictionary like structure.
      **/
     public static JsonData JSONStringToDictionary(string json)
@@ -36,7 +37,7 @@ public sealed class HttpRequest
      **/
     public HttpRequest()
     {
-        string[] tmpCommandString = { "/osc/commands/execute", "/osc/commands/status", "/osc/state", "/osc/checkForUpdates", "/osc/info", ""};
+        string[] tmpCommandString = { "/osc/commands/execute", "/osc/commands/status", "/osc/state", "/osc/checkForUpdates", "/osc/info", "" };
         RequestType[] tmpCommandType = { RequestType.POST, RequestType.POST, RequestType.POST, RequestType.POST, RequestType.GET, RequestType.GET };
 
         for(int i = 0; i < tmpCommandString.Length; ++i)
@@ -53,7 +54,7 @@ public sealed class HttpRequest
      * Use this to change the current API command target
      * ie: ChangeCommand(Commands.POST_STATE);
      * Or to set the URI to download a file
-     * ie: ChangeCommand("image023.JPG");
+     * ie: ChangeCommand("URL");
      **/
     public void ChangeCommand(Commands newCommand)
     {
@@ -63,7 +64,7 @@ public sealed class HttpRequest
 
     public void ChangeCommand(string URL)
     {
-        ChangeCommand(Commands.GET_URI);
+        ChangeCommand(Commands.GET_URL);
         string withoutIP = Regex.Match(URL, @"" + mIPAdress + "(.+)", RegexOptions.Singleline).Groups[1].Value;
         mCommand += withoutIP;
     }
@@ -92,6 +93,8 @@ public sealed class HttpRequest
                 byte[] postData = System.Text.Encoding.UTF8.GetBytes(mData.ToCharArray());
                 mRequest = new WWW(mIPAdress + mCommand, postData, mHeader);
 
+                Debug.Log(mIPAdress + mCommand + ":" + mData);
+
                 // Reset data buffer
                 mData = "";
             }
@@ -106,21 +109,26 @@ public sealed class HttpRequest
         }
     }
 
-    /*
+    /**
      * Return true if a request has been made and its result is ready
      **/
     public bool IsTerminated()
     {
+        Debug.Log(mRequest.error);
+        Debug.Log(mRequest.text);
         return mRequest != null && mRequest.isDone;
     }
 
+    /**
+     * Return true if last terminated request was successful
+     **/
     public bool IsSuccessful()
     {
         return mLastRequestSuccessful;
     }
 
     /**
-     * Return the HTTP response of last request made or error message on error
+     * Return the HTTP response of last request made as string or error message on error
      * Return null if the response isn't ready
      * A request should have been executed before calling this method !
      **/
@@ -141,11 +149,20 @@ public sealed class HttpRequest
         else
             return null;         
     }
-
+    
+    /**
+     * Return the raw HTTP response as byte array
+     * Useful for binary data
+     * Return null if the response isn't ready
+     * A request should have been executed before calling this method !
+     **/
     public byte[] GetRawResponse()
     {
         if (IsTerminated())
         {
+            mLastRequestSuccessful = false;
+            if (mRequest.error == null)
+                mLastRequestSuccessful = true;
             return mRequest.bytes;
         }
         return null;
