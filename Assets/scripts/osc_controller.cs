@@ -170,7 +170,7 @@ public sealed class osc_controller : MonoBehaviour
     /**
      * LIVE PREVIEW
      **/
-     void ManageLivePreview(JsonData jdata)
+    void ManageLivePreview(JsonData jdata)
     {
         Debug.Log(mHTTP.GetHTTPResponse());
     }
