@@ -37,7 +37,7 @@ public class rotateCamera : MonoBehaviour
         d.x = threshold;
         float actualRotation = transform.rotation.eulerAngles.x;
 
-        if (actualRotation > threshold || (360.0f - actualRotation) > threshold)
+        if (actualRotation > threshold && (360.0f - actualRotation) > threshold)
             if (actualRotation > 180.0f)
                 d.y = threshold;
             else

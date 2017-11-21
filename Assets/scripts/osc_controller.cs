@@ -17,12 +17,12 @@ public sealed class osc_controller : MonoBehaviour
     Action mCallBack = null;                                        //callback to signal that photo download is finish
     Material mDefaultSkybox;
     byte[] mBuffer;
-    enum OSCStates { DISCONNECTED, IDLE, TAKE_PHOTO, DOWNLOAD_PHOTO, DELETE_PHOTO };
+    enum OSCStates { DISCONNECTED, IDLE, LIVE_PREVIEW, TAKE_PHOTO, DOWNLOAD_PHOTO, DELETE_PHOTO };
     OSCStates mCurrentState;
 
     /* Actions associated with the method name */
-    enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE };
-    string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskCameraInfo", "AskDeletePhoto" };
+    enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE, START_LIVE_PREVIEW };
+    string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskCameraInfo", "AskDeletePhoto", "AskStartLivePreview" };
 
     // Use this for initialization
     private void Start()
@@ -45,7 +45,9 @@ public sealed class osc_controller : MonoBehaviour
     {
         if (mCurrentState != OSCStates.IDLE)
             throw new InvalidOperationException("OSC controller wasn't in IDLE state when trying to take a picture.");
-        EnqueueAction(OSCActions.TAKE_PICTURE);
+        //EnqueueAction(OSCActions.TAKE_PICTURE);
+        mCurrentState = OSCStates.LIVE_PREVIEW;
+        EnqueueAction(OSCActions.START_LIVE_PREVIEW);
         mCallBack = callback;
     }
 
@@ -129,6 +131,9 @@ public sealed class osc_controller : MonoBehaviour
             case OSCStates.IDLE:
                 ManageIdle(jdata);
                 break;
+            case OSCStates.LIVE_PREVIEW:
+                ManageLivePreview(jdata);
+                break;
             case OSCStates.TAKE_PHOTO:
                 ManageTakePhoto(jdata);
                 break;
@@ -160,6 +165,14 @@ public sealed class osc_controller : MonoBehaviour
     void ManageIdle(JsonData jdata)
     {
 
+    }
+
+    /**
+     * LIVE PREVIEW
+     **/
+     void ManageLivePreview(JsonData jdata)
+    {
+        Debug.Log(mHTTP.GetHTTPResponse());
     }
 
     /**
@@ -412,6 +425,28 @@ public sealed class osc_controller : MonoBehaviour
         json.Write(mInternalData.mFileURL);
         json.WriteArrayEnd();
         json.WriteObjectEnd();
+        json.WriteObjectEnd();
+
+        return sb.ToString();
+    }
+
+    /**
+     * Start live preview mode
+     **/
+    private void AskStartLivePreview()
+    {
+        mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_EXECUTE);
+        mHTTP.SetJSONData(ConstructStartLivePreviewJSONString());
+        mHTTP.Execute();
+    }
+
+    private string ConstructStartLivePreviewJSONString()
+    {
+        StringBuilder sb = new StringBuilder();
+        JsonWriter json = new JsonWriter(sb);
+        json.WriteObjectStart();
+        json.WritePropertyName("name");
+        json.Write("camera.getLivePreview");
         json.WriteObjectEnd();
 
         return sb.ToString();

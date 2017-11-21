@@ -93,6 +93,8 @@ public sealed class HttpRequest
                 byte[] postData = System.Text.Encoding.UTF8.GetBytes(mData.ToCharArray());
                 mRequest = new WWW(mIPAdress + mCommand, postData, mHeader);
 
+                Debug.Log(mIPAdress + mCommand + ":" + mData);
+
                 // Reset data buffer
                 mData = "";
             }
@@ -112,6 +114,8 @@ public sealed class HttpRequest
      **/
     public bool IsTerminated()
     {
+        Debug.Log(mRequest.error);
+        Debug.Log(mRequest.text);
         return mRequest != null && mRequest.isDone;
     }
 
