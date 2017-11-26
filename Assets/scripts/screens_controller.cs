@@ -16,10 +16,9 @@ public sealed class screens_controller : MonoBehaviour
     public rotateCamera mCamera;
     public osc_controller mOSCController;
     public skybox_manager mSkyboxMng;
-    public facebook mFB;
 
     //one state per screen
-    enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, SHARE_PHOTO };
+    enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, SHARE_PHOTO, ERROR };
     ScreensStates mCurrentState;
 
     //interface buttons
@@ -27,6 +26,7 @@ public sealed class screens_controller : MonoBehaviour
     bool[] mButtonsActivated = new bool[5]; //buffer
 
     bool mIsOSCReady = false;
+    facebook mFB;
 
     //count down used when taking a photo
     CounterDown mCounter = new CounterDown();
@@ -34,6 +34,7 @@ public sealed class screens_controller : MonoBehaviour
     /* Use this for initialization */
     private void Start()
     {
+        mFB = new facebook();
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  //device screen should never turn off
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
         mCamera.AutomaticRotation();                    //use automatic rotation of welcome photo
@@ -43,9 +44,17 @@ public sealed class screens_controller : MonoBehaviour
     /* Update is called once per frame */
     private void Update()
     {
-        //handle user interactions
-        ManageStates();
-        ResetButtons();
+        if (!mOSCController.IsCameraOK())   //go to error state and stay inside
+        {
+            mCurrentState = ScreensStates.ERROR;
+            UpdateScreen();
+        }
+        else
+        {
+            //handle user interactions
+            ManageStates();
+            ResetButtons();
+        }
     }
 
     /**

@@ -7,20 +7,8 @@ using System;
  * This class encapsulates calls to the Facebook API
  * You can connect, disconnect and share an Url
  **/
-public class facebook : MonoBehaviour
+public class facebook
 {
-    // Use this for initialization
-    private void Start ()
-    {
-
-	}
-
-	// Update is called once per frame
-	private void Update ()
-    {
-
-	}
-
     private void InitSDK()
     {
         if (!FB.IsInitialized)
