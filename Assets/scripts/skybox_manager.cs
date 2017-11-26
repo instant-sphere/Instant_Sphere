@@ -30,11 +30,14 @@ public sealed class skybox_manager : MonoBehaviour
         Material m = new Material(Shader.Find("Skybox/Equirectangular"));
         m.SetTexture("_Tex", t);
 
+        Destroy(RenderSettings.skybox.GetTexture("_Tex"));
+        Destroy(RenderSettings.skybox);
         RenderSettings.skybox = m;
     }
 
     public void ResetSkybox()
     {
+        Destroy(RenderSettings.skybox);
         RenderSettings.skybox = mDefaultSkybox;
     }
 }
