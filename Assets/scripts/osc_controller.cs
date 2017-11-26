@@ -4,6 +4,10 @@ using UnityEngine;
 using LitJson;
 using System;
 using System.Text;
+using System.Net;
+using System.IO;
+using UnityEngine.UI;
+using System.Threading;
 
 /**
  * This class is intended to handle an 360 degrees camera that provide OSC API 2
@@ -15,19 +19,18 @@ public sealed class osc_controller : MonoBehaviour
     Queue<MethodInfo> mExecutionQueue = new Queue<MethodInfo>();    //queue for methods that should be executed
     osc_controller_data mInternalData;                              //structure holding ID's
     Action mCallBack = null;                                        //callback to signal that photo download is finish
-    Material mDefaultSkybox;
+
     byte[] mBuffer;
     enum OSCStates { DISCONNECTED, IDLE, LIVE_PREVIEW, TAKE_PHOTO, DOWNLOAD_PHOTO, DELETE_PHOTO };
     OSCStates mCurrentState;
 
     /* Actions associated with the method name */
-    enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE, START_LIVE_PREVIEW };
+    enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE, LIVE_PREVIEW };
     string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskCameraInfo", "AskDeletePhoto", "AskStartLivePreview" };
 
     // Use this for initialization
     private void Start()
     {
-        mDefaultSkybox = RenderSettings.skybox;
         mInternalData.mFileURL = "";
         mInternalData.mCurrentOperationId = "";
         mInternalData.mSessionId = "";
@@ -43,20 +46,31 @@ public sealed class osc_controller : MonoBehaviour
      **/
     public void StartCapture(Action callback)
     {
+        mCurrentState = OSCStates.IDLE; //TODO create StopLivePreview and these 2 lines inside and stop properly thread
+        mInternalData.mIsBusy = false;
+
         if (mCurrentState != OSCStates.IDLE)
             throw new InvalidOperationException("OSC controller wasn't in IDLE state when trying to take a picture.");
-        //EnqueueAction(OSCActions.TAKE_PICTURE);
-        mCurrentState = OSCStates.LIVE_PREVIEW;
-        EnqueueAction(OSCActions.START_LIVE_PREVIEW);
+        EnqueueAction(OSCActions.TAKE_PICTURE);
         mCallBack = callback;
+    }
+
+    public void StartLivePreview()
+    {
+        if (mCurrentState != OSCStates.IDLE)
+            throw new InvalidOperationException("OSC controller wasn't in IDLE state when trying to start live preview.");
+        EnqueueAction(OSCActions.LIVE_PREVIEW);
     }
 
     /**
      * Get the last downloaded photo as byte buffer
+     * or null if no new image is available
      **/
     public byte[] GetLatestData()
     {
-        return mBuffer;
+        byte[] ret = mBuffer;
+        mBuffer = null;
+        return ret;
     }
 
     /**
@@ -95,6 +109,10 @@ public sealed class osc_controller : MonoBehaviour
                 HandleError(s);
             mInternalData.mIsBusy = false;
         }
+        else if(mCurrentState == OSCStates.LIVE_PREVIEW)    //else if we are streaming check for a new image
+        {
+            ResponseHandler(null);
+        }
     }
 
     /**
@@ -103,7 +121,7 @@ public sealed class osc_controller : MonoBehaviour
     private void HandleError(string err)
     {
         Debug.Log("HTTP error: " + err); //Log error message
-        mCurrentState = OSCStates.DISCONNECTED; //assume deconnection after error and try again
+        mCurrentState = OSCStates.DISCONNECTED; //assume disconnection after error and try again
         ClearQueue();
         EnqueueAction(OSCActions.START_SESSION);
     }
@@ -132,7 +150,7 @@ public sealed class osc_controller : MonoBehaviour
                 ManageIdle(jdata);
                 break;
             case OSCStates.LIVE_PREVIEW:
-                ManageLivePreview(jdata);
+                ManageLivePreview();
                 break;
             case OSCStates.TAKE_PHOTO:
                 ManageTakePhoto(jdata);
@@ -170,9 +188,9 @@ public sealed class osc_controller : MonoBehaviour
     /**
      * LIVE PREVIEW
      **/
-    void ManageLivePreview(JsonData jdata)
+    void ManageLivePreview()
     {
-        Debug.Log(mHTTP.GetHTTPResponse());
+        mBuffer = mHTTP.mStreamRequest.GetLastReceivedImage();
     }
 
     /**
@@ -184,6 +202,7 @@ public sealed class osc_controller : MonoBehaviour
         string state = jdata["state"].ToString();
         if (state == "inProgress")
         {
+            Thread.Sleep(2500); //suspend main thread for 2.5sec to prevent from spaming camera with progress status requests
             mInternalData.mCurrentOperationId = jdata["id"].ToString();
             EnqueueAction(OSCActions.PROGRESS_STATUS);
         }
@@ -201,26 +220,6 @@ public sealed class osc_controller : MonoBehaviour
     void ManageDownload(JsonData jdata)
     {
         mBuffer = mHTTP.GetRawResponse();
-
-        /*if (!System.IO.Directory.Exists("/sdcard/AEI"))
-            System.IO.Directory.CreateDirectory("/sdcard/AEI");
-        System.IO.File.WriteAllBytes("/sdcard/AEI/downloaded_image.jpg", image);
-
-        byte[] loadedPicture = System.IO.File.ReadAllBytes("/sdcard/AEI/downloaded_image.jpg");
-        Texture2D t = new Texture2D(2, 2);
-        t.LoadImage(loadedPicture);
-
-        // TODO : convert equirectangular to cubemap and don't create a new skybox from the shader "Skybox/Equirectangular"
-        /*Cubemap cmap = new Cubemap(t.height, TextureFormat.RGB24, false);
-        cmap.SetPixels(t.GetPixels(), CubemapFace.PositiveX);
-        cmap.filterMode = FilterMode.Trilinear;
-        cmap.Apply();*/
-
-        /*Material m = new Material(Shader.Find("Skybox/Equirectangular"));
-        m.SetTexture("_Tex", t);
-
-        RenderSettings.skybox = m;*/
-
         EnqueueAction(OSCActions.DELETE);
         mCurrentState = OSCStates.DELETE_PHOTO;
     }
@@ -435,8 +434,10 @@ public sealed class osc_controller : MonoBehaviour
      **/
     private void AskStartLivePreview()
     {
+        mCurrentState = OSCStates.LIVE_PREVIEW;
         mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_EXECUTE);
         mHTTP.SetJSONData(ConstructStartLivePreviewJSONString());
+        mHTTP.SetNextStream();
         mHTTP.Execute();
     }
 

@@ -16,6 +16,7 @@ public sealed class screens_controller : MonoBehaviour
     public rotateCamera mCamera;
     public osc_controller mOSCController;
     public skybox_manager mSkyboxMng;
+    public facebook mFB;
 
     //one state per screen
     enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, SHARE_PHOTO };
@@ -37,6 +38,7 @@ public sealed class screens_controller : MonoBehaviour
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
         mCamera.AutomaticRotation();                    //use automatic rotation of welcome photo
         UpdateScreen();
+        //mFB.StartConnection();
     }
 
     /* Update is called once per frame */
@@ -161,6 +163,7 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (Input.touchCount > 0 || Input.GetMouseButton(0))
         {
+            mOSCController.StartLivePreview();
             mCurrentState = ScreensStates.READY_TAKE_PHOTO;
             mCamera.ManualRotation();
             UpdateScreen();
@@ -172,6 +175,10 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageReadyTakePhotoScreen()
     {
+        byte[] data = mOSCController.GetLatestData();
+        if(data != null)
+            mSkyboxMng.DefineNewSkybox(data);
+
         if (IsButtonDown(InterfaceButtons.TAKE_PHOTO))
         {
             mCurrentState = ScreensStates.TAKING_PHOTO;
@@ -185,6 +192,10 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageTakingPhotoScreen()
     {
+        byte[] data = mOSCController.GetLatestData();
+        if (data != null)
+            mSkyboxMng.DefineNewSkybox(data);
+
         if (!mCounter.IsCounting())
         {
             StartCoroutine(mCounter.Count(3, UpdateCountDownText));
@@ -203,13 +214,11 @@ public sealed class screens_controller : MonoBehaviour
      * Wait until the OSC controller signal that the photo is ready
      * Then retrieve the data, save them and go to display screen
      **/
-    private void ManageWaitingScreen() //TODO wait for photo to be downloaded with some animation.
+    private void ManageWaitingScreen()
     {
         if (mIsOSCReady)
         {
-            byte[] photoData = mOSCController.GetLatestData();
-            mSkyboxMng.DefineNewSkybox(photoData);
-
+            mSkyboxMng.DefineNewSkybox(mOSCController.GetLatestData());
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }
@@ -230,7 +239,7 @@ public sealed class screens_controller : MonoBehaviour
         }
         else if (IsButtonDown(InterfaceButtons.RETRY))
         {
-            mSkyboxMng.ResetSkybox(); //TODO set to preview
+            mOSCController.StartLivePreview();
             mCurrentState = ScreensStates.READY_TAKE_PHOTO;
         }
         else if (IsButtonDown(InterfaceButtons.OK))
@@ -244,6 +253,7 @@ public sealed class screens_controller : MonoBehaviour
 
     /**
      * On the share screen go back to display screen if user presses the BACK button
+     * and disconnect the user from Facebook
      **/
     private void ManageShareScreen()
     {
@@ -264,7 +274,7 @@ public class CounterDown
     bool mCountDownEnded = false;
 
     /**
-     * Start counting from start to 0 second. Calls update(i) each time 
+     * Start counting from start to 0 second. Calls update(i) each time
      * This is a coroutine
      **/
     public IEnumerator Count(int start, Action<int> update)

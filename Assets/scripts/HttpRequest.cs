@@ -12,8 +12,10 @@ public sealed class HttpRequest
     string mIPAdress;       //server IP address
     string mCommand;        //current API command
     WWW mRequest;           //WWW object to send requests
+    public streamingRequest mStreamRequest;
     RequestType mType;      //GET or POST type
     bool mLastRequestSuccessful;
+    bool mIsStream;
     Dictionary<string, string> mHeader = new Dictionary<string, string>();  //POST headers
     string mData = "";      //JSON data buffer for POST requests
 
@@ -48,6 +50,7 @@ public sealed class HttpRequest
 
         mHeader.Add("Content-Type", "application/json");
         mIPAdress = "http://192.168.1.1";
+        mIsStream = false;
     }
 
     /**
@@ -69,6 +72,11 @@ public sealed class HttpRequest
         mCommand += withoutIP;
     }
 
+    public void SetNextStream()
+    {
+        mIsStream = true;
+    }
+
     /**
      * Set JSON data for next request
      * Request should be of type POST
@@ -86,11 +94,18 @@ public sealed class HttpRequest
     {
         try
         {
-            // Construct POST string if needed
-            if (mType == RequestType.POST)
+            // Send POST request and start waiting for response
+            byte[] postData = System.Text.Encoding.UTF8.GetBytes(mData.ToCharArray());
+
+            if (mIsStream)
             {
-                // Send POST request and start waiting for response
-                byte[] postData = System.Text.Encoding.UTF8.GetBytes(mData.ToCharArray());
+                mRequest = null;
+                mStreamRequest = new streamingRequest(mIPAdress + mCommand, mData);
+                mIsStream = false;
+            }
+            else if (mType == RequestType.POST) // Construct POST string if needed
+            {
+
                 mRequest = new WWW(mIPAdress + mCommand, postData, mHeader);
 
                 Debug.Log(mIPAdress + mCommand + ":" + mData);
@@ -114,8 +129,6 @@ public sealed class HttpRequest
      **/
     public bool IsTerminated()
     {
-        Debug.Log(mRequest.error);
-        Debug.Log(mRequest.text);
         return mRequest != null && mRequest.isDone;
     }
 
