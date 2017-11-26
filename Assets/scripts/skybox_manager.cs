@@ -16,6 +16,15 @@ public sealed class skybox_manager : MonoBehaviour
 
     }
 
+    private void DestroyCurrentSkybox()
+    {
+        if (RenderSettings.skybox != mDefaultSkybox)
+        {
+            Destroy(RenderSettings.skybox.GetTexture("_Tex"));
+            Destroy(RenderSettings.skybox);
+        }
+    }
+
     public void DefineNewSkybox(byte[] data)
     {
         Texture2D t = new Texture2D(2, 2);
@@ -30,14 +39,13 @@ public sealed class skybox_manager : MonoBehaviour
         Material m = new Material(Shader.Find("Skybox/Equirectangular"));
         m.SetTexture("_Tex", t);
 
-        Destroy(RenderSettings.skybox.GetTexture("_Tex"));
-        Destroy(RenderSettings.skybox);
+        DestroyCurrentSkybox();
         RenderSettings.skybox = m;
     }
 
     public void ResetSkybox()
     {
-        Destroy(RenderSettings.skybox);
+        DestroyCurrentSkybox();
         RenderSettings.skybox = mDefaultSkybox;
     }
 }

@@ -46,20 +46,31 @@ public sealed class osc_controller : MonoBehaviour
      **/
     public void StartCapture(Action callback)
     {
-        mCurrentState = OSCStates.IDLE; //TODO create StopLivePreview and these 2 lines inside and stop properly thread
-        mInternalData.mIsBusy = false;
-
         if (mCurrentState != OSCStates.IDLE)
             throw new InvalidOperationException("OSC controller wasn't in IDLE state when trying to take a picture.");
         EnqueueAction(OSCActions.TAKE_PICTURE);
         mCallBack = callback;
     }
 
+    /**
+     * Call this method to start live preview acquisition
+     * The system should be in IDLE state otherwise throw an exception
+     **/
     public void StartLivePreview()
     {
         if (mCurrentState != OSCStates.IDLE)
             throw new InvalidOperationException("OSC controller wasn't in IDLE state when trying to start live preview.");
         EnqueueAction(OSCActions.LIVE_PREVIEW);
+    }
+
+    /**
+     * Stop a live preview acquisition going back to IDLE state and closing streaming connection
+     **/
+    public void StopLivePreview()
+    {
+        mInternalData.mIsBusy = false;
+        mCurrentState = OSCStates.IDLE;
+        mHTTP.CloseStreaming();
     }
 
     /**
@@ -437,7 +448,7 @@ public sealed class osc_controller : MonoBehaviour
         mCurrentState = OSCStates.LIVE_PREVIEW;
         mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_EXECUTE);
         mHTTP.SetJSONData(ConstructStartLivePreviewJSONString());
-        mHTTP.SetNextStream();
+        mHTTP.NextRequestIsStream();
         mHTTP.Execute();
     }
 

@@ -49,6 +49,15 @@ public class streamingRequest
         return ret;
     }
 
+    /**
+     * Read the stream until the beginning of the data
+     * Return the size of the data in octet to be read
+     **/
+    private int SkipHeaderAndGetSize(BinaryReader binReader)
+    {
+        return 0;
+    }
+
     void Run()
     {
         Stream stream = mWebRequest.GetResponse().GetResponseStream();

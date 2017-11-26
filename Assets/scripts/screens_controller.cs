@@ -23,7 +23,7 @@ public sealed class screens_controller : MonoBehaviour
     ScreensStates mCurrentState;
 
     //interface buttons
-    enum InterfaceButtons { TAKE_PHOTO = 0, ABORT, RETRY, OK, BACK };
+    enum InterfaceButtons { TAKE_PHOTO = 0, ABORT, RETRY, OK, BACK, SHARE_FB };
     bool[] mButtonsActivated = new bool[5]; //buffer
 
     bool mIsOSCReady = false;
@@ -38,7 +38,6 @@ public sealed class screens_controller : MonoBehaviour
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
         mCamera.AutomaticRotation();                    //use automatic rotation of welcome photo
         UpdateScreen();
-        //mFB.StartConnection();
     }
 
     /* Update is called once per frame */
@@ -81,6 +80,11 @@ public sealed class screens_controller : MonoBehaviour
     public void ButtonBack()
     {
         SetButtonDown(InterfaceButtons.BACK);
+    }
+
+    public void ButtonShareFB()
+    {
+        SetButtonDown(InterfaceButtons.SHARE_FB);
     }
 
     /**
@@ -203,6 +207,7 @@ public sealed class screens_controller : MonoBehaviour
         else if (mCounter.IsCounterFinished())
         {
             mIsOSCReady = false;
+            mOSCController.StopLivePreview();
             mOSCController.StartCapture(TriggerOSCReady);
             mCurrentState = ScreensStates.WAITING;
             mCounter = new CounterDown();
@@ -257,6 +262,8 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageShareScreen()
     {
+        if(IsButtonDown(InterfaceButtons.SHARE_FB))
+            mFB.StartConnection();
         if (IsButtonDown(InterfaceButtons.BACK))
         {
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
