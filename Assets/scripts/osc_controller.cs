@@ -18,12 +18,12 @@ public sealed class osc_controller : MonoBehaviour
     Action mCallBack = null;                                        //callback to signal that photo download is finish
 
     byte[] mBuffer;
-    enum OSCStates { DISCONNECTED, IDLE, LIVE_PREVIEW, TAKE_PHOTO, DOWNLOAD_PHOTO, DELETE_PHOTO, ERROR };
+    enum OSCStates { DISCONNECTED, IDLE, LIVE_PREVIEW, TAKE_PHOTO, DOWNLOAD_PHOTO, DELETE_PHOTO, ERROR, RESETTING };
     OSCStates mCurrentState;
 
     /* Actions associated with the method name */
-    enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE, LIVE_PREVIEW };
-    string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskCameraInfo", "AskDeletePhoto", "AskStartLivePreview" };
+    enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE, LIVE_PREVIEW, RESET };
+    string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskCameraInfo", "AskDeletePhoto", "AskStartLivePreview", "AskReset" };
 
     // Use this for initialization
     private void Start()
@@ -120,16 +120,19 @@ public sealed class osc_controller : MonoBehaviour
         else if (mInternalData.isBusy && mHTTP.IsTerminated())  //else if the request is terminated and successful handle it in the FSM
         {
             string s = mHTTP.GetHTTPResponse();
+            Debug.Log(s);
             if (mHTTP.IsSuccessful())
             {
+                //when request response is OK we have 3 tries before going to ERROR except if it' a response to RESET command because we are already handling an error
+                if (mCurrentState != OSCStates.RESETTING)
+                    mInternalData.remainingConnectionTry = 3;
                 ResponseHandler(s);
-                mInternalData.remainingConnectionTry = 3;
             }
             else
                 HandleError(s);
             mInternalData.isBusy = false;
         }
-        else if(mCurrentState == OSCStates.LIVE_PREVIEW)    //else if we are streaming check for a new image
+        else if (mCurrentState == OSCStates.LIVE_PREVIEW)    //else if we are streaming check for a new image
         {
             ResponseHandler(null);
         }
@@ -143,9 +146,8 @@ public sealed class osc_controller : MonoBehaviour
         if (mInternalData.remainingConnectionTry > 0)
         {
             Debug.Log("HTTP error: " + err);        //Log error message
-            mCurrentState = OSCStates.DISCONNECTED; //assume disconnection after error and try again
             ClearQueue();
-            EnqueueAction(OSCActions.START_SESSION);
+            EnqueueAction(OSCActions.RESET);
             mInternalData.remainingConnectionTry--;
         }
         else    //3 try, 3 fails, application goes to error state
@@ -189,6 +191,9 @@ public sealed class osc_controller : MonoBehaviour
                 break;
             case OSCStates.DELETE_PHOTO:
                 ManageDelete(jdata);
+                break;
+            case OSCStates.RESETTING:
+                ManageResetting();
                 break;
         }
     }
@@ -265,6 +270,24 @@ public sealed class osc_controller : MonoBehaviour
             mCallBack = null;
         }
         mCurrentState = OSCStates.IDLE;
+    }
+
+    /**
+     * When we have reset the camera go to DISCONNECTED state and try to start a new session after 5sec
+     **/
+    void ManageResetting()
+    {
+        WaitForWifi();
+        mCurrentState = OSCStates.DISCONNECTED;
+        EnqueueAction(OSCActions.START_SESSION);
+    }
+
+    /**
+     * Just suspend current thread for 5 sec
+     **/
+    private void WaitForWifi()    //TODO do this with non blocking code
+    {
+        Thread.Sleep(10000);
     }
 
 
@@ -477,6 +500,29 @@ public sealed class osc_controller : MonoBehaviour
         json.WriteObjectStart();
         json.WritePropertyName("name");
         json.Write("camera.getLivePreview");
+        json.WriteObjectEnd();
+
+        return sb.ToString();
+    }
+
+    /**
+     * Reset the camera
+     **/
+    private void AskReset()
+    {
+        mCurrentState = OSCStates.RESETTING;
+        mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_EXECUTE);
+        mHTTP.SetJSONData(ConstructResetJSONString());
+        mHTTP.Execute();
+    }
+
+    private string ConstructResetJSONString()
+    {
+        StringBuilder sb = new StringBuilder();
+        JsonWriter json = new JsonWriter(sb);
+        json.WriteObjectStart();
+        json.WritePropertyName("name");
+        json.Write("camera.reset");
         json.WriteObjectEnd();
 
         return sb.ToString();
