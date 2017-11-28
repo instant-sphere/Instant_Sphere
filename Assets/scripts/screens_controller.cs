@@ -23,7 +23,7 @@ public sealed class screens_controller : MonoBehaviour
 
     //interface buttons
     enum InterfaceButtons { TAKE_PHOTO = 0, ABORT, RETRY, OK, BACK, SHARE_FB };
-    bool[] mButtonsActivated = new bool[5]; //buffer
+    bool[] mButtonsActivated = new bool[6]; //buffer
 
     bool mIsOSCReady = false;
     facebook mFB;
