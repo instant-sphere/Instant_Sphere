@@ -4,9 +4,6 @@ using UnityEngine;
 using LitJson;
 using System;
 using System.Text;
-using System.Net;
-using System.IO;
-using UnityEngine.UI;
 using System.Threading;
 
 /**
@@ -21,20 +18,21 @@ public sealed class osc_controller : MonoBehaviour
     Action mCallBack = null;                                        //callback to signal that photo download is finish
 
     byte[] mBuffer;
-    enum OSCStates { DISCONNECTED, IDLE, LIVE_PREVIEW, TAKE_PHOTO, DOWNLOAD_PHOTO, DELETE_PHOTO };
+    enum OSCStates { DISCONNECTED, IDLE, LIVE_PREVIEW, TAKE_PHOTO, DOWNLOAD_PHOTO, DELETE_PHOTO, ERROR, RESETTING };
     OSCStates mCurrentState;
 
     /* Actions associated with the method name */
-    enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE, LIVE_PREVIEW };
-    string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskCameraInfo", "AskDeletePhoto", "AskStartLivePreview" };
+    enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE, LIVE_PREVIEW, RESET };
+    string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskCameraInfo", "AskDeletePhoto", "AskStartLivePreview", "AskReset" };
 
     // Use this for initialization
     private void Start()
     {
-        mInternalData.mFileURL = "";
-        mInternalData.mCurrentOperationId = "";
-        mInternalData.mSessionId = "";
-        mInternalData.mIsBusy = false;
+        mInternalData.fileURL = "";
+        mInternalData.currentOperationId = "";
+        mInternalData.sessionId = "";
+        mInternalData.isBusy = false;
+        mInternalData.remainingConnectionTry = 3;
         mCurrentState = OSCStates.DISCONNECTED;
         EnqueueAction(OSCActions.START_SESSION);
     }
@@ -46,20 +44,31 @@ public sealed class osc_controller : MonoBehaviour
      **/
     public void StartCapture(Action callback)
     {
-        mCurrentState = OSCStates.IDLE; //TODO create StopLivePreview and these 2 lines inside and stop properly thread
-        mInternalData.mIsBusy = false;
-
         if (mCurrentState != OSCStates.IDLE)
             throw new InvalidOperationException("OSC controller wasn't in IDLE state when trying to take a picture.");
         EnqueueAction(OSCActions.TAKE_PICTURE);
         mCallBack = callback;
     }
 
+    /**
+     * Call this method to start live preview acquisition
+     * The system should be in IDLE state otherwise throw an exception
+     **/
     public void StartLivePreview()
     {
         if (mCurrentState != OSCStates.IDLE)
             throw new InvalidOperationException("OSC controller wasn't in IDLE state when trying to start live preview.");
         EnqueueAction(OSCActions.LIVE_PREVIEW);
+    }
+
+    /**
+     * Stop a live preview acquisition going back to IDLE state and closing streaming connection
+     **/
+    public void StopLivePreview()
+    {
+        mInternalData.isBusy = false;
+        mCurrentState = OSCStates.IDLE;
+        mHTTP.CloseStreaming();
     }
 
     /**
@@ -71,6 +80,14 @@ public sealed class osc_controller : MonoBehaviour
         byte[] ret = mBuffer;
         mBuffer = null;
         return ret;
+    }
+
+    /**
+     * Return true if camera works, false if the system can't communicate with the camera
+     **/
+    public bool IsCameraOK()
+    {
+        return mCurrentState != OSCStates.ERROR;
     }
 
     /**
@@ -95,21 +112,27 @@ public sealed class osc_controller : MonoBehaviour
     private void Update()
     {
         //Dequeue and invoke a new method if we are done with the previous request
-        if (!mInternalData.mIsBusy && mExecutionQueue.Count > 0)
+        if (!mInternalData.isBusy && mExecutionQueue.Count > 0)
         {
             mExecutionQueue.Dequeue().Invoke(this, null);
-            mInternalData.mIsBusy = true;
+            mInternalData.isBusy = true;
         }
-        else if (mInternalData.mIsBusy && mHTTP.IsTerminated())  //else if the request is terminated and successful handle it in the FSM
+        else if (mInternalData.isBusy && mHTTP.IsTerminated())  //else if the request is terminated and successful handle it in the FSM
         {
             string s = mHTTP.GetHTTPResponse();
+            Debug.Log(s);
             if (mHTTP.IsSuccessful())
+            {
+                //when request response is OK we have 3 tries before going to ERROR except if it' a response to RESET command because we are already handling an error
+                if (mCurrentState != OSCStates.RESETTING)
+                    mInternalData.remainingConnectionTry = 3;
                 ResponseHandler(s);
+            }
             else
                 HandleError(s);
-            mInternalData.mIsBusy = false;
+            mInternalData.isBusy = false;
         }
-        else if(mCurrentState == OSCStates.LIVE_PREVIEW)    //else if we are streaming check for a new image
+        else if (mCurrentState == OSCStates.LIVE_PREVIEW)    //else if we are streaming check for a new image
         {
             ResponseHandler(null);
         }
@@ -120,10 +143,18 @@ public sealed class osc_controller : MonoBehaviour
      **/
     private void HandleError(string err)
     {
-        Debug.Log("HTTP error: " + err); //Log error message
-        mCurrentState = OSCStates.DISCONNECTED; //assume disconnection after error and try again
-        ClearQueue();
-        EnqueueAction(OSCActions.START_SESSION);
+        if (mInternalData.remainingConnectionTry > 0)
+        {
+            Debug.Log("HTTP error: " + err);        //Log error message
+            ClearQueue();
+            EnqueueAction(OSCActions.RESET);
+            mInternalData.remainingConnectionTry--;
+        }
+        else    //3 try, 3 fails, application goes to error state
+        {
+            ClearQueue();
+            mCurrentState = OSCStates.ERROR;
+        }
     }
 
     /**
@@ -161,6 +192,9 @@ public sealed class osc_controller : MonoBehaviour
             case OSCStates.DELETE_PHOTO:
                 ManageDelete(jdata);
                 break;
+            case OSCStates.RESETTING:
+                ManageResetting();
+                break;
         }
     }
 
@@ -171,7 +205,7 @@ public sealed class osc_controller : MonoBehaviour
      **/
     void ManageDisconnected(JsonData jdata)
     {
-        mInternalData.mSessionId = jdata["results"]["sessionId"].ToString();
+        mInternalData.sessionId = jdata["results"]["sessionId"].ToString();
         EnqueueAction(OSCActions.UPGRADE_API);
         EnqueueAction(OSCActions.SET_OPTIONS);
         mCurrentState = OSCStates.IDLE;
@@ -203,12 +237,12 @@ public sealed class osc_controller : MonoBehaviour
         if (state == "inProgress")
         {
             Thread.Sleep(2500); //suspend main thread for 2.5sec to prevent from spaming camera with progress status requests
-            mInternalData.mCurrentOperationId = jdata["id"].ToString();
+            mInternalData.currentOperationId = jdata["id"].ToString();
             EnqueueAction(OSCActions.PROGRESS_STATUS);
         }
         else if (state == "done")
         {
-            mInternalData.mFileURL = jdata["results"]["fileUrl"].ToString();
+            mInternalData.fileURL = jdata["results"]["fileUrl"].ToString();
             EnqueueAction(OSCActions.DOWNLOAD);
             mCurrentState = OSCStates.DOWNLOAD_PHOTO;
         }
@@ -236,6 +270,24 @@ public sealed class osc_controller : MonoBehaviour
             mCallBack = null;
         }
         mCurrentState = OSCStates.IDLE;
+    }
+
+    /**
+     * When we have reset the camera go to DISCONNECTED state and try to start a new session after 5sec
+     **/
+    void ManageResetting()
+    {
+        WaitForWifi();
+        mCurrentState = OSCStates.DISCONNECTED;
+        EnqueueAction(OSCActions.START_SESSION);
+    }
+
+    /**
+     * Just suspend current thread for 5 sec
+     **/
+    private void WaitForWifi()    //TODO do this with non blocking code
+    {
+        Thread.Sleep(10000);
     }
 
 
@@ -292,7 +344,7 @@ public sealed class osc_controller : MonoBehaviour
         json.WritePropertyName("parameters");
         json.WriteObjectStart();
         json.WritePropertyName("sessionId");
-        json.Write(mInternalData.mSessionId);
+        json.Write(mInternalData.sessionId);
         json.WritePropertyName("options");
         json.WriteObjectStart();
         json.WritePropertyName("clientVersion");
@@ -385,7 +437,7 @@ public sealed class osc_controller : MonoBehaviour
         JsonWriter json = new JsonWriter(sb);
         json.WriteObjectStart();
         json.WritePropertyName("id");
-        json.Write(mInternalData.mCurrentOperationId);
+        json.Write(mInternalData.currentOperationId);
         json.WriteObjectEnd();
 
         return sb.ToString();
@@ -396,7 +448,7 @@ public sealed class osc_controller : MonoBehaviour
      **/
     private void AskDownloadPhoto()
     {
-        mHTTP.ChangeCommand(mInternalData.mFileURL);
+        mHTTP.ChangeCommand(mInternalData.fileURL);
         mHTTP.Execute();
     }
 
@@ -421,7 +473,7 @@ public sealed class osc_controller : MonoBehaviour
         json.WriteObjectStart();
         json.WritePropertyName("fileUrls");
         json.WriteArrayStart();
-        json.Write(mInternalData.mFileURL);
+        json.Write(mInternalData.fileURL);
         json.WriteArrayEnd();
         json.WriteObjectEnd();
         json.WriteObjectEnd();
@@ -437,7 +489,7 @@ public sealed class osc_controller : MonoBehaviour
         mCurrentState = OSCStates.LIVE_PREVIEW;
         mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_EXECUTE);
         mHTTP.SetJSONData(ConstructStartLivePreviewJSONString());
-        mHTTP.SetNextStream();
+        mHTTP.NextRequestIsStream();
         mHTTP.Execute();
     }
 
@@ -452,6 +504,29 @@ public sealed class osc_controller : MonoBehaviour
 
         return sb.ToString();
     }
+
+    /**
+     * Reset the camera
+     **/
+    private void AskReset()
+    {
+        mCurrentState = OSCStates.RESETTING;
+        mHTTP.ChangeCommand(HttpRequest.Commands.POST_C_EXECUTE);
+        mHTTP.SetJSONData(ConstructResetJSONString());
+        mHTTP.Execute();
+    }
+
+    private string ConstructResetJSONString()
+    {
+        StringBuilder sb = new StringBuilder();
+        JsonWriter json = new JsonWriter(sb);
+        json.WriteObjectStart();
+        json.WritePropertyName("name");
+        json.Write("camera.reset");
+        json.WriteObjectEnd();
+
+        return sb.ToString();
+    }
 }
 
 
@@ -460,8 +535,9 @@ public sealed class osc_controller : MonoBehaviour
  **/
 struct osc_controller_data
 {
-    public string mSessionId;          //session ID used before upgrading camera API to 2.1
-    public string mCurrentOperationId; //ID of operation currently in progress in the camera
-    public string mFileURL;            //URL of file on the camera
-    public bool mIsBusy;         //is the camera actually handling a request
+    public string sessionId;            //session ID used before upgrading camera API to 2.1
+    public string currentOperationId;   //ID of operation currently in progress in the camera
+    public string fileURL;              //URL of file on the camera
+    public bool isBusy;                 //is the camera actually handling a request
+    public int remainingConnectionTry;  //number of retry before going to maintenance state
 }

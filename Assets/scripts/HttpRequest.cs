@@ -72,9 +72,16 @@ public sealed class HttpRequest
         mCommand += withoutIP;
     }
 
-    public void SetNextStream()
+    public void NextRequestIsStream()
     {
         mIsStream = true;
+    }
+
+    public void CloseStreaming()
+    {
+        mStreamRequest.Abort();
+        mStreamRequest = null;
+        mIsStream = false;
     }
 
     /**
@@ -101,7 +108,7 @@ public sealed class HttpRequest
             {
                 mRequest = null;
                 mStreamRequest = new streamingRequest(mIPAdress + mCommand, mData);
-                mIsStream = false;
+                //mIsStream = false;
             }
             else if (mType == RequestType.POST) // Construct POST string if needed
             {
