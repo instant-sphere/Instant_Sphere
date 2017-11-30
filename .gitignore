@@ -323,12 +323,10 @@ __pycache__/
 *.xsd.cs
 
 *.iml
-.gradle
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries
-.DS_Store
-/build
+*.DS_Store
 /captures
-.externalNativeBuild
+*.externalNativeBuild
 *.jar
