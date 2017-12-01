@@ -25,4 +25,6 @@
 	
   </application>
   <uses-permission android:name="com.samsung.accessory.permission.ACCESSORY_FRAMEWORK" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 </manifest>

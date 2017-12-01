@@ -176,10 +176,17 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (Input.touchCount > 0 || Input.GetMouseButton(0))
         {
-            mOSCController.StartLivePreview();
-            mCurrentState = ScreensStates.READY_TAKE_PHOTO;
-            mCamera.ManualRotation();
-            UpdateScreen();
+            try
+            {
+                mOSCController.StartLivePreview();
+                mCurrentState = ScreensStates.READY_TAKE_PHOTO;
+                mCamera.ManualRotation();
+                UpdateScreen();
+            }
+            catch(Exception e)
+            {
+                Debug.Log(e.Message);
+            }
         }
     }
 
@@ -215,12 +222,22 @@ public sealed class screens_controller : MonoBehaviour
         }
         else if (mCounter.IsCounterFinished())
         {
-            mIsOSCReady = false;
-            mOSCController.StopLivePreview();
-            mOSCController.StartCapture(TriggerOSCReady);
-            mCurrentState = ScreensStates.WAITING;
-            mCounter = new CounterDown();
-            UpdateScreen();
+            try
+            {
+                mIsOSCReady = false;
+                mOSCController.StopLivePreview();
+                mOSCController.StartCapture(TriggerOSCReady);
+                mCurrentState = ScreensStates.WAITING;
+                UpdateScreen();
+            }
+            catch(Exception e)
+            {
+                Debug.Log(e.Message);
+            }
+            finally
+            {
+                mCounter = new CounterDown();   //new countdown for next time
+            }
         }
     }
 
