@@ -12,7 +12,7 @@ public sealed class screens_controller : MonoBehaviour
 {
     //Unity components set in inspector
     public List<Canvas> mScreens;
-    public Text mCountDown;
+    public Image mCountDown;
     public rotateCamera mCamera;
     public osc_controller mOSCController;
     public skybox_manager mSkyboxMng;
@@ -126,7 +126,23 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void UpdateCountDownText(int v)
     {
-        mCountDown.text = v.ToString();
+        string imageLocation = "ecran_3/";
+        switch (v)
+        {
+            case 3:
+                imageLocation += "ecran_3_A";
+                break;
+            case 2:
+                imageLocation += "ecran_3_B";
+                break;
+            case 1:
+                imageLocation += "ecran_3_C";
+                break;
+        }
+        Texture2D s = Resources.Load(imageLocation) as Texture2D;
+        if(v != 3)
+            Destroy(mCountDown.sprite);
+        mCountDown.sprite = Sprite.Create(s, mCountDown.sprite.rect, new Vector2(0.5f, 0.5f));
     }
 
     /**
@@ -307,13 +323,13 @@ public class CounterDown
     bool mCountDownEnded = false;
 
     /**
-     * Start counting from start to 0 second. Calls update(i) each time
+     * Start counting from start to 0(excluded) second. Calls update(i) each time
      * This is a coroutine
      **/
     public IEnumerator Count(int start, Action<int> update)
     {
         mCountingDown = true;
-        for (int i = start; i >= 0; i--)
+        for (int i = start; i > 0; i--)
         {
             update(i);
             yield return new WaitForSeconds(1.0f);
