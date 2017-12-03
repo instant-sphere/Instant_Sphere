@@ -27,6 +27,7 @@ public sealed class screens_controller : MonoBehaviour
 
     bool mIsOSCReady = false;
     facebook mFB;
+    byte[] mFullResolutionImage;
 
     //count down used when taking a photo
     CounterDown mCounter = new CounterDown();
@@ -265,7 +266,8 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (mIsOSCReady)
         {
-            mSkyboxMng.DefineNewSkybox(mOSCController.GetLatestData());
+            mFullResolutionImage = mOSCController.GetLatestData();
+            mSkyboxMng.DefineNewSkybox(mFullResolutionImage);
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }
@@ -304,8 +306,11 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageShareScreen()
     {
-        if(IsButtonDown(InterfaceButtons.SHARE_FB))
-            mFB.StartConnection();
+        if (IsButtonDown(InterfaceButtons.SHARE_FB))
+        {
+            mFB.StartConnection(mFullResolutionImage);
+        }
+
         if (IsButtonDown(InterfaceButtons.BACK))
         {
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
