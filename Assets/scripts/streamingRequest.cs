@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -13,6 +14,7 @@ public class streamingRequest
     ReaderWriterLockSlim mAccessImage;
     byte[] mLastFullImage;
     string mData;
+    bool mError = false;
 
     public streamingRequest(string URL, string jsonData)
     {
@@ -26,9 +28,18 @@ public class streamingRequest
         byte[] postBytes = Encoding.Default.GetBytes(jsonData);
         mWebRequest.ContentLength = postBytes.Length;
 
-        Stream reqStream = mWebRequest.GetRequestStream();
-        reqStream.Write(postBytes, 0, postBytes.Length);
-        reqStream.Close();
+        try
+        {
+            Stream reqStream = mWebRequest.GetRequestStream();
+            reqStream.Write(postBytes, 0, postBytes.Length);
+            reqStream.Close();
+        }
+        catch(Exception e)
+        {
+            Debug.Log(e.Message);
+            mError = true;
+            return;
+        }
 
         mThread = new Thread(Run);
         mThread.Start();
@@ -49,6 +60,11 @@ public class streamingRequest
         return ret;
     }
 
+    public bool IsStreamOnError()
+    {
+        return mError;
+    }
+
     /**
      * Read the stream until the beginning of the data
      * Return the size of the data in octet to be read
@@ -60,9 +76,18 @@ public class streamingRequest
 
     void Run()
     {
-        Stream stream = mWebRequest.GetResponse().GetResponseStream();
-
-        BinaryReader reader = new BinaryReader(new BufferedStream(stream), new ASCIIEncoding());
+        BinaryReader reader;
+        try
+        {
+            Stream stream = mWebRequest.GetResponse().GetResponseStream();
+            reader = new BinaryReader(new BufferedStream(stream), new ASCIIEncoding());
+        }
+        catch(Exception e)
+        {
+            Debug.Log(e.Message);
+            mError = true;
+            return;
+        }
 
         while (true)
         {

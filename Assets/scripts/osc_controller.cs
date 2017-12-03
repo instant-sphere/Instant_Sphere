@@ -224,6 +224,11 @@ public sealed class osc_controller : MonoBehaviour
      **/
     void ManageLivePreview()
     {
+        if(mHTTP.mStreamRequest.IsStreamOnError())
+        {
+            mCurrentState = OSCStates.ERROR;
+            return;
+        }
         mBuffer = mHTTP.mStreamRequest.GetLastReceivedImage();
     }
 

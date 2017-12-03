@@ -27,6 +27,7 @@ public sealed class screens_controller : MonoBehaviour
 
     bool mIsOSCReady = false;
     facebook mFB;
+    WifiManager mWifi;
     byte[] mFullResolutionImage;
 
     //count down used when taking a photo
@@ -35,6 +36,11 @@ public sealed class screens_controller : MonoBehaviour
     /* Use this for initialization */
     private void Start()
     {
+        mWifi = new WifiManager();
+        if (!mWifi.WaitForWifi())                       //ensure that wifi is ON when app starts or quit
+        {
+            Application.Quit();
+        }
         mFB = new facebook();
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  //device screen should never turn off
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
@@ -308,11 +314,13 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (IsButtonDown(InterfaceButtons.SHARE_FB))
         {
+            mWifi.SaveAndShutdownWifi();
             mFB.StartConnection(mFullResolutionImage);
         }
 
         if (IsButtonDown(InterfaceButtons.BACK))
         {
+            mWifi.RestoreWifi();
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }
