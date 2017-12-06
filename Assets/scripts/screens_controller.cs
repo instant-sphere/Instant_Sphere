@@ -47,6 +47,8 @@ public sealed class screens_controller : MonoBehaviour
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
         mCamera.AutomaticRotation();                    //use automatic rotation of welcome photo
         UpdateScreen();
+        LogSD log = new LogSD();
+        log.ecritureFichier("test1");
     }
 
     /* Update is called once per frame */
