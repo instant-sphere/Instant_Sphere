@@ -21,8 +21,6 @@ public sealed class LogSD
 
       //Ecriture du texte dans votre fichier
       monStreamWriter.WriteLine("Ma toute première ligne ...");
-      monStreamWriter.WriteLine("Ma seconde ligne ...");
-      monStreamWriter.WriteLine("Ma troisième ligne ...");
 
       // Fermeture du StreamWriter (Très important)
       monStreamWriter.Close();

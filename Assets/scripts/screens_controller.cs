@@ -34,6 +34,11 @@ public sealed class screens_controller : MonoBehaviour
     //count down used when taking a photo
     CounterDown mCounter = new CounterDown();
 
+    //Logs
+    LogSD log = new LogSD();
+    DateTime now;
+    String now_str;
+
     /* Use this for initialization */
     private void Start()
     {
@@ -47,8 +52,6 @@ public sealed class screens_controller : MonoBehaviour
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
         mCamera.AutomaticRotation();                    //use automatic rotation of welcome photo
         UpdateScreen();
-        LogSD log = new LogSD();
-        log.ecritureFichier("test1");
     }
 
     /* Update is called once per frame */
@@ -202,6 +205,9 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (Input.touchCount > 0 || Input.GetMouseButton(0))
         {
+            now = System.DateTime.Now;
+            now_str = now.ToString("MM-dd-yyyy_hh.ss.mm");
+            log.ecritureFichier(now_str);
             try
             {
                 mOSCController.StartLivePreview();
