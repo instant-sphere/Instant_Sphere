@@ -15,12 +15,19 @@ public class rotateCamera : MonoBehaviour
     /* Called once per frame */
     private void Update()
     {
-        if (mIsAutomaticRotationEnable)
-            mDelta = ComputeDelta();
-        else if (Input.touchCount > 0)
+        if (Input.touchCount > 0)
+        {
             mDelta = Input.GetTouch(0).deltaPosition;
+            mDelta /= 5.0f;
+            ManualRotation();
+        }
         else if (Input.GetMouseButton(0))
+        {
             mDelta = new Vector2(Input.GetAxis("Mouse X") * 10.0f, Input.GetAxis("Mouse Y") * 10.0f);
+            ManualRotation();
+        }
+        else if (mIsAutomaticRotationEnable)
+            mDelta = ComputeDelta();
 
         //This is made in order to avoid rotation on Z, just typing 0 on Zcoord isn’t enough
         //so the container is rotated around Y and the camera around X separately

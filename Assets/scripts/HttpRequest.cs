@@ -13,11 +13,10 @@ public sealed class HttpRequest
     string mIPAdress;       //server IP address
     string mCommand;        //current API command
     int mTimeout;           //connection timeout
-    UnityWebRequestAsyncOperation mWebRequest;  //object representing current connection
+    UnityWebRequestAsyncOperation mWebRequest;  //object representing current connection for regular HTTP requests
     public streamingRequest mStreamRequest;
     RequestType mType;      //GET or POST type
-    bool mIsStream;
-    Dictionary<string, string> mHeader = new Dictionary<string, string>();  //POST headers
+    bool mIsStream;         //is current request a streaming request ?
     string mData = "";      //JSON data buffer for POST requests
 
     enum RequestType { GET, POST };
@@ -49,7 +48,6 @@ public sealed class HttpRequest
             mCommandsValues.Add(tmp);
         }
 
-        mHeader.Add("Content-Type", "application/json");
         mIPAdress = "http://192.168.1.1";
         mTimeout = 10;
         mIsStream = false;
@@ -74,14 +72,20 @@ public sealed class HttpRequest
         mCommand += withoutIP;
     }
 
+    /**
+     * Signal that next request is a streaming request
+     **/
     public void NextRequestIsStream()
     {
         mIsStream = true;
     }
 
+    /**
+     * Cancel current streaming by aborting connection
+     **/
     public void CloseStreaming()
     {
-        mStreamRequest.Abort();
+        mStreamRequest.Abort(); //close connection and terminate thread
         mStreamRequest = null;
         mIsStream = false;
     }
@@ -101,6 +105,13 @@ public sealed class HttpRequest
      **/
     public void Execute()
     {
+        if(mWebRequest != null)
+            mWebRequest.webRequest.Dispose();
+        mWebRequest = null;
+        if(mStreamRequest != null)
+            mStreamRequest.Abort();
+        mStreamRequest = null;
+
         try
         {
             byte[] postData = System.Text.Encoding.UTF8.GetBytes(mData.ToCharArray());
@@ -108,35 +119,34 @@ public sealed class HttpRequest
             if (mIsStream)  // Streaming request
             {
                 mStreamRequest = new streamingRequest(mIPAdress + mCommand, mData);
+                Debug.Log("Streaming:" + mIPAdress + mCommand + " : " + mData);
             }
-            else if (mType == RequestType.POST) // Construct POST string if needed
+            else
             {
-                if(mWebRequest != null)
-                    mWebRequest.webRequest.Dispose();
-
-                UploadHandler upHandler = new UploadHandlerRaw(postData);
                 DownloadHandlerBuffer dlHandler = new DownloadHandlerBuffer();
-                UnityWebRequest www = new UnityWebRequest(mIPAdress + mCommand, UnityWebRequest.kHttpVerbPOST, dlHandler, upHandler);
-                www.useHttpContinue = false;
-                www.timeout = mTimeout;
-                www.SetRequestHeader("Content-Type", "application/json");
-                mWebRequest = www.SendWebRequest();
+                if (mType == RequestType.POST) //POST request
+                {
+                    UploadHandler upHandler = new UploadHandlerRaw(postData);
+                    UnityWebRequest www = new UnityWebRequest(mIPAdress + mCommand, UnityWebRequest.kHttpVerbPOST, dlHandler, upHandler);
+                    www.useHttpContinue = false;
+                    www.timeout = mTimeout;
+                    www.SetRequestHeader("Content-Type", "application/json");
+                    mWebRequest = www.SendWebRequest();
 
-                Debug.Log(mIPAdress + mCommand + ":" + mData);
+                    Debug.Log("POST:" + mIPAdress + mCommand + ":" + mData);
 
-                // Reset data buffer
-                mData = "";
-            }
-            else //GET request
-            {
-                if (mWebRequest != null)
-                    mWebRequest.webRequest.Dispose();
-                DownloadHandlerBuffer dlHandler = new DownloadHandlerBuffer();
-                UnityWebRequest www = new UnityWebRequest(mIPAdress + mCommand);
-                www.downloadHandler = dlHandler;
-                www.useHttpContinue = false;
-                www.timeout = mTimeout;
-                mWebRequest = www.SendWebRequest();
+                    mData = ""; // Reset data buffer
+                }
+                else //GET request
+                {
+                    UnityWebRequest www = new UnityWebRequest(mIPAdress + mCommand);
+                    www.downloadHandler = dlHandler;
+                    www.useHttpContinue = false;
+                    www.timeout = mTimeout * 10;    //allowing more time to download files
+                    mWebRequest = www.SendWebRequest();
+
+                    Debug.Log("GET:" + mIPAdress + mCommand);
+                }
             }
         }
         catch (UnityException ex)

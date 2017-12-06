@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -203,7 +204,6 @@ public sealed class screens_controller : MonoBehaviour
             {
                 mOSCController.StartLivePreview();
                 mCurrentState = ScreensStates.READY_TAKE_PHOTO;
-                mCamera.ManualRotation();
                 UpdateScreen();
             }
             catch(Exception e)
@@ -266,7 +266,7 @@ public sealed class screens_controller : MonoBehaviour
 
     /**
      * Wait until the OSC controller signal that the photo is ready
-     * Then retrieve the data, save them and go to display screen
+     * Then retrieve the data, save them and go to display screen with automatic rotation
      **/
     private void ManageWaitingScreen()
     {
@@ -274,6 +274,7 @@ public sealed class screens_controller : MonoBehaviour
         {
             mFullResolutionImage = mOSCController.GetLatestData();
             mSkyboxMng.DefineNewSkybox(mFullResolutionImage);
+            mCamera.AutomaticRotation();
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }
@@ -321,6 +322,8 @@ public sealed class screens_controller : MonoBehaviour
         if (IsButtonDown(InterfaceButtons.BACK))
         {
             mWifi.RestoreWifi();
+            Thread.Sleep(3000);
+            mOSCController.RebootController();
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }
