@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using LitJson;
+using UnityEngine.Networking;
 
 /**
  * Execute POST or GET requests on the camera HTTP server.
@@ -11,12 +12,11 @@ public sealed class HttpRequest
 {
     string mIPAdress;       //server IP address
     string mCommand;        //current API command
-    WWW mRequest;           //WWW object to send requests
+    int mTimeout;           //connection timeout
+    UnityWebRequestAsyncOperation mWebRequest;  //object representing current connection for regular HTTP requests
     public streamingRequest mStreamRequest;
     RequestType mType;      //GET or POST type
-    bool mLastRequestSuccessful;
-    bool mIsStream;
-    Dictionary<string, string> mHeader = new Dictionary<string, string>();  //POST headers
+    bool mIsStream;         //is current request a streaming request ?
     string mData = "";      //JSON data buffer for POST requests
 
     enum RequestType { GET, POST };
@@ -48,8 +48,8 @@ public sealed class HttpRequest
             mCommandsValues.Add(tmp);
         }
 
-        mHeader.Add("Content-Type", "application/json");
         mIPAdress = "http://192.168.1.1";
+        mTimeout = 10;
         mIsStream = false;
     }
 
@@ -72,14 +72,20 @@ public sealed class HttpRequest
         mCommand += withoutIP;
     }
 
+    /**
+     * Signal that next request is a streaming request
+     **/
     public void NextRequestIsStream()
     {
         mIsStream = true;
     }
 
+    /**
+     * Cancel current streaming by aborting connection
+     **/
     public void CloseStreaming()
     {
-        mStreamRequest.Abort();
+        mStreamRequest.Abort(); //close connection and terminate thread
         mStreamRequest = null;
         mIsStream = false;
     }
@@ -99,30 +105,48 @@ public sealed class HttpRequest
      **/
     public void Execute()
     {
+        if(mWebRequest != null)
+            mWebRequest.webRequest.Dispose();
+        mWebRequest = null;
+        if(mStreamRequest != null)
+            mStreamRequest.Abort();
+        mStreamRequest = null;
+
         try
         {
-            // Send POST request and start waiting for response
             byte[] postData = System.Text.Encoding.UTF8.GetBytes(mData.ToCharArray());
 
-            if (mIsStream)
+            if (mIsStream)  // Streaming request
             {
-                mRequest = null;
                 mStreamRequest = new streamingRequest(mIPAdress + mCommand, mData);
-                //mIsStream = false;
+                Debug.Log("Streaming:" + mIPAdress + mCommand + " : " + mData);
             }
-            else if (mType == RequestType.POST) // Construct POST string if needed
+            else
             {
+                DownloadHandlerBuffer dlHandler = new DownloadHandlerBuffer();
+                if (mType == RequestType.POST) //POST request
+                {
+                    UploadHandler upHandler = new UploadHandlerRaw(postData);
+                    UnityWebRequest www = new UnityWebRequest(mIPAdress + mCommand, UnityWebRequest.kHttpVerbPOST, dlHandler, upHandler);
+                    www.useHttpContinue = false;
+                    www.timeout = mTimeout;
+                    www.SetRequestHeader("Content-Type", "application/json");
+                    mWebRequest = www.SendWebRequest();
 
-                mRequest = new WWW(mIPAdress + mCommand, postData, mHeader);
+                    Debug.Log("POST:" + mIPAdress + mCommand + ":" + mData);
 
-                Debug.Log(mIPAdress + mCommand + ":" + mData);
+                    mData = ""; // Reset data buffer
+                }
+                else //GET request
+                {
+                    UnityWebRequest www = new UnityWebRequest(mIPAdress + mCommand);
+                    www.downloadHandler = dlHandler;
+                    www.useHttpContinue = false;
+                    www.timeout = mTimeout * 10;    //allowing more time to download files
+                    mWebRequest = www.SendWebRequest();
 
-                // Reset data buffer
-                mData = "";
-            }
-            else //GET request
-            {
-                mRequest = new WWW(mIPAdress + mCommand);
+                    Debug.Log("GET:" + mIPAdress + mCommand);
+                }
             }
         }
         catch (UnityException ex)
@@ -136,7 +160,7 @@ public sealed class HttpRequest
      **/
     public bool IsTerminated()
     {
-        return mRequest != null && mRequest.isDone;
+        return mWebRequest != null && mWebRequest.isDone;
     }
 
     /**
@@ -144,7 +168,7 @@ public sealed class HttpRequest
      **/
     public bool IsSuccessful()
     {
-        return mLastRequestSuccessful;
+        return mWebRequest != null && !mWebRequest.webRequest.isHttpError && !mWebRequest.webRequest.isNetworkError;
     }
 
     /**
@@ -156,14 +180,11 @@ public sealed class HttpRequest
     {
         if (IsTerminated())
         {
-            string r = mRequest.error;
-            mLastRequestSuccessful = false;
+            string r = mWebRequest.webRequest.error;
             if (r == null)
             {
-                r = mRequest.text;
-                mLastRequestSuccessful = true;
+                r = mWebRequest.webRequest.downloadHandler.text;
             }
-
             return r;
         }
         else
@@ -173,17 +194,14 @@ public sealed class HttpRequest
     /**
      * Return the raw HTTP response as byte array
      * Useful for binary data
-     * Return null if the response isn't ready
+     * Return null if the response isn't ready or if there is an error
      * A request should have been executed before calling this method !
      **/
     public byte[] GetRawResponse()
     {
-        if (IsTerminated())
+        if (IsTerminated() && IsSuccessful())
         {
-            mLastRequestSuccessful = false;
-            if (mRequest.error == null)
-                mLastRequestSuccessful = true;
-            return mRequest.bytes;
+            return mWebRequest.webRequest.downloadHandler.data;
         }
         return null;
     }

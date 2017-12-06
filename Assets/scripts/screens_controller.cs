@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,7 +13,7 @@ public sealed class screens_controller : MonoBehaviour
 {
     //Unity components set in inspector
     public List<Canvas> mScreens;
-    public Text mCountDown;
+    public Image mCountDown;
     public rotateCamera mCamera;
     public osc_controller mOSCController;
     public skybox_manager mSkyboxMng;
@@ -27,6 +28,8 @@ public sealed class screens_controller : MonoBehaviour
 
     bool mIsOSCReady = false;
     facebook mFB;
+    WifiManager mWifi;
+    byte[] mFullResolutionImage;
 
     //count down used when taking a photo
     CounterDown mCounter = new CounterDown();
@@ -34,6 +37,11 @@ public sealed class screens_controller : MonoBehaviour
     /* Use this for initialization */
     private void Start()
     {
+        mWifi = new WifiManager();
+        if (!mWifi.WaitForWifi())                       //ensure that wifi is ON when app starts or quit
+        {
+            Application.Quit();
+        }
         mFB = new facebook();
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  //device screen should never turn off
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
@@ -126,7 +134,23 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void UpdateCountDownText(int v)
     {
-        mCountDown.text = v.ToString();
+        string imageLocation = "ecran_3/";
+        switch (v)
+        {
+            case 3:
+                imageLocation += "ecran_3_A";
+                break;
+            case 2:
+                imageLocation += "ecran_3_B";
+                break;
+            case 1:
+                imageLocation += "ecran_3_C";
+                break;
+        }
+        Texture2D s = Resources.Load(imageLocation) as Texture2D;
+        if(v != 3)
+            Destroy(mCountDown.sprite);
+        mCountDown.sprite = Sprite.Create(s, mCountDown.sprite.rect, new Vector2(0.5f, 0.5f));
     }
 
     /**
@@ -176,10 +200,16 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (Input.touchCount > 0 || Input.GetMouseButton(0))
         {
-            mOSCController.StartLivePreview();
-            mCurrentState = ScreensStates.READY_TAKE_PHOTO;
-            mCamera.ManualRotation();
-            UpdateScreen();
+            try
+            {
+                mOSCController.StartLivePreview();
+                mCurrentState = ScreensStates.READY_TAKE_PHOTO;
+                UpdateScreen();
+            }
+            catch(Exception e)
+            {
+                Debug.Log(e.Message);
+            }
         }
     }
 
@@ -215,24 +245,36 @@ public sealed class screens_controller : MonoBehaviour
         }
         else if (mCounter.IsCounterFinished())
         {
-            mIsOSCReady = false;
-            mOSCController.StopLivePreview();
-            mOSCController.StartCapture(TriggerOSCReady);
-            mCurrentState = ScreensStates.WAITING;
-            mCounter = new CounterDown();
-            UpdateScreen();
+            try
+            {
+                mIsOSCReady = false;
+                mOSCController.StopLivePreview();
+                mOSCController.StartCapture(TriggerOSCReady);
+                mCurrentState = ScreensStates.WAITING;
+                UpdateScreen();
+            }
+            catch(Exception e)
+            {
+                Debug.Log(e.Message);
+            }
+            finally
+            {
+                mCounter = new CounterDown();   //new countdown for next time
+            }
         }
     }
 
     /**
      * Wait until the OSC controller signal that the photo is ready
-     * Then retrieve the data, save them and go to display screen
+     * Then retrieve the data, save them and go to display screen with automatic rotation
      **/
     private void ManageWaitingScreen()
     {
         if (mIsOSCReady)
         {
-            mSkyboxMng.DefineNewSkybox(mOSCController.GetLatestData());
+            mFullResolutionImage = mOSCController.GetLatestData();
+            mSkyboxMng.DefineNewSkybox(mFullResolutionImage);
+            mCamera.AutomaticRotation();
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }
@@ -271,10 +313,17 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageShareScreen()
     {
-        if(IsButtonDown(InterfaceButtons.SHARE_FB))
-            mFB.StartConnection();
+        if (IsButtonDown(InterfaceButtons.SHARE_FB))
+        {
+            mWifi.SaveAndShutdownWifi();
+            mFB.StartConnection(mFullResolutionImage);
+        }
+
         if (IsButtonDown(InterfaceButtons.BACK))
         {
+            mWifi.RestoreWifi();
+            Thread.Sleep(3000);
+            mOSCController.RebootController();
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }
@@ -290,13 +339,13 @@ public class CounterDown
     bool mCountDownEnded = false;
 
     /**
-     * Start counting from start to 0 second. Calls update(i) each time
+     * Start counting from start to 0(excluded) second. Calls update(i) each time
      * This is a coroutine
      **/
     public IEnumerator Count(int start, Action<int> update)
     {
         mCountingDown = true;
-        for (int i = start; i >= 0; i--)
+        for (int i = start; i > 0; i--)
         {
             update(i);
             yield return new WaitForSeconds(1.0f);

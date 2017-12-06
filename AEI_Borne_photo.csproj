@@ -250,6 +250,7 @@
     <Compile Include="Assets\scripts\screens_controller.cs" />
     <Compile Include="Assets\scripts\skybox_manager.cs" />
     <Compile Include="Assets\scripts\streamingRequest.cs" />
+    <Compile Include="Assets\scripts\WifiManager.cs" />
     <Compile Include="Assets\thirdparty\litjson-master\src\LitJson\IJsonWrapper.cs" />
     <Compile Include="Assets\thirdparty\litjson-master\src\LitJson\JsonData.cs" />
     <Compile Include="Assets\thirdparty\litjson-master\src\LitJson\JsonException.cs" />

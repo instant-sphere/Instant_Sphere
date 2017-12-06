@@ -28,13 +28,21 @@ public sealed class osc_controller : MonoBehaviour
     // Use this for initialization
     private void Start()
     {
+        Init();
+    }
+
+    private void Init()
+    {
         mInternalData.fileURL = "";
         mInternalData.currentOperationId = "";
         mInternalData.sessionId = "";
         mInternalData.isBusy = false;
         mInternalData.remainingConnectionTry = 3;
+        mInternalData.timer = 0;
         mCurrentState = OSCStates.DISCONNECTED;
         EnqueueAction(OSCActions.START_SESSION);
+        EnqueueAction(OSCActions.UPGRADE_API);
+        EnqueueAction(OSCActions.SET_OPTIONS);
     }
 
     /**
@@ -91,6 +99,15 @@ public sealed class osc_controller : MonoBehaviour
     }
 
     /**
+     * Use this to reboot the OSC controller when necessary (ie after disconnecting / reconnecting to the camera)
+     **/
+    public void RebootController()
+    {
+        ClearQueue();
+        Init();
+    }
+
+    /**
      * Enqueue the specified action
      **/
     private void EnqueueAction(OSCActions action)
@@ -120,7 +137,7 @@ public sealed class osc_controller : MonoBehaviour
         else if (mInternalData.isBusy && mHTTP.IsTerminated())  //else if the request is terminated and successful handle it in the FSM
         {
             string s = mHTTP.GetHTTPResponse();
-            Debug.Log(s);
+            Debug.Log("Request answer: " + s);
             if (mHTTP.IsSuccessful())
             {
                 //when request response is OK we have 3 tries before going to ERROR except if it' a response to RESET command because we are already handling an error
@@ -132,9 +149,18 @@ public sealed class osc_controller : MonoBehaviour
                 HandleError(s);
             mInternalData.isBusy = false;
         }
-        else if (mCurrentState == OSCStates.LIVE_PREVIEW)    //else if we are streaming check for a new image
+        else if (mCurrentState == OSCStates.LIVE_PREVIEW)    //else if we are streaming check for a new image or try restarting live preview
         {
-            ResponseHandler(null);
+            if(mHTTP.mStreamRequest.IsStreamOnError())
+            {
+                StopLivePreview();
+                RebootController();
+                EnqueueAction(OSCActions.LIVE_PREVIEW);
+            }
+            else
+            {
+                ResponseHandler(null);
+            }
         }
     }
 
@@ -206,8 +232,8 @@ public sealed class osc_controller : MonoBehaviour
     void ManageDisconnected(JsonData jdata)
     {
         mInternalData.sessionId = jdata["results"]["sessionId"].ToString();
-        EnqueueAction(OSCActions.UPGRADE_API);
-        EnqueueAction(OSCActions.SET_OPTIONS);
+//         EnqueueAction(OSCActions.UPGRADE_API);
+//         EnqueueAction(OSCActions.SET_OPTIONS);
         mCurrentState = OSCStates.IDLE;
     }
 
@@ -224,6 +250,11 @@ public sealed class osc_controller : MonoBehaviour
      **/
     void ManageLivePreview()
     {
+        if(mHTTP.mStreamRequest.IsStreamOnError())
+        {
+            mCurrentState = OSCStates.DISCONNECTED;    //go to disconnected, then try connect eventually reset camera
+            return;
+        }
         mBuffer = mHTTP.mStreamRequest.GetLastReceivedImage();
     }
 
@@ -236,7 +267,6 @@ public sealed class osc_controller : MonoBehaviour
         string state = jdata["state"].ToString();
         if (state == "inProgress")
         {
-            Thread.Sleep(2500); //suspend main thread for 2.5sec to prevent from spaming camera with progress status requests
             mInternalData.currentOperationId = jdata["id"].ToString();
             EnqueueAction(OSCActions.PROGRESS_STATUS);
         }
@@ -273,19 +303,18 @@ public sealed class osc_controller : MonoBehaviour
     }
 
     /**
-     * When we have reset the camera go to DISCONNECTED state and try to start a new session after 5sec
+     * When we have reset the camera wait some seconds to allow camera to turn ON again then launch initial sequence
      **/
     void ManageResetting()
     {
-        WaitForWifi();
-        mCurrentState = OSCStates.DISCONNECTED;
-        EnqueueAction(OSCActions.START_SESSION);
+        WaitSomeSec();
+        RebootController();
     }
 
     /**
      * Just suspend current thread for 5 sec
      **/
-    private void WaitForWifi()    //TODO do this with non blocking code
+    private void WaitSomeSec()    //TODO do this with non blocking code
     {
         Thread.Sleep(10000);
     }
@@ -540,4 +569,5 @@ struct osc_controller_data
     public string fileURL;              //URL of file on the camera
     public bool isBusy;                 //is the camera actually handling a request
     public int remainingConnectionTry;  //number of retry before going to maintenance state
+    public float timer;                 //timer
 }

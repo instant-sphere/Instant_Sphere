@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -11,8 +12,10 @@ public class streamingRequest
     HttpWebRequest mWebRequest;
     Thread mThread;
     ReaderWriterLockSlim mAccessImage;
+    BinaryReader mReader;
     byte[] mLastFullImage;
     string mData;
+    bool mError = false;
 
     public streamingRequest(string URL, string jsonData)
     {
@@ -26,18 +29,35 @@ public class streamingRequest
         byte[] postBytes = Encoding.Default.GetBytes(jsonData);
         mWebRequest.ContentLength = postBytes.Length;
 
-        Stream reqStream = mWebRequest.GetRequestStream();
-        reqStream.Write(postBytes, 0, postBytes.Length);
-        reqStream.Close();
+        try
+        {
+            Stream reqStream = mWebRequest.GetRequestStream();
+            reqStream.Write(postBytes, 0, postBytes.Length);
+            reqStream.Close();
+        }
+        catch(Exception e)
+        {
+            Debug.Log(e.Message);
+            mError = true;
+            return;
+        }
 
         mThread = new Thread(Run);
         mThread.Start();
+        Debug.Log("Starting streaming thread " + mThread.ToString());
     }
 
     public void Abort()
     {
-        mThread.Abort();
-        mWebRequest.Abort();
+        if (mThread != null)
+        {
+            Debug.Log("Terminating thread " + mThread.ToString());
+            mThread.Abort();
+        }
+        if (mReader != null)
+            mReader.Close();
+        if(mWebRequest != null)
+            mWebRequest.Abort();
     }
 
     public byte[] GetLastReceivedImage()
@@ -49,55 +69,69 @@ public class streamingRequest
         return ret;
     }
 
+    public bool IsStreamOnError()
+    {
+        return mError;
+    }
+
     /**
      * Read the stream until the beginning of the data
      * Return the size of the data in octet to be read
      **/
-    private int SkipHeaderAndGetSize(BinaryReader binReader)
+    private int SkipHeaderAndGetSize()
     {
-        return 0;
+        char c;
+        char[] cs = new char[256];
+        int i = 0;
+        do
+        {
+            c = mReader.ReadChar();
+        } while (c != 'h');
+
+        mReader.ReadChar();
+
+        while (c != '\n')
+        {
+            c = mReader.ReadChar();
+            cs[i++] = c;
+        }
+
+        mReader.ReadChar();
+        mReader.ReadChar();
+
+        string s = new string(cs);
+        return int.Parse(s);
     }
 
     void Run()
     {
-        Stream stream = mWebRequest.GetResponse().GetResponseStream();
-
-        BinaryReader reader = new BinaryReader(new BufferedStream(stream), new ASCIIEncoding());
-
-        while (true)
+        try
         {
-            char c;
-            char[] cs = new char[256];
-            int i = 0;
-            do
-            {
-                c = reader.ReadChar();
-            } while (c != 'h');
+            Stream stream = mWebRequest.GetResponse().GetResponseStream();
+            stream.ReadTimeout = 3 * 1000;
+            mReader = new BinaryReader(new BufferedStream(stream), new ASCIIEncoding());
 
-            reader.ReadChar();
-
-            while (c != '\n')
+            while (true)
             {
-                c = reader.ReadChar();
-                cs[i++] = c;
+                int blockSize = SkipHeaderAndGetSize();
+
+                byte[] data = new byte[blockSize];
+                int readByte = 0;
+                while (readByte != blockSize)
+                {
+                    readByte += mReader.Read(data, readByte, blockSize - readByte);
+                }
+
+                mAccessImage.EnterWriteLock();
+                mLastFullImage = data;
+                mAccessImage.ExitWriteLock();
             }
-
-            reader.ReadChar();
-            reader.ReadChar();
-
-            string s = new string(cs);
-            int blockSize = int.Parse(s);
-
-            byte[] data = new byte[blockSize];
-            int readByte = 0;
-            while (readByte != blockSize)
-            {
-                readByte += reader.Read(data, readByte, blockSize - readByte);
-            }
-
-            mAccessImage.EnterWriteLock();
-            mLastFullImage = data;
-            mAccessImage.ExitWriteLock();
+        }
+        catch(Exception e)
+        {
+            Debug.Log(e.Message);
+            mError = true;
+            return;
         }
     }
 }

@@ -5,47 +5,83 @@ using System;
 
 /**
  * This class encapsulates calls to the Facebook API
- * You can connect, disconnect and share an Url
+ * You can connect, disconnect and share an Url/photo
  **/
 public class facebook
 {
-    private void InitSDK()
-    {
-        if (!FB.IsInitialized)
-            FB.Init(Connection);
-        else
-            FB.ActivateApp();
-    }
+    byte[] mPhotoToShare;
 
-    public void Disconnection()
-    {
-        if (FB.IsInitialized && FB.IsLoggedIn)
-            FB.LogOut();
-    }
 
-    public void StartConnection()
+    /**
+     * Initiate a new connection with facebook in order to share the photo passed in parameter
+     * Initialize facebook SDK if it is not otherwise call Connection()
+     **/
+    public void StartConnection(byte[] photo)
     {
+        mPhotoToShare = photo;
         if (!FB.IsInitialized)
             InitSDK();
         else
             Connection();
     }
 
+    /*
+     * Destroy the local copy of the photo and logout any connected user
+     **/
+    public void Disconnection()
+    {
+        mPhotoToShare = null;
+        if (FB.IsInitialized && FB.IsLoggedIn)
+            FB.LogOut();
+    }
+
+    /**
+     * Initialize the facebook SDK and call Connection() after
+     **/
+    private void InitSDK()
+    {
+        if (!FB.IsInitialized)
+            FB.Init(Connection);
+    }
+
+    /**
+     * Prompt user for login into facebook with publish permissions
+     * publish permissions will not be granted if app has not been validated by facebook
+     **/
     private void Connection()
     {
         FB.ActivateApp();
         FB.LogInWithPublishPermissions(new List<string>() { "publish_actions" }, AuthCallback);
     }
 
+    /**
+     * Callback for authentication
+     * Share a link on user facebook account and try to upload a photo
+     **/
     private void AuthCallback(ILoginResult res)
     {
-        if(FB.IsLoggedIn)
+        if (FB.IsLoggedIn)
         {
-            FB.ShareLink(contentURL: new Uri("http://www.instant-sphere.com/"));
+            FB.ShareLink(contentURL: new Uri("http://www.instant-sphere.com/"));    //share a link OK
+
+            WWWForm data = new WWWForm();   //upload an image: need publish permissions, need facebook validation
+            data.AddBinaryData("image", mPhotoToShare, "photo.jpg", "image/jpeg");
+            data.AddField("allow_spherical_photo", "true");
+            FB.API("me/photos", HttpMethod.POST, ShareCallback, data);
         }
         else
         {
-            Debug.Log("Authentification canceled");
+            Debug.Log("Authentication canceled");
         }
+    }
+
+    /**
+     * Callback for uploading the photo
+     * Check if uploading was successful then disconnect the user
+     **/
+    private void ShareCallback(IGraphResult res)
+    {
+        Debug.Log(res.RawResult);   //TODO check if publication was successful
+        Disconnection();
     }
 }
