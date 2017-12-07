@@ -2,7 +2,7 @@
 
 /**
  * This class control camera rotations for both automatic and manual mode
- **/
+ // **/
 public class rotateCamera : MonoBehaviour
 {
     float mTurnSpeed = 10.0f;
@@ -12,11 +12,20 @@ public class rotateCamera : MonoBehaviour
 
     public Transform container; // camera container
 
+    //For logs
+    // DateTime now;
+    // String now_str;
+
     /* Called once per frame */
     private void Update()
     {
         if (Input.touchCount > 0)
         {
+            //For Logs
+            // now = System.DateTime.Now;
+            // now_str = now.ToString("MM-dd-yyyy_hh.ss.mm");
+            // log.WriteFile(log.file_date_str, "\n\t{\"event\": \"navigate_?\", \"time\": \""+now_str+"\"}," );
+
             mDelta = Input.GetTouch(0).deltaPosition;
             mDelta /= 5.0f;
             ManualRotation();
