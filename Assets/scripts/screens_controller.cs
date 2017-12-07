@@ -315,15 +315,15 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (IsButtonDown(InterfaceButtons.SHARE_FB))
         {
-            mWifi.SaveAndShutdownWifi();
+            //mWifi.SaveAndShutdownWifi();
             mFB.StartConnection(mFullResolutionImage);
         }
 
         if (IsButtonDown(InterfaceButtons.BACK))
         {
-            mWifi.RestoreWifi();
+            /*mWifi.RestoreWifi();
             Thread.Sleep(3000);
-            mOSCController.RebootController();
+            mOSCController.RebootController();*/
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }

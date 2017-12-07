@@ -39,7 +39,8 @@ PlayerSettings:
     width: 1
     height: 1
   m_SplashScreenLogos: []
-  m_VirtualRealitySplashScreen: {fileID: 0}
+  m_VirtualRealitySplashScreen: {fileID: 2800000, guid: cb2f62a59a0a7b745b5c56ec2000e30a,
+    type: 3}
   m_HolographicTrackingLossScreen: {fileID: 0}
   defaultScreenWidth: 1024
   defaultScreenHeight: 768
@@ -228,7 +229,7 @@ PlayerSettings:
   appleEnableAutomaticSigning: 0
   AndroidTargetDevice: 0
   AndroidSplashScreenScale: 0
-  androidSplashScreen: {fileID: 2800000, guid: bd24ca0fe2ba5c04cbe883080ed63201, type: 3}
+  androidSplashScreen: {fileID: 0}
   AndroidKeystoreName: 
   AndroidKeyaliasName: 
   AndroidTVCompatibility: 1
@@ -246,32 +247,32 @@ PlayerSettings:
   - m_BuildTarget: Android
     m_Icons:
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: bd24ca0fe2ba5c04cbe883080ed63201, type: 3}
+      m_Icon: {fileID: 2800000, guid: cb2f62a59a0a7b745b5c56ec2000e30a, type: 3}
       m_Width: 192
       m_Height: 192
       m_Kind: 0
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: bd24ca0fe2ba5c04cbe883080ed63201, type: 3}
+      m_Icon: {fileID: 0}
       m_Width: 144
       m_Height: 144
       m_Kind: 0
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: bd24ca0fe2ba5c04cbe883080ed63201, type: 3}
+      m_Icon: {fileID: 0}
       m_Width: 96
       m_Height: 96
       m_Kind: 0
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: bd24ca0fe2ba5c04cbe883080ed63201, type: 3}
+      m_Icon: {fileID: 0}
       m_Width: 72
       m_Height: 72
       m_Kind: 0
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: bd24ca0fe2ba5c04cbe883080ed63201, type: 3}
+      m_Icon: {fileID: 0}
       m_Width: 48
       m_Height: 48
       m_Kind: 0
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: bd24ca0fe2ba5c04cbe883080ed63201, type: 3}
+      m_Icon: {fileID: 0}
       m_Width: 36
       m_Height: 36
       m_Kind: 0
