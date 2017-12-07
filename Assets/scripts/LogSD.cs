@@ -5,22 +5,29 @@ using UnityEngine;
 public sealed class LogSD
 {
 
-  // public void creationFichier (string fichier){
-  //   FileInfo mon_fichier = new FileInfo(fichier+".log");
-  //   mon_fichier.Create();
-  //   //mon_fichier.Close();
-  // }
+  public DateTime file_date;
+  public String file_date_str;
 
-  public void ecritureFichier (string fichier)
+  public LogSD(){
+    this.file_date = System.DateTime.Now;
+    this.file_date_str = file_date.ToString("MM-dd-yyyy_hh.ss.mm");
+  }
+
+  public void new_date (){
+    this.file_date = System.DateTime.Now;
+    this.file_date_str = file_date.ToString("MM-dd-yyyy_hh.ss.mm");
+  }
+
+  public void WriteFile (string file, string to_print)
   {
     try
     {
 
-      StreamWriter  monStreamWriter = new StreamWriter(@"./logs/"+fichier+".log",true);
+      StreamWriter  monStreamWriter = new StreamWriter(@"./logs/"+file+".log",true);
       //StreamWriter  monStreamWriter = new StreamWriter(File.Create(fichier));
 
       //Ecriture du texte dans votre fichier
-      monStreamWriter.WriteLine("Ma toute première ligne ...");
+      monStreamWriter.WriteLine(to_print);
 
       // Fermeture du StreamWriter (Très important)
       monStreamWriter.Close();

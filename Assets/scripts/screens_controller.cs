@@ -59,6 +59,12 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (!mOSCController.IsCameraOK())   //go to error state and stay inside
         {
+            // For logs
+            now = System.DateTime.Now;
+            now_str = now.ToString("MM-dd-yyyy_hh.ss.mm");
+            log.new_date();
+            log.WriteFile(log.file_date_str, "[\n\t{\"event\": \"timeout\", \"time\": \""+now_str+"\"}\n]" );
+
             mCurrentState = ScreensStates.ERROR;
             UpdateScreen();
         }
@@ -205,9 +211,6 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (Input.touchCount > 0 || Input.GetMouseButton(0))
         {
-            now = System.DateTime.Now;
-            now_str = now.ToString("MM-dd-yyyy_hh.ss.mm");
-            log.ecritureFichier(now_str);
             try
             {
                 mOSCController.StartLivePreview();
@@ -226,6 +229,13 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageReadyTakePhotoScreen()
     {
+        // For logs
+        now = System.DateTime.Now;
+        now_str = now.ToString("MM-dd-yyyy_hh.ss.mm");
+        log.new_date();
+        log.WriteFile(log.file_date_str, "[\n\t{\"event\": \"start\", \"time\": \""+now_str+"\"}," );
+
+
         byte[] data = mOSCController.GetLatestData();
         if(data != null)
             mSkyboxMng.DefineNewSkybox(data);
@@ -243,6 +253,11 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageTakingPhotoScreen()
     {
+        // For logs
+        now = System.DateTime.Now;
+        now_str = now.ToString("MM-dd-yyyy_hh.ss.mm");
+        log.WriteFile(log.file_date_str, "\n\t{\"event\": \"capture\", \"time\": \""+now_str+"\"}," );
+
         byte[] data = mOSCController.GetLatestData();
         if (data != null)
             mSkyboxMng.DefineNewSkybox(data);
@@ -295,19 +310,33 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageDisplayScreen()
     {
+        // For logs
+        now = System.DateTime.Now;
+        now_str = now.ToString("MM-dd-yyyy_hh.ss.mm");
+        log.WriteFile(log.file_date_str, "\n\t{\"event\": \"visualize\", \"time\": \""+now_str+"\", \"choice\": " );
+
         if (IsButtonDown(InterfaceButtons.ABORT))
         {
+            // For logs
+            log.WriteFile(log.file_date_str, "\"abandon\"}\n]" );
+
             mSkyboxMng.ResetSkybox();
             mCurrentState = ScreensStates.WELCOME;
             mCamera.AutomaticRotation();
         }
         else if (IsButtonDown(InterfaceButtons.RETRY))
         {
+            // For logs
+            log.WriteFile(log.file_date_str, "\"restart\"}," );
+
             mOSCController.StartLivePreview();
             mCurrentState = ScreensStates.READY_TAKE_PHOTO;
         }
         else if (IsButtonDown(InterfaceButtons.OK))
         {
+            // For logs
+            log.WriteFile(log.file_date_str, "\"share\"}," );
+
             mCurrentState = ScreensStates.SHARE_PHOTO;
         }
         else
@@ -321,14 +350,25 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageShareScreen()
     {
+        // For logs
+        now = System.DateTime.Now;
+        now_str = now.ToString("MM-dd-yyyy_hh.ss.mm");
+        log.WriteFile(log.file_date_str, "\n\t{\"event\": \"share\", \"time\": \""+now_str+"\", \"choice\": " );
+
         if (IsButtonDown(InterfaceButtons.SHARE_FB))
         {
+            // For logs
+            log.WriteFile(log.file_date_str, "\"facebook\"}," );
+
             mWifi.SaveAndShutdownWifi();
             mFB.StartConnection(mFullResolutionImage);
         }
 
         if (IsButtonDown(InterfaceButtons.BACK))
         {
+            // For logs
+            log.WriteFile(log.file_date_str, "\"abandon\"}\n]" );
+
             mWifi.RestoreWifi();
             Thread.Sleep(3000);
             mOSCController.RebootController();
