@@ -369,6 +369,7 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (IsButtonDown(InterfaceButtons.SHARE_FB))
         {
+            //mWifi.SaveAndShutdownWifi();
             // For logs
             now = System.DateTime.Now;
             now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
@@ -388,7 +389,7 @@ public sealed class screens_controller : MonoBehaviour
 
             mWifi.RestoreWifi();
             Thread.Sleep(3000);
-            mOSCController.RebootController();
+            mOSCController.RebootController();*/
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }

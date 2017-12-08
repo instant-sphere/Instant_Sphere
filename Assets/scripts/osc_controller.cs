@@ -38,7 +38,6 @@ public sealed class osc_controller : MonoBehaviour
         mInternalData.sessionId = "";
         mInternalData.isBusy = false;
         mInternalData.remainingConnectionTry = 3;
-        mInternalData.timer = 0;
         mCurrentState = OSCStates.DISCONNECTED;
         EnqueueAction(OSCActions.START_SESSION);
         EnqueueAction(OSCActions.UPGRADE_API);
@@ -226,14 +225,11 @@ public sealed class osc_controller : MonoBehaviour
 
     /**
      * When disconnected we can only received the result of a startSession command
-     * Then upgrade API and set camera options
      * Go to IDLE state
      **/
     void ManageDisconnected(JsonData jdata)
     {
         mInternalData.sessionId = jdata["results"]["sessionId"].ToString();
-//         EnqueueAction(OSCActions.UPGRADE_API);
-//         EnqueueAction(OSCActions.SET_OPTIONS);
         mCurrentState = OSCStates.IDLE;
     }
 
@@ -242,19 +238,13 @@ public sealed class osc_controller : MonoBehaviour
      **/
     void ManageIdle(JsonData jdata)
     {
-
     }
 
     /**
-     * LIVE PREVIEW
+     * LIVE PREVIEW: store the lastest image
      **/
     void ManageLivePreview()
     {
-        if(mHTTP.mStreamRequest.IsStreamOnError())
-        {
-            mCurrentState = OSCStates.DISCONNECTED;    //go to disconnected, then try connect eventually reset camera
-            return;
-        }
         mBuffer = mHTTP.mStreamRequest.GetLastReceivedImage();
     }
 
@@ -569,5 +559,4 @@ struct osc_controller_data
     public string fileURL;              //URL of file on the camera
     public bool isBusy;                 //is the camera actually handling a request
     public int remainingConnectionTry;  //number of retry before going to maintenance state
-    public float timer;                 //timer
 }
