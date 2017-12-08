@@ -10,12 +10,12 @@ public sealed class LogSD
 
   public LogSD(){
     this.file_date = System.DateTime.Now;
-    this.file_date_str = file_date.ToString("MM-dd-yyyy_hh.ss.mm");
+    this.file_date_str = file_date.ToString("MM-dd-yyyy_hh.mm.ss");
   }
 
   public void new_date (){
     this.file_date = System.DateTime.Now;
-    this.file_date_str = file_date.ToString("MM-dd-yyyy_hh.ss.mm");
+    this.file_date_str = file_date.ToString("MM-dd-yyyy_hh.mm.ss");
   }
 
   public void WriteFile (string file, string to_print)

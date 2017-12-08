@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 /**
  * This class control camera rotations for both automatic and manual mode
@@ -13,25 +14,34 @@ public class rotateCamera : MonoBehaviour
     public Transform container; // camera container
 
     //For logs
-    // DateTime now;
-    // String now_str;
+    LogSD log = new LogSD();
+    DateTime now;
+    String now_str;
 
     /* Called once per frame */
     private void Update()
     {
         if (Input.touchCount > 0)
         {
-            //For Logs
-            // now = System.DateTime.Now;
-            // now_str = now.ToString("MM-dd-yyyy_hh.ss.mm");
-            // log.WriteFile(log.file_date_str, "\n\t{\"event\": \"navigate_?\", \"time\": \""+now_str+"\"}," );
-
+          /*
+            //For logs
+            now = System.DateTime.Now;
+            now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+            log.WriteFile(log.file_date_str, "\t{\"event\": \"navigate_???\", \"time\": \""+now_str+"\"}," );
+            */
             mDelta = Input.GetTouch(0).deltaPosition;
             mDelta /= 5.0f;
             ManualRotation();
         }
         else if (Input.GetMouseButton(0))
         {
+          /*
+            //For logs
+            now = System.DateTime.Now;
+            now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+
+            log.WriteFile(log.file_date_str, "\t{\"event\": \"navigate_?\", \"time\": \""+now_str+"\"}," );
+            */
             mDelta = new Vector2(Input.GetAxis("Mouse X") * 10.0f, Input.GetAxis("Mouse Y") * 10.0f);
             ManualRotation();
         }
@@ -62,9 +72,10 @@ public class rotateCamera : MonoBehaviour
     }
 
     /* Enable automatic rotation */
-    public void AutomaticRotation()
+    public void AutomaticRotation(String date_str)
     {
         mIsAutomaticRotationEnable = true;
+        log.file_date_str = date_str;
     }
 
     /* Enable manual rotation */
