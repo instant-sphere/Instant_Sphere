@@ -8,9 +8,15 @@ public sealed class LogSD
   public DateTime file_date;
   public String file_date_str;
 
+  // RT=Real time; HQ = haut qualité
+  public enum enum_state {RT, HQ};
+  public enum_state state;
+
+
   public LogSD(){
     this.file_date = System.DateTime.Now;
     this.file_date_str = file_date.ToString("MM-dd-yyyy_hh.mm.ss");
+    state = enum_state.RT;
   }
 
   public void new_date (){

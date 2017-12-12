@@ -51,7 +51,7 @@ public sealed class screens_controller : MonoBehaviour
         mFB = new facebook();
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  //device screen should never turn off
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
-        mCamera.AutomaticRotation(log.file_date_str);   //use automatic rotation of welcome photo
+        mCamera.AutomaticRotation(log);   //use automatic rotation of welcome photo
         UpdateScreen();
     }
 
@@ -269,6 +269,8 @@ public sealed class screens_controller : MonoBehaviour
     {
 
         byte[] data = mOSCController.GetLatestData();
+        log.state = LogSD.enum_state.HQ;
+
         if (data != null)
             mSkyboxMng.DefineNewSkybox(data);
 
@@ -312,7 +314,7 @@ public sealed class screens_controller : MonoBehaviour
         {
             mFullResolutionImage = mOSCController.GetLatestData();
             mSkyboxMng.DefineNewSkybox(mFullResolutionImage);
-            mCamera.AutomaticRotation(log.file_date_str);
+            mCamera.AutomaticRotation(log);
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }
@@ -335,7 +337,7 @@ public sealed class screens_controller : MonoBehaviour
 
             mSkyboxMng.ResetSkybox();
             mCurrentState = ScreensStates.WELCOME;
-            mCamera.AutomaticRotation(log.file_date_str);
+            mCamera.AutomaticRotation(log);
         }
         else if (IsButtonDown(InterfaceButtons.RETRY))
         {
@@ -389,7 +391,7 @@ public sealed class screens_controller : MonoBehaviour
 
             mWifi.RestoreWifi();
             Thread.Sleep(3000);
-            mOSCController.RebootController();*/
+            mOSCController.RebootController();
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }

@@ -14,7 +14,7 @@ public class rotateCamera : MonoBehaviour
     public Transform container; // camera container
 
     //For logs
-    LogSD log = new LogSD();
+    LogSD log;
     DateTime now;
     String now_str;
 
@@ -23,25 +23,29 @@ public class rotateCamera : MonoBehaviour
     {
         if (Input.touchCount > 0)
         {
-          /*
-            //For logs
-            now = System.DateTime.Now;
-            now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
-            log.WriteFile(log.file_date_str, "\t{\"event\": \"navigate_???\", \"time\": \""+now_str+"\"}," );
-            */
             mDelta = Input.GetTouch(0).deltaPosition;
             mDelta /= 5.0f;
             ManualRotation();
         }
         else if (Input.GetMouseButton(0))
         {
-          /*
             //For logs
-            now = System.DateTime.Now;
-            now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+            if(System.DateTime.Now > now.AddSeconds(2)){
+              now = System.DateTime.Now;
+              now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+              if(log.state == LogSD.enum_state.RT){
+                log.WriteFile(log.file_date_str, "\t{\"event\": \"navigate_RT\", \"time\": \""+now_str+"\"}," );
+              }
+              else if(log.state == LogSD.enum_state.HQ){
+                log.WriteFile(log.file_date_str, "\t{\"event\": \"navigate_HD\", \"time\": \""+now_str+"\"}," );
+              }
 
-            log.WriteFile(log.file_date_str, "\t{\"event\": \"navigate_?\", \"time\": \""+now_str+"\"}," );
-            */
+            }
+            else{//System.DateTime.Now <= now.AddSeconds(2)
+              // on ne fait rien
+            }
+
+
             mDelta = new Vector2(Input.GetAxis("Mouse X") * 10.0f, Input.GetAxis("Mouse Y") * 10.0f);
             ManualRotation();
         }
@@ -72,10 +76,10 @@ public class rotateCamera : MonoBehaviour
     }
 
     /* Enable automatic rotation */
-    public void AutomaticRotation(String date_str)
+    public void AutomaticRotation(LogSD log_in)
     {
         mIsAutomaticRotationEnable = true;
-        log.file_date_str = date_str;
+        log = log_in;
     }
 
     /* Enable manual rotation */
