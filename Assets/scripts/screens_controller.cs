@@ -63,9 +63,10 @@ public sealed class screens_controller : MonoBehaviour
             // For logs
             if(countTimeout < 1){
               now = System.DateTime.Now;
-              now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+              now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
               countTimeout++;
-              log.WriteFile(log.file_date_str, "\t{\"event\": \"timeout\", \"time\": \""+now_str+"\"}\n]" );
+              log.WriteFile(log.file_date_str, "\t{\"event\": \"timeout\", \"time\": \""+now_str+"\", \"state\": \""+mCurrentState+"\"}" );
+              log.WriteFile(log.file_date_str, "]");
             }
             mCurrentState = ScreensStates.ERROR;
             UpdateScreen();
@@ -221,7 +222,7 @@ public sealed class screens_controller : MonoBehaviour
                 countTimeout=0;
                 log.state = LogSD.enum_state.RT;
                 now = System.DateTime.Now;
-                now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+                now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
                 log.new_date();
                 log.WriteFile(log.file_date_str, "[" );
                 log.WriteFile(log.file_date_str, "\t{\"event\": \"start\", \"time\": \""+now_str+"\"}," );
@@ -231,10 +232,6 @@ public sealed class screens_controller : MonoBehaviour
             }
             catch(Exception e)
             {
-                now = System.DateTime.Now;
-                now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
-                log.WriteFile(log.file_date_str, "\t{\"event\": \"bug Welcome Screen\", \"time\": \""+now_str+"\"}," );
-
                 Debug.Log(e.Message);
             }
         }
@@ -255,7 +252,7 @@ public sealed class screens_controller : MonoBehaviour
         {
             // For logs
             now = System.DateTime.Now;
-            now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+            now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
             log.WriteFile(log.file_date_str, "\n\t{\"event\": \"capture\", \"time\": \""+now_str+"\"}," );
 
             mCurrentState = ScreensStates.TAKING_PHOTO;
@@ -292,11 +289,6 @@ public sealed class screens_controller : MonoBehaviour
             }
             catch(Exception e)
             {
-                //For logs
-                now = System.DateTime.Now;
-                now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
-                log.WriteFile(log.file_date_str, "\t{\"event\": \"bug Taking Photo Screen\", \"time\": \""+now_str+"\"}," );
-
                 Debug.Log(e.Message);
             }
             finally
@@ -333,7 +325,7 @@ public sealed class screens_controller : MonoBehaviour
         {
             // For logs
             now = System.DateTime.Now;
-            now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+            now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
             log.WriteFile(log.file_date_str, "\n\t{\"event\": \"visualize\", \"time\": \""+now_str+"\", \"choice\": \"abandon\"}" );
             log.WriteFile(log.file_date_str, "]" );
 
@@ -345,7 +337,7 @@ public sealed class screens_controller : MonoBehaviour
         {
             // For logs
             now = System.DateTime.Now;
-            now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+            now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
             log.WriteFile(log.file_date_str, "\n\t{\"event\": \"visualize\", \"time\": \""+now_str+"\", \"choice\": \"restart\"}," );
 
             mOSCController.StartLivePreview();
@@ -355,7 +347,7 @@ public sealed class screens_controller : MonoBehaviour
         {
             // For logs
             now = System.DateTime.Now;
-            now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+            now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
             log.WriteFile(log.file_date_str, "\n\t{\"event\": \"visualize\", \"time\": \""+now_str+"\", \"choice\": \"share\"}," );
 
             mCurrentState = ScreensStates.SHARE_PHOTO;
@@ -376,7 +368,7 @@ public sealed class screens_controller : MonoBehaviour
             //mWifi.SaveAndShutdownWifi();
             // For logs
             now = System.DateTime.Now;
-            now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+            now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
             log.WriteFile(log.file_date_str, "\n\t{\"event\": \"share\", \"time\": \""+now_str+"\", \"choice\": \"facebook\"}," );
 
             mWifi.SaveAndShutdownWifi();
@@ -387,7 +379,7 @@ public sealed class screens_controller : MonoBehaviour
         {
             // For logs
             now = System.DateTime.Now;
-            now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+            now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
             log.WriteFile(log.file_date_str, "\n\t{\"event\": \"share\", \"time\": \""+now_str+"\", \"choice\": \"abandon\"}" );
             log.WriteFile(log.file_date_str, "]" );
 

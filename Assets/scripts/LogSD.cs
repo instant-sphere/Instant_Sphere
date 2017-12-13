@@ -15,13 +15,13 @@ public sealed class LogSD
 
   public LogSD(){
     this.file_date = System.DateTime.Now;
-    this.file_date_str = file_date.ToString("MM-dd-yyyy_hh.mm.ss");
+    this.file_date_str = file_date.ToString("MM-dd-yyyy_HH.mm.ss");
     state = enum_state.RT;
   }
 
   public void new_date (){
-    this.file_date = System.DateTime.Now;
-    this.file_date_str = file_date.ToString("MM-dd-yyyy_hh.mm.ss");
+      this.file_date = System.DateTime.Now;
+    this.file_date_str = file_date.ToString("MM-dd-yyyy_HH.mm.ss");
   }
 
   public void WriteFile (string file, string to_print)
