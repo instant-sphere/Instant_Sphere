@@ -32,7 +32,7 @@ public class rotateCamera : MonoBehaviour
             //For logs
             if(System.DateTime.Now > now.AddSeconds(2)){
               now = System.DateTime.Now;
-              now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+              now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
               if(log.state == LogSD.enum_state.RT){
                 log.WriteFile(log.file_date_str, "\t{\"event\": \"navigate_RT\", \"time\": \""+now_str+"\"}," );
               }
