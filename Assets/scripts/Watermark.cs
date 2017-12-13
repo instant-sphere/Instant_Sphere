@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class Watermark : MonoBehaviour
 {
-	private string logo_filename;
-	private Texture2D logo;
-	private Texture2D finalPicture;
-	private int nbLogos = 4;
-	private int logos_y;
+	string logo_filename;
+	Texture2D logo;
+	Texture2D finalPicture;
+	int nbLogos = 4;
+	int logos_y;
 	Vector2[] logosTopLeftCorners;
 
 	public Watermark(byte[] picture)

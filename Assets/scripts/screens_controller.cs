@@ -52,7 +52,7 @@ public sealed class screens_controller : MonoBehaviour
             Application.Quit();
         }
         mFB = new facebook();
-        mTimeout =  = new Timeout(30.0f, TimeoutGoToWelcome);
+        mTimeout = new Timeout(30.0f, TimeoutGoToWelcome);
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  //device screen should never turn off
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
         mCamera.AutomaticRotation(log);   //use automatic rotation of welcome photo
@@ -66,7 +66,7 @@ public sealed class screens_controller : MonoBehaviour
         {
             // For logs
             if(countTimeout < 1){
-              now = System.DateTime.Now;
+              now = DateTime.Now;
               now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
               countTimeout++;
               log.WriteFile(log.file_date_str, "\t{\"event\": \"timeout\", \"time\": \""+now_str+"\", \"state\": \""+mCurrentState+"\"}" );
@@ -83,9 +83,15 @@ public sealed class screens_controller : MonoBehaviour
         }
     }
 
+    /**
+     * Method to be used as callback when no action timeout
+     **/
     public void TimeoutGoToWelcome()
     {
-
+        mSkyboxMng.ResetSkybox();
+        mCamera.AutomaticRotation(log);
+        mCurrentState = ScreensStates.WELCOME;
+        UpdateScreen();
     }
 
     /**
