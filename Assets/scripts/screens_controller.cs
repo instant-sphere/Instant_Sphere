@@ -34,6 +34,9 @@ public sealed class screens_controller : MonoBehaviour
     //count down used when taking a photo
     CounterDown mCounter = new CounterDown();
 
+    Timeout mTimeout;
+
+
     //Logs
     LogSD log = new LogSD();
     DateTime now;
@@ -49,6 +52,7 @@ public sealed class screens_controller : MonoBehaviour
             Application.Quit();
         }
         mFB = new facebook();
+        mTimeout =  = new Timeout(30.0f, TimeoutGoToWelcome);
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  //device screen should never turn off
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
         mCamera.AutomaticRotation(log);   //use automatic rotation of welcome photo
@@ -76,6 +80,11 @@ public sealed class screens_controller : MonoBehaviour
             ManageStates();
             ResetButtons();
         }
+    }
+
+    public void TimeoutGoToWelcome()
+    {
+
     }
 
     /**
@@ -216,6 +225,7 @@ public sealed class screens_controller : MonoBehaviour
             try
             {
                 mOSCController.StartLivePreview();
+                mCamera.AutomaticRotation(log);
 
                 // For logs (new log)
                 countTimeout=0;
@@ -377,7 +387,7 @@ public sealed class screens_controller : MonoBehaviour
             now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
             log.WriteFile(log.file_date_str, "\n\t{\"event\": \"share\", \"time\": \""+now_str+"\", \"choice\": \"facebook\"}," );
 
-            mWifi.SaveAndShutdownWifi();
+            //mWifi.SaveAndShutdownWifi();
             mFB.StartConnection(mFullResolutionImage);
         }
 
@@ -389,10 +399,10 @@ public sealed class screens_controller : MonoBehaviour
             log.WriteFile(log.file_date_str, "\n\t{\"event\": \"share\", \"time\": \""+now_str+"\", \"choice\": \"abandon\"}" );
             log.WriteFile(log.file_date_str, "]" );
 
-            mWifi.RestoreWifi();
-            Thread.Sleep(3000);
-            mOSCController.RebootController();
-            mCurrentState = ScreensStates.DISPLAY_PHOTO;
+            //mWifi.RestoreWifi();
+            //Thread.Sleep(3000);
+            //mOSCController.RebootController();
+            mCurrentState = ScreensStates.WELCOME;
             UpdateScreen();
         }
     }
