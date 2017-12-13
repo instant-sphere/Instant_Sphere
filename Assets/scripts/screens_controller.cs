@@ -219,6 +219,7 @@ public sealed class screens_controller : MonoBehaviour
 
                 // For logs (new log)
                 countTimeout=0;
+                log.state = LogSD.enum_state.RT;
                 now = System.DateTime.Now;
                 now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
                 log.new_date();
@@ -246,6 +247,7 @@ public sealed class screens_controller : MonoBehaviour
     {
 
         byte[] data = mOSCController.GetLatestData();
+        log.state = LogSD.enum_state.RT;
         if(data != null)
             mSkyboxMng.DefineNewSkybox(data);
 
