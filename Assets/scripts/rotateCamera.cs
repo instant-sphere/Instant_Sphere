@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 /**
  * This class control camera rotations for both automatic and manual mode
@@ -13,25 +14,38 @@ public class rotateCamera : MonoBehaviour
     public Transform container; // camera container
 
     //For logs
-    // DateTime now;
-    // String now_str;
+    LogSD log;
+    DateTime now;
+    String now_str;
 
     /* Called once per frame */
     private void Update()
     {
         if (Input.touchCount > 0)
         {
-            //For Logs
-            // now = System.DateTime.Now;
-            // now_str = now.ToString("MM-dd-yyyy_hh.ss.mm");
-            // log.WriteFile(log.file_date_str, "\n\t{\"event\": \"navigate_?\", \"time\": \""+now_str+"\"}," );
-
             mDelta = Input.GetTouch(0).deltaPosition;
             mDelta /= 5.0f;
             ManualRotation();
         }
         else if (Input.GetMouseButton(0))
         {
+            //For logs
+            if(System.DateTime.Now > now.AddSeconds(2)){
+              now = System.DateTime.Now;
+              now_str = now.ToString("MM-dd-yyyy_hh.mm.ss");
+              if(log.state == LogSD.enum_state.RT){
+                log.WriteFile(log.file_date_str, "\t{\"event\": \"navigate_RT\", \"time\": \""+now_str+"\"}," );
+              }
+              else if(log.state == LogSD.enum_state.HQ){
+                log.WriteFile(log.file_date_str, "\t{\"event\": \"navigate_HD\", \"time\": \""+now_str+"\"}," );
+              }
+
+            }
+            else{//System.DateTime.Now <= now.AddSeconds(2)
+              // on ne fait rien
+            }
+
+
             mDelta = new Vector2(Input.GetAxis("Mouse X") * 10.0f, Input.GetAxis("Mouse Y") * 10.0f);
             ManualRotation();
         }
@@ -62,9 +76,10 @@ public class rotateCamera : MonoBehaviour
     }
 
     /* Enable automatic rotation */
-    public void AutomaticRotation()
+    public void AutomaticRotation(LogSD log_in)
     {
         mIsAutomaticRotationEnable = true;
+        log = log_in;
     }
 
     /* Enable manual rotation */
