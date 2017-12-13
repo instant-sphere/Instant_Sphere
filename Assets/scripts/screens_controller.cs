@@ -312,14 +312,17 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageWaitingScreen()
     {
-        if (mIsOSCReady)
-        {
-            mFullResolutionImage = mOSCController.GetLatestData();
-            mSkyboxMng.DefineNewSkybox(mFullResolutionImage);
-            mCamera.AutomaticRotation(log);
-            mCurrentState = ScreensStates.DISPLAY_PHOTO;
-            UpdateScreen();
-        }
+		if (mIsOSCReady)
+		{
+			mFullResolutionImage = mOSCController.GetLatestData();
+			Watermark watermarkedImage = new Watermark (mFullResolutionImage);
+			watermarkedImage.AddWatermark("logo512");
+
+			mSkyboxMng.DefineNewSkyboxTexture(watermarkedImage.GetTexture());
+			mCamera.AutomaticRotation(log);
+			mCurrentState = ScreensStates.DISPLAY_PHOTO;
+			UpdateScreen();
+		}
     }
 
     /**
