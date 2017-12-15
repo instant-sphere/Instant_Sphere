@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Windows;
 
-/**
+ /**
  * This class handle which application screen is being shown
  * It is also responsible for calling OSC controller methods
  **/
@@ -17,6 +19,7 @@ public sealed class screens_controller : MonoBehaviour
     public rotateCamera mCamera;
     public osc_controller mOSCController;
     public skybox_manager mSkyboxMng;
+	public Watermark watermark;
 
     //one state per screen
     enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, SHARE_PHOTO, ERROR };
@@ -211,6 +214,7 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageWelcomeScreen()
     {
+        
         if (Input.touchCount > 0 || Input.GetMouseButton(0))
         {
             try
@@ -315,10 +319,14 @@ public sealed class screens_controller : MonoBehaviour
 		if (mIsOSCReady)
 		{
 			mFullResolutionImage = mOSCController.GetLatestData();
-			Watermark watermarkedImage = new Watermark (mFullResolutionImage);
-			watermarkedImage.AddWatermark("logo512");
+			watermark.CreateWatermark (mFullResolutionImage);
+			watermark.AddWatermark();
 
-			mSkyboxMng.DefineNewSkyboxTexture(watermarkedImage.GetTexture());
+//		    // Save image with watermark
+//		    var bytes = watermark.GetTexture().EncodeToPNG();
+//		    File.WriteAllBytes(Application.dataPath + "/final_picture.png", bytes);
+			
+			mSkyboxMng.DefineNewSkyboxTexture(watermark.GetTexture());
 			mCamera.AutomaticRotation(log);
 			mCurrentState = ScreensStates.DISPLAY_PHOTO;
 			UpdateScreen();
