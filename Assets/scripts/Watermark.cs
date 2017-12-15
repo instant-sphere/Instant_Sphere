@@ -8,6 +8,7 @@ public class Watermark : MonoBehaviour
 	private Texture2D finalPicture;
 	private int nbLogos = 4;
 	private int logos_y;
+
 	Vector2[] logosTopLeftCorners;
 
 	public void CreateWatermark(byte[] picture)

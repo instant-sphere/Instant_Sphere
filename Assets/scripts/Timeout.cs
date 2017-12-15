@@ -1,19 +1,32 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class NewBehaviourScript : MonoBehaviour {
+public class Timeout
+{
     float mTimeBeforeTrigger;
-    Action mCondition;
+    float mTotalTime;
+    Action mCallback;
 
-	// Use this for initialization
-	void Start () {
+    public Timeout(float count, Action cb)
+    {
+        mTimeBeforeTrigger = count;
+        mTotalTime = count;
+        mCallback = cb;
+    }
 
-	}
+    public void Reset()
+    {
+        mTimeBeforeTrigger = mTotalTime;
+    }
 
-	// Update is called once per frame
-	void Update () {
-
-	}
+    public IEnumerable StartTimer()
+    {
+        while (mTimeBeforeTrigger > 0.0f)
+        {
+            mTimeBeforeTrigger -= 1.0f;
+            yield return new WaitForSecondsRealtime(1.0f);
+        }
+        mCallback();
+    }
 }
