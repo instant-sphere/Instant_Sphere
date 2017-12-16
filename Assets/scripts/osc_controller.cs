@@ -398,6 +398,8 @@ public sealed class osc_controller : MonoBehaviour
         json.WriteObjectStart();
         json.WritePropertyName("offDelay");
         json.Write(65535);
+        json.WritePropertyName("sleepDelay");
+        json.Write(65535);
         json.WritePropertyName("fileFormat");
         json.WriteObjectStart();
         json.WritePropertyName("type");
