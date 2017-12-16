@@ -8,16 +8,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -2115301841, guid: 30cbc29388d462948a8e4611aa2f4bcb, type: 3}
+  m_Script: {fileID: -2115301841, guid: b96583fe9d2614f3081becbbd70cd55f, type: 3}
   m_Name: FacebookSettings
   m_EditorClassIdentifier: 
   selectedAppIndex: 0
   clientTokens:
-  - 
+  - 6f8c0eab0c959b84e53cf28758dd671c
   appIds:
-  - 0
+  - 1793707584262372
   appLabels:
-  - App Name
+  - Instant Sphere Borne
   cookie: 1
   logging: 1
   status: 1

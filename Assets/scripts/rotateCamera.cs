@@ -13,6 +13,8 @@ public class rotateCamera : MonoBehaviour
 
     public Transform container; // camera container
 
+    Timeout mScreenTimeout;
+
     //For logs
     LogSD log;
     DateTime now;
@@ -23,12 +25,14 @@ public class rotateCamera : MonoBehaviour
     {
         if (Input.touchCount > 0)
         {
+            mScreenTimeout.Reset();
             mDelta = Input.GetTouch(0).deltaPosition;
             mDelta /= 5.0f;
             ManualRotation();
         }
         else if (Input.GetMouseButton(0))
         {
+            mScreenTimeout.Reset();
             //For logs
             if(System.DateTime.Now > now.AddSeconds(2)){
               now = System.DateTime.Now;
@@ -76,10 +80,11 @@ public class rotateCamera : MonoBehaviour
     }
 
     /* Enable automatic rotation */
-    public void AutomaticRotation(LogSD log_in)
+    public void AutomaticRotation(LogSD log_in, Timeout screenTimeout)
     {
         mIsAutomaticRotationEnable = true;
         log = log_in;
+        mScreenTimeout = screenTimeout;
     }
 
     /* Enable manual rotation */

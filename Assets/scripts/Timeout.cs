@@ -20,7 +20,7 @@ public class Timeout
         mTimeBeforeTrigger = mTotalTime;
     }
 
-    public IEnumerable StartTimer()
+    public IEnumerator StartTimer()
     {
         while (mTimeBeforeTrigger > 0.0f)
         {

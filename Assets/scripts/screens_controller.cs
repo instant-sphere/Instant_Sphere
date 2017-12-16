@@ -55,7 +55,7 @@ public sealed class screens_controller : MonoBehaviour
         mTimeout = new Timeout(30.0f, TimeoutGoToWelcome);
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  //device screen should never turn off
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
-        mCamera.AutomaticRotation(log);   //use automatic rotation of welcome photo
+        mCamera.AutomaticRotation(log, mTimeout);   //use automatic rotation of welcome photo
         UpdateScreen();
     }
 
@@ -89,7 +89,10 @@ public sealed class screens_controller : MonoBehaviour
     public void TimeoutGoToWelcome()
     {
         mSkyboxMng.ResetSkybox();
-        mCamera.AutomaticRotation(log);
+        mCamera.AutomaticRotation(log, mTimeout);
+        if (mTimeout != null)
+            StopCoroutine(mTimeout.StartTimer());
+        mTimeout = new Timeout(30, TimeoutGoToWelcome);
         mCurrentState = ScreensStates.WELCOME;
         UpdateScreen();
     }
@@ -232,7 +235,8 @@ public sealed class screens_controller : MonoBehaviour
             try
             {
                 mOSCController.StartLivePreview();
-                mCamera.AutomaticRotation(log);
+                mCamera.AutomaticRotation(log, mTimeout);
+                StartCoroutine(mTimeout.StartTimer());
 
                 // For logs (new log)
                 countTimeout=0;
@@ -266,6 +270,8 @@ public sealed class screens_controller : MonoBehaviour
 
         if (IsButtonDown(InterfaceButtons.TAKE_PHOTO))
         {
+            mTimeout.Reset();
+
             // For logs
             now = System.DateTime.Now;
             now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
@@ -297,6 +303,8 @@ public sealed class screens_controller : MonoBehaviour
         {
             try
             {
+                mTimeout.Reset();
+
                 mIsOSCReady = false;
                 mOSCController.StopLivePreview();
                 mOSCController.StartCapture(TriggerOSCReady);
@@ -309,6 +317,7 @@ public sealed class screens_controller : MonoBehaviour
             }
             finally
             {
+                StopCoroutine(mCounter.Count(3, UpdateCountDownText));
                 mCounter = new CounterDown();   //new countdown for next time
             }
         }
@@ -322,12 +331,13 @@ public sealed class screens_controller : MonoBehaviour
     {
 		if (mIsOSCReady)
 		{
-			mFullResolutionImage = mOSCController.GetLatestData();
+            mTimeout.Reset();
+            mFullResolutionImage = mOSCController.GetLatestData();
 			Watermark watermarkedImage = new Watermark (mFullResolutionImage);
 			watermarkedImage.AddWatermark("logo512");
 
 			mSkyboxMng.DefineNewSkyboxTexture(watermarkedImage.GetTexture());
-			mCamera.AutomaticRotation(log);
+			mCamera.AutomaticRotation(log, mTimeout);
 			mCurrentState = ScreensStates.DISPLAY_PHOTO;
 			UpdateScreen();
 		}
@@ -342,6 +352,8 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (IsButtonDown(InterfaceButtons.ABORT))
         {
+            mTimeout.Reset();
+
             // For logs
             now = System.DateTime.Now;
             now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
@@ -350,10 +362,12 @@ public sealed class screens_controller : MonoBehaviour
 
             mSkyboxMng.ResetSkybox();
             mCurrentState = ScreensStates.WELCOME;
-            mCamera.AutomaticRotation(log);
+            mCamera.AutomaticRotation(log, mTimeout);
         }
         else if (IsButtonDown(InterfaceButtons.RETRY))
         {
+            mTimeout.Reset();
+
             // For logs
             now = System.DateTime.Now;
             now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
@@ -364,6 +378,8 @@ public sealed class screens_controller : MonoBehaviour
         }
         else if (IsButtonDown(InterfaceButtons.OK))
         {
+            mTimeout.Reset();
+
             // For logs
             now = System.DateTime.Now;
             now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
@@ -384,6 +400,7 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (IsButtonDown(InterfaceButtons.SHARE_FB))
         {
+            mTimeout.Reset();
             //mWifi.SaveAndShutdownWifi();
             // For logs
             now = System.DateTime.Now;
@@ -396,6 +413,7 @@ public sealed class screens_controller : MonoBehaviour
 
         if (IsButtonDown(InterfaceButtons.BACK))
         {
+            mTimeout.Reset();
             // For logs
             now = System.DateTime.Now;
             now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
