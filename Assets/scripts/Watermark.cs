@@ -39,11 +39,6 @@ public class Watermark : MonoBehaviour
     private void LoadLogo()
     {
         logo = Resources.Load("logo_blanc") as Texture2D;
-        Debug.Log(logo);
-        //byte[] logoBytes = File.ReadAllBytes(Application.dataPath + "/Resources/logo_blanc.png");
-
-        //logo = new Texture2D(0, 0);
-        //logo.LoadImage(logoBytes);
     }
 
     /**
