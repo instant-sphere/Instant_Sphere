@@ -1,21 +1,21 @@
 ﻿using System;
+using System.IO;
 using UnityEngine;
 
 public class Watermark : MonoBehaviour
 {
-	string logo_filename;
-	Texture2D logo;
-	Texture2D finalPicture;
-	int nbLogos = 4;
-	int logos_y;
+	private Texture2D logo;
+	private Texture2D finalPicture;
+	private int nbLogos = 4;
+	private int logos_y;
+
 	Vector2[] logosTopLeftCorners;
 
-	public Watermark(byte[] picture)
+	public void CreateWatermark(byte[] picture)
 	{
 		// Creates a new texture for the final picture
 		finalPicture = new Texture2D(0, 0);
 		finalPicture.LoadImage(picture);
-
 		logosTopLeftCorners = new Vector2[nbLogos];
 	}
 
@@ -26,19 +26,21 @@ public class Watermark : MonoBehaviour
 	/**
 	 * Adds Instant Sphere logo as a watermark on the final picture
 	 */
-	public void AddWatermark(string filename) {
-		logo_filename = filename;
-		LoadLogo ();
-		SetLogosPositions ();
-		InsertLogos ();
+	public void AddWatermark() {
+		LoadLogo();
+		SetLogosPositions();
+		InsertLogos();
 	}
 
 	/**
 	 * Loads Instant Sphere logo
 	 */
 	private void LoadLogo() {
-		logo = Resources.Load(logo_filename) as Texture2D;
-		logos_y = finalPicture.height - 2 * logo.height;
+		byte[] logoBytes = File.ReadAllBytes(Application.dataPath + "/Resources/logo_blanc.png");
+
+		logo = new Texture2D(0, 0);
+		logo.LoadImage(logoBytes);
+		logos_y = logo.height;
 	}
 
 	/**
@@ -60,25 +62,26 @@ public class Watermark : MonoBehaviour
 	/**
 	 * Inserts the four logos on the final picture by replacing the corresponding pixels
 	 */
-	private void InsertLogos() {
-		float x;
-		float y;
+	private void InsertLogos()
+	{
+		int logo_x = 0;
+		int logo_y = 0;
 
-		// For each logo
-		for (int k = 0; k < nbLogos; k++) {
-			// Gets (x,y) logo position on the final picture
-			x = logosTopLeftCorners[k].x;
-			y = logosTopLeftCorners[k].y;
-
-			// Replaces final picture pixels by logo pixels, on the correct position
-			for (int i = 0; i < logo.width; i++) {
-				for (int j = 0; j < logo.height; j++) {
-					finalPicture.SetPixel((int)x, (int)y, logo.GetPixel(i, j));
-					y++;
+		// For each logo, replaces final picture pixels by logo pixels (at the correct position)
+		for (int k = 0; k < logosTopLeftCorners.Length; k++)
+		{
+			for (int final_x = (int)logosTopLeftCorners[k].x; final_x < (int)logosTopLeftCorners[k].x + logo.width; final_x++) {
+				for (int final_y = (int)logosTopLeftCorners[k].y; final_y < (int)logosTopLeftCorners[k].y + logo.height; final_y++) {
+					// Non transparent pixels
+					if (logo.GetPixel(logo_x, logo_y) != Color.clear)
+					{
+						finalPicture.SetPixel(final_x, final_y, logo.GetPixel(logo_x, logo_y));
+					}
+						logo_y++;
+					}
+					logo_x++;
 				}
-				x++;
-			}
 		}
+		finalPicture.Apply();
 	}
-
 }
