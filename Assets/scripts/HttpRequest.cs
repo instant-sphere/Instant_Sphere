@@ -85,7 +85,8 @@ public sealed class HttpRequest
      **/
     public void CloseStreaming()
     {
-        mStreamRequest.Abort(); //close connection and terminate thread
+        if(mStreamRequest != null)
+            mStreamRequest.Abort(); //close connection and terminate thread
         mStreamRequest = null;
         mIsStream = false;
     }

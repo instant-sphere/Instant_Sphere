@@ -6,7 +6,7 @@ using UnityEngine;
  // **/
 public class rotateCamera : MonoBehaviour
 {
-    float mTurnSpeed = 4.0f;
+    float mTurnSpeed = 5.0f;
     Vector2 mDelta;
     bool mIsAutomaticRotationEnable = false;
     const float threshold = 2.0f; // value in degrees for camera rotation in automatic mode
@@ -58,10 +58,14 @@ public class rotateCamera : MonoBehaviour
         else if (mIsAutomaticRotationEnable)
             mDelta = ComputeDelta();
 
+        Vector2 cam = Vector2.zero, cont = Vector2.zero;
+        cam.y = mDelta.y;
+        cont.x = mDelta.x;
+
         //This is made in order to avoid rotation on Z, just typing 0 on Zcoord isn’t enough
         //so the container is rotated around Y and the camera around X separately
-        container.Rotate(mDelta * Time.deltaTime * mTurnSpeed);
-        transform.Rotate(mDelta * Time.deltaTime * mTurnSpeed);
+        container.Rotate(cam * Time.deltaTime * mTurnSpeed);
+        transform.Rotate(cont * Time.deltaTime * mTurnSpeed);
 
         mDelta = Vector2.zero;
     }

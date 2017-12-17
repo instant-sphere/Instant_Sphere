@@ -90,10 +90,11 @@ public sealed class screens_controller : MonoBehaviour
      **/
     public void TimeoutGoToWelcome()
     {
-        mSkyboxMng.ResetSkybox();
-        mCamera.AutomaticRotation(mLog, mTimeout);
+        mOSCController.StopLivePreview();
         if (mTimeout != null)
             StopCoroutine(mTimeout.StartTimer());
+        mSkyboxMng.ResetSkybox();
+        mCamera.AutomaticRotation(mLog, mTimeout);
         mTimeout = new Timeout(30, TimeoutGoToWelcome);
         mCurrentState = ScreensStates.WELCOME;
         UpdateScreen();
@@ -430,6 +431,7 @@ public sealed class screens_controller : MonoBehaviour
             //mWifi.RestoreWifi();
             //Thread.Sleep(3000);
             //mOSCController.RebootController();
+            mCamera.AutomaticRotation(mLog, mTimeout);
             mCurrentState = ScreensStates.WELCOME;
             UpdateScreen();
         }
