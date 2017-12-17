@@ -16,15 +16,30 @@ public class rotateCamera : MonoBehaviour
     Timeout mScreenTimeout;
 
     //For logs
-    LogSD log;
-    DateTime now;
-    String now_str;
+    LogSD mLog;
+    DateTime mDate = DateTime.Now;
 
     /* Called once per frame */
     private void Update()
     {
         if (Input.touchCount > 0)
         {
+            //For logs
+            if (DateTime.Now > mDate.AddSeconds(2))
+            {
+                mDate = DateTime.Now;
+                string nowStr = mDate.ToString("dd-MM-yyyy_HH.mm.ss");
+                if (mLog.state == LogSD.enum_state.RT)
+                {
+                    mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_RT\", \"time\": \"" + nowStr + "\"},");
+                }
+                else if (mLog.state == LogSD.enum_state.HQ)
+                {
+                    mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_HD\", \"time\": \"" + nowStr + "\"},");
+                }
+
+            }
+
             mScreenTimeout.Reset();
             mDelta = Input.GetTouch(0).deltaPosition;
             mDelta /= 5.0f;
@@ -33,22 +48,6 @@ public class rotateCamera : MonoBehaviour
         else if (Input.GetMouseButton(0))
         {
             mScreenTimeout.Reset();
-            //For logs
-            if(System.DateTime.Now > now.AddSeconds(2)){
-              now = System.DateTime.Now;
-              now_str = now.ToString("MM-dd-yyyy_HH.mm.ss");
-              if(log.state == LogSD.enum_state.RT){
-                log.WriteFile(log.file_date_str, "\t{\"event\": \"navigate_RT\", \"time\": \""+now_str+"\"}," );
-              }
-              else if(log.state == LogSD.enum_state.HQ){
-                log.WriteFile(log.file_date_str, "\t{\"event\": \"navigate_HD\", \"time\": \""+now_str+"\"}," );
-              }
-
-            }
-            else{//System.DateTime.Now <= now.AddSeconds(2)
-              // on ne fait rien
-            }
-
 
             mDelta = new Vector2(Input.GetAxis("Mouse X") * 10.0f, Input.GetAxis("Mouse Y") * 10.0f);
             ManualRotation();
@@ -80,10 +79,10 @@ public class rotateCamera : MonoBehaviour
     }
 
     /* Enable automatic rotation */
-    public void AutomaticRotation(LogSD log_in, Timeout screenTimeout)
+    public void AutomaticRotation(LogSD logger, Timeout screenTimeout)
     {
         mIsAutomaticRotationEnable = true;
-        log = log_in;
+        mLog = logger;
         mScreenTimeout = screenTimeout;
     }
 
