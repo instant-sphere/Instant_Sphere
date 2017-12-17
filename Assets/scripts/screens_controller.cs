@@ -18,7 +18,7 @@ public sealed class screens_controller : MonoBehaviour
     public rotateCamera mCamera;
     public osc_controller mOSCController;
     public skybox_manager mSkyboxMng;
-    public Watermark watermark;
+    public Watermark mWatermarker;
 
     //one state per screen
     enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, SHARE_PHOTO, ERROR };
@@ -338,15 +338,16 @@ public sealed class screens_controller : MonoBehaviour
         {
             mTimeout.Reset();
             mFullResolutionImage = mOSCController.GetLatestData();
-            watermark.CreateWatermark(mFullResolutionImage);
-            watermark.AddWatermark();
+            mWatermarker.CreateWatermark(mFullResolutionImage);
+            mWatermarker.AddWatermark();
+            mFullResolutionImage = mWatermarker.GetBytes();
             mCamera.AutomaticRotation(mLog, mTimeout);
 
             //		    // Save image with watermark
             //		    var bytes = watermark.GetTexture().EncodeToPNG();
             //		    File.WriteAllBytes(Application.dataPath + "/final_picture.png", bytes);
 
-            mSkyboxMng.DefineNewSkyboxTexture(watermark.GetTexture());
+            mSkyboxMng.DefineNewSkyboxTexture(mWatermarker.GetTexture());
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }
@@ -432,6 +433,7 @@ public sealed class screens_controller : MonoBehaviour
             //mWifi.RestoreWifi();
             //Thread.Sleep(3000);
             //mOSCController.RebootController();
+            mSkyboxMng.ResetSkybox();
             mCamera.AutomaticRotation(mLog, mTimeout);
             mCurrentState = ScreensStates.WELCOME;
             UpdateScreen();

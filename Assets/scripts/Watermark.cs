@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Watermark : MonoBehaviour
 {
@@ -22,6 +20,11 @@ public class Watermark : MonoBehaviour
     public Texture2D GetTexture()
     {
         return finalPicture;
+    }
+
+    public byte[] GetBytes()
+    {
+        return finalPicture.EncodeToJPG(95);
     }
 
     /**

@@ -861,7 +861,7 @@ MonoBehaviour:
   mCamera: {fileID: 1900725532}
   mOSCController: {fileID: 1189230296}
   mSkyboxMng: {fileID: 584471693}
-  watermark: {fileID: 1392651764}
+  mWatermarker: {fileID: 1392651764}
 --- !u!1 &497389613
 GameObject:
   m_ObjectHideFlags: 0
