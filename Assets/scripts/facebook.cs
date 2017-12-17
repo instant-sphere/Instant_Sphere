@@ -62,7 +62,7 @@ public class facebook
     {
         if (FB.IsLoggedIn)
         {
-            FB.ShareLink(contentURL: new Uri("http://www.instant-sphere.com/"));    //share a link OK
+            //FB.ShareLink(contentURL: new Uri("http://www.instant-sphere.com/"));    //share a link OK
 
             WWWForm data = new WWWForm();   //upload an image: need publish permissions, need facebook validation
             data.AddBinaryData("image", mPhotoToShare, "photo.jpg", "image/jpeg");

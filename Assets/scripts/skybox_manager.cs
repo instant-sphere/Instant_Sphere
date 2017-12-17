@@ -28,11 +28,11 @@ public sealed class skybox_manager : MonoBehaviour
 	public void DefineNewSkybox(byte[] data) {
 		Texture2D t = new Texture2D(2, 2);
 		t.LoadImage(data);
-		DefineNewSkyboxTexture(t);
+		DefineNewSkybox(t);
 	}
 
 
-	public void DefineNewSkyboxTexture(Texture2D t)
+	public void DefineNewSkybox(Texture2D t)
     {
         // TODO : convert equirectangular to cubemap and don't create a new skybox from the shader "Skybox/Equirectangular"
         /*Cubemap cmap = new Cubemap(t.height, TextureFormat.RGB24, false);

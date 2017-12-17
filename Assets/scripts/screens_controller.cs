@@ -35,8 +35,10 @@ public sealed class screens_controller : MonoBehaviour
 
     //count down used when taking a photo
     CounterDown mCounter = new CounterDown();
+    Coroutine mCounterCoroutine;
 
     Timeout mTimeout;
+    Coroutine mTimeoutCoroutine;
     const float mTimeoutValue = 60.0f;
 
 
@@ -93,7 +95,9 @@ public sealed class screens_controller : MonoBehaviour
     {
         mOSCController.StopLivePreview();
         if (mTimeout != null)
-            StopCoroutine(mTimeout.StartTimer());
+            StopCoroutine(mTimeoutCoroutine);
+        if (mCurrentState == ScreensStates.ERROR)
+            mOSCController.RebootController();
         mSkyboxMng.ResetSkybox();
         mCamera.AutomaticRotation(mLog, mTimeout);
         mTimeout = new Timeout(mTimeoutValue, TimeoutGoToWelcome);
@@ -184,8 +188,7 @@ public sealed class screens_controller : MonoBehaviour
                 break;
         }
         Texture2D s = Resources.Load(imageLocation) as Texture2D;
-        if (v != 3)
-            Destroy(mCountDown.sprite);
+        Destroy(mCountDown.sprite);
         mCountDown.sprite = Sprite.Create(s, mCountDown.sprite.rect, new Vector2(0.5f, 0.5f));
     }
 
@@ -234,14 +237,14 @@ public sealed class screens_controller : MonoBehaviour
      **/
     private void ManageWelcomeScreen()
     {
-
+        mCamera.AutomaticRotation(mLog, mTimeout);
         if (Input.touchCount > 0 || Input.GetMouseButton(0))
         {
             try
             {
                 mOSCController.StartLivePreview();
                 mCamera.AutomaticRotation(mLog, mTimeout);
-                StartCoroutine(mTimeout.StartTimer());
+                mTimeoutCoroutine = StartCoroutine(mTimeout.StartTimer());
 
                 // For logs (new log)
                 countTimeout = 0;
@@ -302,7 +305,7 @@ public sealed class screens_controller : MonoBehaviour
 
         if (!mCounter.IsCounting())
         {
-            StartCoroutine(mCounter.Count(3, UpdateCountDownText));
+            mCounterCoroutine = StartCoroutine(mCounter.Count(3, UpdateCountDownText));
         }
         else if (mCounter.IsCounterFinished())
         {
@@ -322,7 +325,7 @@ public sealed class screens_controller : MonoBehaviour
             }
             finally
             {
-                StopCoroutine(mCounter.Count(3, UpdateCountDownText));
+                StopCoroutine(mCounterCoroutine);
                 mCounter = new CounterDown();   //new countdown for next time
             }
         }
@@ -338,16 +341,16 @@ public sealed class screens_controller : MonoBehaviour
         {
             mTimeout.Reset();
             mFullResolutionImage = mOSCController.GetLatestData();
-            mWatermarker.CreateWatermark(mFullResolutionImage);
-            mWatermarker.AddWatermark();
-            mFullResolutionImage = mWatermarker.GetBytes();
+            //mWatermarker.CreateWatermark(mFullResolutionImage);
+            //mWatermarker.AddWatermark();
+            //mFullResolutionImage = mWatermarker.GetBytes();
             mCamera.AutomaticRotation(mLog, mTimeout);
 
             //		    // Save image with watermark
             //		    var bytes = watermark.GetTexture().EncodeToPNG();
             //		    File.WriteAllBytes(Application.dataPath + "/final_picture.png", bytes);
 
-            mSkyboxMng.DefineNewSkyboxTexture(mWatermarker.GetTexture());
+            mSkyboxMng.DefineNewSkybox(mFullResolutionImage/*mWatermarker.GetTexture()*/);
             mCurrentState = ScreensStates.DISPLAY_PHOTO;
             UpdateScreen();
         }
@@ -362,7 +365,9 @@ public sealed class screens_controller : MonoBehaviour
     {
         if (IsButtonDown(InterfaceButtons.ABORT))
         {
+
             mTimeout.Reset();
+            StopCoroutine(mTimeoutCoroutine);
 
             // For logs
             mDate = System.DateTime.Now;
@@ -424,6 +429,7 @@ public sealed class screens_controller : MonoBehaviour
         if (IsButtonDown(InterfaceButtons.BACK))
         {
             mTimeout.Reset();
+            StopCoroutine(mTimeoutCoroutine);
             // For logs
             mDate = System.DateTime.Now;
             string nowStr = mDate.ToString("MM-dd-yyyy_HH.mm.ss");
@@ -434,7 +440,7 @@ public sealed class screens_controller : MonoBehaviour
             //Thread.Sleep(3000);
             //mOSCController.RebootController();
             mSkyboxMng.ResetSkybox();
-            mCamera.AutomaticRotation(mLog, mTimeout);
+            //mCamera.AutomaticRotation(mLog, mTimeout);
             mCurrentState = ScreensStates.WELCOME;
             UpdateScreen();
         }
