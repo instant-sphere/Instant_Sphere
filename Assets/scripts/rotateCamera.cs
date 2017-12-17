@@ -6,7 +6,7 @@ using UnityEngine;
  // **/
 public class rotateCamera : MonoBehaviour
 {
-    float mTurnSpeed = 10.0f;
+    float mTurnSpeed = 4.0f;
     Vector2 mDelta;
     bool mIsAutomaticRotationEnable = false;
     const float threshold = 2.0f; // value in degrees for camera rotation in automatic mode
@@ -41,15 +41,18 @@ public class rotateCamera : MonoBehaviour
             }
 
             mScreenTimeout.Reset();
-            mDelta = Input.GetTouch(0).deltaPosition;
-            mDelta /= 5.0f;
+            Vector2 tmp = Input.GetTouch(0).deltaPosition;
+            tmp /= 5.0f;
+            mDelta.x = tmp.y;
+            mDelta.y = -tmp.x;
             ManualRotation();
         }
         else if (Input.GetMouseButton(0))
         {
             mScreenTimeout.Reset();
 
-            mDelta = new Vector2(Input.GetAxis("Mouse X") * 10.0f, Input.GetAxis("Mouse Y") * 10.0f);
+            mDelta.x = Input.GetAxis("Mouse Y") * 10.0f;
+            mDelta.y = -Input.GetAxis("Mouse X") * 10.0f;
             ManualRotation();
         }
         else if (mIsAutomaticRotationEnable)
@@ -57,8 +60,8 @@ public class rotateCamera : MonoBehaviour
 
         //This is made in order to avoid rotation on Z, just typing 0 on Zcoord isn’t enough
         //so the container is rotated around Y and the camera around X separately
-        container.Rotate(new Vector3(0.0f, -mDelta.x, 0.0f) * Time.deltaTime * mTurnSpeed);
-        transform.Rotate(new Vector3(mDelta.y, 0.0f, 0.0f) * Time.deltaTime * mTurnSpeed);
+        container.Rotate(mDelta * Time.deltaTime * mTurnSpeed);
+        transform.Rotate(mDelta * Time.deltaTime * mTurnSpeed);
 
         mDelta = Vector2.zero;
     }
@@ -67,14 +70,14 @@ public class rotateCamera : MonoBehaviour
     private Vector2 ComputeDelta()
     {
         Vector2 d = Vector2.zero;
-        d.x = threshold;
+        d.y = -threshold;
         float actualRotation = transform.rotation.eulerAngles.x;
 
         if (actualRotation > threshold && (360.0f - actualRotation) > threshold)
             if (actualRotation > 180.0f)
-                d.y = threshold;
+                d.x = threshold;
             else
-                d.y = -threshold;
+                d.x = -threshold;
         return d;
     }
 

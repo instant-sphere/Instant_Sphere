@@ -6,16 +6,17 @@ public class Watermark : MonoBehaviour
 {
     private Texture2D logo;
     private Texture2D finalPicture;
-    private int nbLogos = 4;
+    private const int nbLogos = 4;
 
-    Vector2[] logosTopLeftCorners;
+    Vector2[] logosTopLeftCorners = new Vector2[nbLogos];
 
     public void CreateWatermark(byte[] picture)
     {
         // Creates a new texture for the final picture
-        finalPicture = new Texture2D(0, 0);
+        if(finalPicture == null)
+            finalPicture = new Texture2D(2, 2);
         finalPicture.LoadImage(picture);
-        logosTopLeftCorners = new Vector2[nbLogos];
+        logo = Resources.Load("logo_blanc") as Texture2D;
     }
 
     public Texture2D GetTexture()
@@ -28,17 +29,8 @@ public class Watermark : MonoBehaviour
 	 */
     public void AddWatermark()
     {
-        LoadLogo();
         SetLogosPositions();
         InsertLogos();
-    }
-
-    /**
-	 * Loads Instant Sphere logo
-	 */
-    private void LoadLogo()
-    {
-        logo = Resources.Load("logo_blanc") as Texture2D;
     }
 
     /**

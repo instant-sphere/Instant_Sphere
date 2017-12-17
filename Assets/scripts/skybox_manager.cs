@@ -28,7 +28,7 @@ public sealed class skybox_manager : MonoBehaviour
 	public void DefineNewSkybox(byte[] data) {
 		Texture2D t = new Texture2D(2, 2);
 		t.LoadImage(data);
-		DefineNewSkyboxTexture (t);
+		DefineNewSkyboxTexture(t);
 	}
 
 
