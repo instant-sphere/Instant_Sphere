@@ -37,6 +37,7 @@ public sealed class screens_controller : MonoBehaviour
     CounterDown mCounter = new CounterDown();
 
     Timeout mTimeout;
+    const float mTimeoutValue = 60.0f;
 
 
     //Logs
@@ -53,7 +54,7 @@ public sealed class screens_controller : MonoBehaviour
             Application.Quit();
         }
         mFB = new facebook();
-        mTimeout = new Timeout(30.0f, TimeoutGoToWelcome);
+        mTimeout = new Timeout(mTimeoutValue, TimeoutGoToWelcome);
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  //device screen should never turn off
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
         mCamera.AutomaticRotation(mLog, mTimeout);   //use automatic rotation of welcome photo
@@ -95,7 +96,7 @@ public sealed class screens_controller : MonoBehaviour
             StopCoroutine(mTimeout.StartTimer());
         mSkyboxMng.ResetSkybox();
         mCamera.AutomaticRotation(mLog, mTimeout);
-        mTimeout = new Timeout(30, TimeoutGoToWelcome);
+        mTimeout = new Timeout(mTimeoutValue, TimeoutGoToWelcome);
         mCurrentState = ScreensStates.WELCOME;
         UpdateScreen();
     }
