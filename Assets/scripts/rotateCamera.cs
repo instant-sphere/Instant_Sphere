@@ -17,7 +17,7 @@ public class rotateCamera : MonoBehaviour
 
     //For logs
     LogSD mLog;
-    DateTime mDate = DateTime.Now;
+    //DateTime mDate = DateTime.Now;
 
     /* Called once per frame */
     private void Update()
@@ -27,15 +27,17 @@ public class rotateCamera : MonoBehaviour
             //For logs
             if (DateTime.Now > mDate.AddSeconds(2))
             {
-                mDate = DateTime.Now;
-                string nowStr = mDate.ToString("dd-MM-yyyy_HH.mm.ss");
+                //mDate = DateTime.Now;
+                //string nowStr = mDate.ToString("dd-MM-yyyy_HH.mm.ss");
                 if (mLog.state == LogSD.enum_state.RT)
                 {
-                    mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_RT\", \"time\": \"" + nowStr + "\"},");
+                    mLog.write_navigate_RT();
+                    //mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_RT\", \"time\": \"" + nowStr + "\"},");
                 }
                 else if (mLog.state == LogSD.enum_state.HQ)
                 {
-                    mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_HD\", \"time\": \"" + nowStr + "\"},");
+                    mLog.write_navigate_HD();
+                    //mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_HD\", \"time\": \"" + nowStr + "\"},");
                 }
 
             }
