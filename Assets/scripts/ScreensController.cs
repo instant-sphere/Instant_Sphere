@@ -71,7 +71,7 @@ public sealed class ScreensController : MonoBehaviour
             // For logs
             if (countTimeout < 1)
             {
-                mLog.write_timeout(mCurrentState);
+                mLog.WriteTimeout(mCurrentState);
                 countTimeout++;
                 /*mDate = DateTime.Now;
                 string nowStr = mDate.ToString("MM-dd-yyyy_HH.mm.ss");
@@ -251,7 +251,7 @@ public sealed class ScreensController : MonoBehaviour
                 // For logs (new log)
                 countTimeout = 0;
 
-                mLog.write_start();
+                mLog.WriteStart();
                 /*
                 mLog.state = LogSD.enum_state.RT;
                 mDate = System.DateTime.Now;
@@ -278,7 +278,7 @@ public sealed class ScreensController : MonoBehaviour
     {
 
         byte[] data = mOSCController.GetLatestData();
-        mLog.state = LogSD.enum_state.RT;
+        mLog.ChangeToRT();
         if (data != null)
             mSkyboxMng.DefineNewSkybox(data);
 
@@ -288,7 +288,7 @@ public sealed class ScreensController : MonoBehaviour
 
             // For logs
 
-            mLog.write_capture();
+            mLog.WriteCapture();
 
             /*
             mDate = System.DateTime.Now;
@@ -309,7 +309,7 @@ public sealed class ScreensController : MonoBehaviour
     {
 
         byte[] data = mOSCController.GetLatestData();
-        mLog.state = LogSD.enum_state.HQ;
+        mLog.ChangeToHQ();
 
         if (data != null)
             mSkyboxMng.DefineNewSkybox(data);
@@ -382,7 +382,7 @@ public sealed class ScreensController : MonoBehaviour
 
             // For logs
 
-            mLog.write_visualize_abandon();
+            mLog.WriteVisualizeAbandon();
             /*
             mDate = System.DateTime.Now;
             string nowStr = mDate.ToString("MM-dd-yyyy_HH.mm.ss");
@@ -398,7 +398,7 @@ public sealed class ScreensController : MonoBehaviour
             mTimeout.Reset();
 
             // For logs
-            mLog.write_visualize_restart();
+            mLog.WriteVisualizeRestart();
             /*
             mDate = System.DateTime.Now;
             string nowStr = mDate.ToString("MM-dd-yyyy_HH.mm.ss");
@@ -413,7 +413,7 @@ public sealed class ScreensController : MonoBehaviour
             mTimeout.Reset();
 
             // For logs
-            mLog.write_visualize_share();
+            mLog.WriteVisualizeShare();
             /*
             mDate = System.DateTime.Now;
             string nowStr = mDate.ToString("MM-dd-yyyy_HH.mm.ss");
@@ -439,7 +439,7 @@ public sealed class ScreensController : MonoBehaviour
 
             // For logs
 
-            mLog.write_share_facebook();
+            mLog.WriteShareFacebook();
             /*
             mDate = System.DateTime.Now;
             string nowStr = mDate.ToString("MM-dd-yyyy_HH.mm.ss");
@@ -456,7 +456,7 @@ public sealed class ScreensController : MonoBehaviour
             StopCoroutine(mTimeoutCoroutine);
 
             // For logs
-            mLog.write_share_abandon();
+            mLog.WriteShareAbandon();
 
             /*
             mDate = System.DateTime.Now;

@@ -29,14 +29,14 @@ public class CameraRotation : MonoBehaviour
             {
                 //mDate = DateTime.Now;
                 //string nowStr = mDate.ToString("dd-MM-yyyy_HH.mm.ss");
-                if (mLog.state == LogSD.enum_state.RT)
+                if (mLog.State() == LogSD.enum_state.RT)
                 {
-                    mLog.write_navigate_RT();
+                    mLog.WriteNavigateRT();
                     //mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_RT\", \"time\": \"" + nowStr + "\"},");
                 }
-                else if (mLog.state == LogSD.enum_state.HQ)
+                else if (mLog.State() == LogSD.enum_state.HQ)
                 {
-                    mLog.write_navigate_HD();
+                    mLog.WriteNavigateHD();
                     //mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_HD\", \"time\": \"" + nowStr + "\"},");
                 }
 

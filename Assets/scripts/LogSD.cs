@@ -4,30 +4,24 @@ using UnityEngine;
 
 public sealed class LogSD
 {
-
-    DateTime mFileDate;
-    public string mFileDataStr;
+    string mFileDateStr;
 
     // RT = Real Time; HQ = High Quality
     public enum enum_state { RT, HQ };
-    public enum_state state;
-
-    DateTime mDate = DateTime.Now;
-    string nowStr;
+    enum_state mState;
 
     public LogSD()
     {
         NewDate();
-        state = enum_state.RT;
+        mState = enum_state.RT;
     }
 
-    public void NewDate()
+    private void NewDate()
     {
-        mFileDate = DateTime.Now;
-        mFileDataStr = mFileDate.ToString("dd-MM-yyyy_HH.mm.ss");
+        mFileDateStr = DateTime.Now.ToString("dd-MM-yyyy_HH.mm.ss");
     }
 
-    public void WriteFile(string file, string toPrint)
+    private void WriteFile(string file, string toPrint)
     {
         try
         {
@@ -42,64 +36,83 @@ public sealed class LogSD
         }
     }
 
-    public void new_date(){
-      mDate = DateTime.Now;
-      nowStr = mDate.ToString("MM-dd-yyyy_HH.mm.ss");
+    public enum_state State()
+    {
+        return mState;
     }
 
-    public void write_timeout(ScreensController.ScreensStates currentState){
-      new_date();
-      WriteFile(mFileDataStr, "\t{\"event\": \"timeout\", \"time\": \"" + nowStr + "\", \"state\": \"" + currentState + "\"}");
-      WriteFile(mFileDataStr, "]");
+    public void ChangeToRT()
+    {
+        mState = enum_state.RT;
     }
 
-    public void write_start(){
-      state = LogSD.enum_state.RT;
-      new_date();
-      NewDate();
-      WriteFile(mFileDataStr, "[");
-      WriteFile(mFileDataStr, "\t{\"event\": \"start\", \"time\": \"" + nowStr + "\"},");
+    public void ChangeToHQ()
+    {
+        mState = enum_state.HQ;
     }
 
-    public void write_capture(){
-      new_date();
-      WriteFile(mFileDataStr, "\n\t{\"event\": \"capture\", \"time\": \"" + nowStr + "\"},");
+    public void WriteTimeout(ScreensController.ScreensStates currentState)
+    {
+        NewDate();
+        WriteFile(mFileDateStr, "\t{\"event\": \"timeout\", \"time\": \"" + mFileDateStr + "\", \"state\": \"" + currentState + "\"}");
+        WriteFile(mFileDateStr, "]");
     }
 
-    public void write_visualize_abandon(){
-      new_date();
-      WriteFile(mFileDataStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + nowStr + "\", \"choice\": \"abandon\"}");
-      WriteFile(mFileDataStr, "]");
+    public void WriteStart()
+    {
+        mState = enum_state.RT;
+        NewDate();
+        WriteFile(mFileDateStr, "[");
+        WriteFile(mFileDateStr, "\t{\"event\": \"start\", \"time\": \"" + mFileDateStr + "\"},");
     }
 
-    public void write_visualize_restart(){
-      new_date();
-      WriteFile(mFileDataStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + nowStr + "\", \"choice\": \"restart\"},");
+    public void WriteCapture()
+    {
+        NewDate();
+        WriteFile(mFileDateStr, "\n\t{\"event\": \"capture\", \"time\": \"" + mFileDateStr + "\"},");
     }
 
-    public void write_visualize_share(){
-      new_date();
-      WriteFile(mFileDataStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + nowStr + "\", \"choice\": \"share\"},");
+    public void WriteVisualizeAbandon()
+    {
+        NewDate();
+        WriteFile(mFileDateStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + mFileDateStr + "\", \"choice\": \"abandon\"}");
+        WriteFile(mFileDateStr, "]");
     }
 
-    public void write_share_facebook(){
-      new_date();
-      WriteFile(mFileDataStr, "\n\t{\"event\": \"share\", \"time\": \"" + nowStr + "\", \"choice\": \"facebook\"},");
+    public void WriteVisualizeRestart()
+    {
+        NewDate();
+        WriteFile(mFileDateStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + mFileDateStr + "\", \"choice\": \"restart\"},");
     }
 
-    public void write_share_abandon(){
-      new_date();
-      WriteFile(mFileDataStr, "\n\t{\"event\": \"share\", \"time\": \"" + nowStr + "\", \"choice\": \"abandon\"}");
-      WriteFile(mFileDataStr, "]");
+    public void WriteVisualizeShare()
+    {
+        NewDate();
+        WriteFile(mFileDateStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + mFileDateStr + "\", \"choice\": \"share\"},");
     }
 
-    public void write_navigate_RT(){
-      new_date();
-      WriteFile(mFileDataStr, "\t{\"event\": \"navigate_RT\", \"time\": \"" + nowStr + "\"},");
+    public void WriteShareFacebook()
+    {
+        NewDate();
+        WriteFile(mFileDateStr, "\n\t{\"event\": \"share\", \"time\": \"" + mFileDateStr + "\", \"choice\": \"facebook\"},");
     }
 
-    public void write_navigate_HD(){
-      new_date();
-      WriteFile(mFileDataStr, "\t{\"event\": \"navigate_HD\", \"time\": \"" + nowStr + "\"},");
+    public void WriteShareAbandon()
+    {
+        NewDate();
+        WriteFile(mFileDateStr, "\n\t{\"event\": \"share\", \"time\": \"" + mFileDateStr + "\", \"choice\": \"abandon\"}");
+        WriteFile(mFileDateStr, "]");
+    }
+
+    public void WriteNavigateRT()
+    {
+        NewDate();
+        WriteFile(mFileDateStr, "\t{\"event\": \"navigate_RT\", \"time\": \"" + mFileDateStr + "\"},");
+    }
+
+    public void WriteNavigateHD()
+    {
+        NewDate();
+        WriteFile(mFileDateStr, "\t{\"event\": \"navigate_HD\", \"time\": \"" + mFileDateStr + "\"},");
     }
 }
