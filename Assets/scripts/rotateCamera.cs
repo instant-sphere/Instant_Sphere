@@ -17,7 +17,7 @@ public class rotateCamera : MonoBehaviour
 
     //For logs
     LogSD mLog;
-    //DateTime mDate = DateTime.Now;
+    DateTime mDate = DateTime.Now;
 
     /* Called once per frame */
     private void Update()

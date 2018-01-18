@@ -21,7 +21,7 @@ public sealed class screens_controller : MonoBehaviour
     public Watermark mWatermarker;
 
     //one state per screen
-    enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, SHARE_PHOTO, ERROR };
+    public enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, SHARE_PHOTO, ERROR };
     ScreensStates mCurrentState;
 
     //interface buttons
@@ -71,7 +71,7 @@ public sealed class screens_controller : MonoBehaviour
             // For logs
             if (countTimeout < 1)
             {
-                mLog.write_timeout();
+                mLog.write_timeout(mCurrentState);
                 countTimeout++;
                 /*mDate = DateTime.Now;
                 string nowStr = mDate.ToString("MM-dd-yyyy_HH.mm.ss");

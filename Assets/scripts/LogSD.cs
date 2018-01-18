@@ -47,59 +47,59 @@ public sealed class LogSD
       nowStr = mDate.ToString("MM-dd-yyyy_HH.mm.ss");
     }
 
-    public void write_timeout(){
+    public void write_timeout(screens_controller.ScreensStates currentState){
       new_date();
-      this.WriteFile(this.mFileDataStr, "\t{\"event\": \"timeout\", \"time\": \"" + nowStr + "\", \"state\": \"" + mCurrentState + "\"}");
-      this.WriteFile(this.mFileDataStr, "]");
+      WriteFile(mFileDataStr, "\t{\"event\": \"timeout\", \"time\": \"" + nowStr + "\", \"state\": \"" + currentState + "\"}");
+      WriteFile(mFileDataStr, "]");
     }
 
     public void write_start(){
-      this.state = LogSD.enum_state.RT;
+      state = LogSD.enum_state.RT;
       new_date();
-      this.NewDate();
-      this.WriteFile(this.mFileDataStr, "[");
-      this.WriteFile(this.mFileDataStr, "\t{\"event\": \"start\", \"time\": \"" + nowStr + "\"},");
+      NewDate();
+      WriteFile(mFileDataStr, "[");
+      WriteFile(mFileDataStr, "\t{\"event\": \"start\", \"time\": \"" + nowStr + "\"},");
     }
 
     public void write_capture(){
       new_date();
-      this.WriteFile(this.mFileDataStr, "\n\t{\"event\": \"capture\", \"time\": \"" + nowStr + "\"},");
+      WriteFile(mFileDataStr, "\n\t{\"event\": \"capture\", \"time\": \"" + nowStr + "\"},");
     }
 
     public void write_visualize_abandon(){
       new_date();
-      this.WriteFile(this.mFileDataStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + nowStr + "\", \"choice\": \"abandon\"}");
-      this.WriteFile(this.mFileDataStr, "]");
+      WriteFile(mFileDataStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + nowStr + "\", \"choice\": \"abandon\"}");
+      WriteFile(mFileDataStr, "]");
     }
 
     public void write_visualize_restart(){
       new_date();
-      this.WriteFile(this.mFileDataStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + nowStr + "\", \"choice\": \"restart\"},");
+      WriteFile(mFileDataStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + nowStr + "\", \"choice\": \"restart\"},");
     }
 
     public void write_visualize_share(){
       new_date();
-      this.WriteFile(this.mFileDataStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + nowStr + "\", \"choice\": \"share\"},");
+      WriteFile(mFileDataStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + nowStr + "\", \"choice\": \"share\"},");
     }
 
     public void write_share_facebook(){
       new_date();
-      this.WriteFile(this.mFileDataStr, "\n\t{\"event\": \"share\", \"time\": \"" + nowStr + "\", \"choice\": \"facebook\"},");
+      WriteFile(mFileDataStr, "\n\t{\"event\": \"share\", \"time\": \"" + nowStr + "\", \"choice\": \"facebook\"},");
     }
 
     public void write_share_abandon(){
       new_date();
-      this.WriteFile(this.mFileDataStr, "\n\t{\"event\": \"share\", \"time\": \"" + nowStr + "\", \"choice\": \"abandon\"}");
-      this.WriteFile(this.mFileDataStr, "]");
+      WriteFile(mFileDataStr, "\n\t{\"event\": \"share\", \"time\": \"" + nowStr + "\", \"choice\": \"abandon\"}");
+      WriteFile(mFileDataStr, "]");
     }
 
     public void write_navigate_RT(){
       new_date();
-      this.WriteFile(this.mFileDataStr, "\t{\"event\": \"navigate_RT\", \"time\": \"" + nowStr + "\"},");
+      WriteFile(mFileDataStr, "\t{\"event\": \"navigate_RT\", \"time\": \"" + nowStr + "\"},");
     }
 
     public void write_navigate_HD(){
       new_date();
-      this.WriteFile(this.mFileDataStr, "\t{\"event\": \"navigate_HD\", \"time\": \"" + nowStr + "\"},");
+      WriteFile(mFileDataStr, "\t{\"event\": \"navigate_HD\", \"time\": \"" + nowStr + "\"},");
     }
 }
