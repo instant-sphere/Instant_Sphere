@@ -10,14 +10,14 @@ using UnityEngine.UI;
 * This class handle which application screen is being shown
 * It is also responsible for calling OSC controller methods
 **/
-public sealed class screens_controller : MonoBehaviour
+public sealed class ScreensController : MonoBehaviour
 {
     //Unity components set in inspector
     public List<Canvas> mScreens;
     public Image mCountDown;
-    public rotateCamera mCamera;
-    public osc_controller mOSCController;
-    public skybox_manager mSkyboxMng;
+    public CameraRotation mCamera;
+    public OSCController mOSCController;
+    public SkyboxManager mSkyboxMng;
     public Watermark mWatermarker;
 
     //one state per screen
@@ -29,7 +29,7 @@ public sealed class screens_controller : MonoBehaviour
     bool[] mButtonsActivated = new bool[6]; //buffer
 
     bool mIsOSCReady = false;
-    facebook mFB;
+    FacebookConnector mFB;
     WifiManager mWifi;
     byte[] mFullResolutionImage;
 
@@ -55,7 +55,7 @@ public sealed class screens_controller : MonoBehaviour
         {
             Application.Quit();
         }
-        mFB = new facebook();
+        mFB = new FacebookConnector();
         mTimeout = new Timeout(mTimeoutValue, TimeoutGoToWelcome);
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  //device screen should never turn off
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen

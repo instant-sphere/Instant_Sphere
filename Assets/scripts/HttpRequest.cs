@@ -14,7 +14,7 @@ public sealed class HttpRequest
     string mCommand;        //current API command
     int mTimeout;           //connection timeout
     UnityWebRequestAsyncOperation mWebRequest;  //object representing current connection for regular HTTP requests
-    public streamingRequest mStreamRequest;
+    public StreamingRequest mStreamRequest;
     RequestType mType;      //GET or POST type
     bool mIsStream;         //is current request a streaming request ?
     string mData = "";      //JSON data buffer for POST requests
@@ -119,7 +119,7 @@ public sealed class HttpRequest
 
             if (mIsStream)  // Streaming request
             {
-                mStreamRequest = new streamingRequest(mIPAdress + mCommand, mData);
+                mStreamRequest = new StreamingRequest(mIPAdress + mCommand, mData);
                 Debug.Log("Streaming:" + mIPAdress + mCommand + " : " + mData);
             }
             else

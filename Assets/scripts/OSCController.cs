@@ -10,7 +10,7 @@ using System.Threading;
  * This class is intended to handle an 360 degrees camera that provide OSC API 2
  * It uses a FSM to follow the camera state
  **/
-public sealed class osc_controller : MonoBehaviour
+public sealed class OSCController : MonoBehaviour
 {
     HttpRequest mHTTP = new HttpRequest();
     Queue<MethodInfo> mExecutionQueue = new Queue<MethodInfo>();    //queue for methods that should be executed

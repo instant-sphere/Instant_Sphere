@@ -7,7 +7,7 @@ using System;
  * This class encapsulates calls to the Facebook API
  * You can connect, disconnect and share an Url/photo
  **/
-public class facebook
+public class FacebookConnector
 {
     byte[] mPhotoToShare;
 

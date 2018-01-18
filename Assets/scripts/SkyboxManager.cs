@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public sealed class skybox_manager : MonoBehaviour
+public sealed class SkyboxManager : MonoBehaviour
 {
     Material mDefaultSkybox;
 

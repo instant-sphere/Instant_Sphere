@@ -4,7 +4,7 @@ using UnityEngine;
 /**
  * This class control camera rotations for both automatic and manual mode
  // **/
-public class rotateCamera : MonoBehaviour
+public class CameraRotation : MonoBehaviour
 {
     float mTurnSpeed = 5.0f;
     Vector2 mDelta;

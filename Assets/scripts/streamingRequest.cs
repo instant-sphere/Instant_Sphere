@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using UnityEngine;
 
-public class streamingRequest
+public class StreamingRequest
 {
     HttpWebRequest mWebRequest;
     Thread mThread;
@@ -17,7 +17,7 @@ public class streamingRequest
     string mData;
     bool mError = false;
 
-    public streamingRequest(string URL, string jsonData)
+    public StreamingRequest(string URL, string jsonData)
     {
         mAccessImage = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         mWebRequest = WebRequest.Create(URL) as HttpWebRequest;

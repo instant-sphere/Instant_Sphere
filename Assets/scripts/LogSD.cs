@@ -47,7 +47,7 @@ public sealed class LogSD
       nowStr = mDate.ToString("MM-dd-yyyy_HH.mm.ss");
     }
 
-    public void write_timeout(screens_controller.ScreensStates currentState){
+    public void write_timeout(ScreensController.ScreensStates currentState){
       new_date();
       WriteFile(mFileDataStr, "\t{\"event\": \"timeout\", \"time\": \"" + nowStr + "\", \"state\": \"" + currentState + "\"}");
       WriteFile(mFileDataStr, "]");
