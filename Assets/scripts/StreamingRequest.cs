@@ -51,7 +51,7 @@ public class StreamingRequest
     {
         if (mThread != null)
         {
-            Debug.Log("Terminating thread " + mThread.ToString());
+            Debug.Log("Terminating thread " + mThread.ManagedThreadId);
             mThread.Abort();
         }
         if (mReader != null)

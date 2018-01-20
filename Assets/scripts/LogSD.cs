@@ -25,8 +25,7 @@ public sealed class LogSD
     {
         try
         {
-            StreamWriter streamWriter = new StreamWriter("/sdcard/" + file + ".log", true);
-
+            StreamWriter streamWriter = new StreamWriter(Application.persistentDataPath + "/" + file + ".log", true);
             streamWriter.WriteLine(toPrint);
             streamWriter.Close();
         }
