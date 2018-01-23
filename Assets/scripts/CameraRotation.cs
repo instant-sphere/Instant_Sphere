@@ -28,16 +28,13 @@ public class CameraRotation : MonoBehaviour
             if (DateTime.Now > mDate.AddSeconds(2))
             {
                 mDate = DateTime.Now;
-                //string nowStr = mDate.ToString("dd-MM-yyyy_HH.mm.ss");
                 if (mLog.State() == LogSD.enum_state.RT)
                 {
                     mLog.WriteNavigateRT();
-                    //mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_RT\", \"time\": \"" + nowStr + "\"},");
                 }
                 else if (mLog.State() == LogSD.enum_state.HQ)
                 {
                     mLog.WriteNavigateHD();
-                    //mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_HD\", \"time\": \"" + nowStr + "\"},");
                 }
 
             }
