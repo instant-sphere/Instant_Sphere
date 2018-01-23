@@ -12,20 +12,20 @@ public sealed class LogSD
 
     public LogSD()
     {
-        NewDate();
         mState = enum_state.RT;
     }
 
-    private void NewDate()
+    private string NewDate()
     {
-        mFileDateStr = DateTime.Now.ToString("dd-MM-yyyy_HH.mm.ss");
+        return DateTime.Now.ToString("dd-MM-yyyy_HH.mm.ss");
     }
 
-    private void WriteFile(string file, string toPrint)
+    private void WriteFile(string toPrint)
     {
         try
         {
-            StreamWriter streamWriter = new StreamWriter(Application.persistentDataPath + "/" + file + ".log", true);
+            StreamWriter streamWriter = new StreamWriter(Application.persistentDataPath + "/" + mFileDateStr + ".log", true);
+            Debug.Log(Application.persistentDataPath + "/" + mFileDateStr + ".log");
             streamWriter.WriteLine(toPrint);
             streamWriter.Close();
         }
@@ -33,6 +33,11 @@ public sealed class LogSD
         {
             Debug.Log("Error writing log file : " + ex.Message);
         }
+    }
+
+    private void NewFile()
+    {
+        mFileDateStr = NewDate();
     }
 
     public enum_state State()
@@ -52,66 +57,57 @@ public sealed class LogSD
 
     public void WriteTimeout(ScreensController.ScreensStates currentState)
     {
-        NewDate();
-        WriteFile(mFileDateStr, "\t{\"event\": \"timeout\", \"time\": \"" + mFileDateStr + "\", \"state\": \"" + currentState + "\"}");
-        WriteFile(mFileDateStr, "]");
+        WriteFile("\t{\"event\": \"timeout\", \"time\": \"" + NewDate() + "\", \"state\": \"" + currentState + "\"}");
+        WriteFile("]");
     }
 
     public void WriteStart()
     {
+        NewFile();
         mState = enum_state.RT;
-        NewDate();
-        WriteFile(mFileDateStr, "[");
-        WriteFile(mFileDateStr, "\t{\"event\": \"start\", \"time\": \"" + mFileDateStr + "\"},");
+        WriteFile("[");
+        WriteFile("\t{\"event\": \"start\", \"time\": \"" + NewDate() + "\"},");
     }
 
     public void WriteCapture()
     {
-        NewDate();
-        WriteFile(mFileDateStr, "\n\t{\"event\": \"capture\", \"time\": \"" + mFileDateStr + "\"},");
+        WriteFile("\n\t{\"event\": \"capture\", \"time\": \"" + NewDate() + "\"},");
     }
 
     public void WriteVisualizeAbandon()
     {
-        NewDate();
-        WriteFile(mFileDateStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + mFileDateStr + "\", \"choice\": \"abandon\"}");
-        WriteFile(mFileDateStr, "]");
+        WriteFile("\n\t{\"event\": \"visualize\", \"time\": \"" + NewDate() + "\", \"choice\": \"abandon\"}");
+        WriteFile("]");
     }
 
     public void WriteVisualizeRestart()
     {
-        NewDate();
-        WriteFile(mFileDateStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + mFileDateStr + "\", \"choice\": \"restart\"},");
+        WriteFile("\n\t{\"event\": \"visualize\", \"time\": \"" + NewDate() + "\", \"choice\": \"restart\"},");
     }
 
     public void WriteVisualizeShare()
     {
-        NewDate();
-        WriteFile(mFileDateStr, "\n\t{\"event\": \"visualize\", \"time\": \"" + mFileDateStr + "\", \"choice\": \"share\"},");
+        WriteFile("\n\t{\"event\": \"visualize\", \"time\": \"" + NewDate() + "\", \"choice\": \"share\"},");
     }
 
     public void WriteShareFacebook()
     {
-        NewDate();
-        WriteFile(mFileDateStr, "\n\t{\"event\": \"share\", \"time\": \"" + mFileDateStr + "\", \"choice\": \"facebook\"},");
+        WriteFile("\n\t{\"event\": \"share\", \"time\": \"" + NewDate() + "\", \"choice\": \"facebook\"},");
     }
 
     public void WriteShareAbandon()
     {
-        NewDate();
-        WriteFile(mFileDateStr, "\n\t{\"event\": \"share\", \"time\": \"" + mFileDateStr + "\", \"choice\": \"abandon\"}");
-        WriteFile(mFileDateStr, "]");
+        WriteFile("\n\t{\"event\": \"share\", \"time\": \"" + NewDate() + "\", \"choice\": \"abandon\"}");
+        WriteFile("]");
     }
 
     public void WriteNavigateRT()
     {
-        NewDate();
-        WriteFile(mFileDateStr, "\t{\"event\": \"navigate_RT\", \"time\": \"" + mFileDateStr + "\"},");
+        WriteFile("\t{\"event\": \"navigate_RT\", \"time\": \"" + NewDate() + "\"},");
     }
 
     public void WriteNavigateHD()
     {
-        NewDate();
-        WriteFile(mFileDateStr, "\t{\"event\": \"navigate_HD\", \"time\": \"" + mFileDateStr + "\"},");
+        WriteFile("\t{\"event\": \"navigate_HD\", \"time\": \"" + NewDate() + "\"},");
     }
 }
