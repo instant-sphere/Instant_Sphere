@@ -27,7 +27,7 @@ public class CameraRotation : MonoBehaviour
             //For logs
             if (DateTime.Now > mDate.AddSeconds(2))
             {
-                //mDate = DateTime.Now;
+                mDate = DateTime.Now;
                 //string nowStr = mDate.ToString("dd-MM-yyyy_HH.mm.ss");
                 if (mLog.State() == LogSD.enum_state.RT)
                 {
