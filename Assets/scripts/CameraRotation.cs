@@ -17,7 +17,6 @@ public class CameraRotation : MonoBehaviour
     Timeout mScreenTimeout;
 
     //For logs
-    LogSD mLog;
     DateTime mDate = DateTime.Now;
 
     /* Called once per frame */
@@ -31,13 +30,13 @@ public class CameraRotation : MonoBehaviour
                 if (DateTime.Now > mDate.AddSeconds(2))
                 {
                     mDate = DateTime.Now;
-                    if (mLog.State() == LogSD.enum_state.RT)
+                    if (Logger.Instance.State() == Logger.enum_state.RT)
                     {
-                        mLog.WriteNavigateRT();
+                        Logger.Instance.WriteNavigateRT();
                     }
-                    else if (mLog.State() == LogSD.enum_state.HQ)
+                    else if (Logger.Instance.State() == Logger.enum_state.HQ)
                     {
-                        mLog.WriteNavigateHD();
+                        Logger.Instance.WriteNavigateHD();
                     }
 
                 }
@@ -92,10 +91,9 @@ public class CameraRotation : MonoBehaviour
     }
 
     /* Enable automatic rotation */
-    public void AutomaticRotation(LogSD logger, Timeout screenTimeout)
+    public void AutomaticRotation(Timeout screenTimeout)
     {
         mRotationMode = ECameraState.AUTO;
-        mLog = logger;
         mScreenTimeout = screenTimeout;
     }
 

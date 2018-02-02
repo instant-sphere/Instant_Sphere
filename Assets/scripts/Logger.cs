@@ -2,17 +2,26 @@ using System;
 using System.IO;
 using UnityEngine;
 
-public sealed class LogSD
+public sealed class Logger
 {
+    static readonly Logger mInstance = new Logger();
     string mFileDateStr;
 
     // RT = Real Time; HQ = High Quality
     public enum enum_state { RT, HQ };
     enum_state mState;
 
-    public LogSD()
+    private Logger()
     {
         mState = enum_state.RT;
+    }
+
+    public static Logger Instance
+    {
+        get
+        {
+            return mInstance;
+        }
     }
 
     private string NewDate()

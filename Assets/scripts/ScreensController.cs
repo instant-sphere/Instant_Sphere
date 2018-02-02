@@ -39,10 +39,7 @@ public sealed class ScreensController : MonoBehaviour
     Coroutine mTimeoutCoroutine;
     const float mTimeoutValue = 60.0f;
 
-
-    //Logs
-    LogSD mLog = new LogSD();
-    //DateTime mDate = DateTime.Now;
+    // Logs
     int countTimeout = 0;
 
     /* Use this for initialization */
@@ -57,7 +54,7 @@ public sealed class ScreensController : MonoBehaviour
         mTimeout = new Timeout(mTimeoutValue, TimeoutGoToWelcome);
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  //device screen should never turn off
         mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
-        mCamera.AutomaticRotation(mLog, mTimeout);   //use automatic rotation of welcome photo
+        mCamera.AutomaticRotation(mTimeout);   //use automatic rotation of welcome photo
         UpdateScreen();
     }
 
@@ -69,7 +66,7 @@ public sealed class ScreensController : MonoBehaviour
             // For logs
             if (countTimeout < 1)
             {
-                mLog.WriteError(mCurrentState);
+                Logger.Instance.WriteError(mCurrentState);
                 countTimeout++;
             }
             mCamera.StopRotation();
@@ -95,7 +92,7 @@ public sealed class ScreensController : MonoBehaviour
         if (mCurrentState == ScreensStates.ERROR)
             mOSCController.RebootController();
         mSkyboxMng.ResetSkybox();
-        mCamera.AutomaticRotation(mLog, mTimeout);
+        mCamera.AutomaticRotation(mTimeout);
         mTimeout = new Timeout(mTimeoutValue, TimeoutGoToWelcome);
         mCurrentState = ScreensStates.WELCOME;
         UpdateScreen();
@@ -233,19 +230,18 @@ public sealed class ScreensController : MonoBehaviour
      **/
     private void ManageWelcomeScreen()
     {
-        mCamera.AutomaticRotation(mLog, mTimeout);
+        mCamera.AutomaticRotation(mTimeout);
         if (Input.touchCount > 0 || Input.GetMouseButton(0))
         {
             try
             {
                 mOSCController.StartLivePreview();
-                mCamera.AutomaticRotation(mLog, mTimeout);
+                mCamera.AutomaticRotation(mTimeout);
                 mTimeoutCoroutine = StartCoroutine(mTimeout.StartTimer());
 
                 // For logs (new log)
                 countTimeout = 0;
-
-                mLog.WriteStart();
+                Logger.Instance.WriteStart();
 
                 mCurrentState = ScreensStates.READY_TAKE_PHOTO;
                 UpdateScreen();
@@ -264,7 +260,7 @@ public sealed class ScreensController : MonoBehaviour
     {
 
         byte[] data = mOSCController.GetLatestData();
-        mLog.ChangeToRT();
+        Logger.Instance.ChangeToRT();
         if (data != null)
             mSkyboxMng.DefineNewSkybox(data);
 
@@ -273,8 +269,7 @@ public sealed class ScreensController : MonoBehaviour
             mTimeout.Reset();
 
             // For logs
-
-            mLog.WriteCapture();
+            Logger.Instance.WriteCapture();
 
             mCurrentState = ScreensStates.TAKING_PHOTO;
             UpdateScreen();
@@ -289,7 +284,7 @@ public sealed class ScreensController : MonoBehaviour
     {
 
         byte[] data = mOSCController.GetLatestData();
-        mLog.ChangeToHQ();
+        Logger.Instance.ChangeToHQ();
 
         if (data != null)
             mSkyboxMng.DefineNewSkybox(data);
@@ -335,7 +330,7 @@ public sealed class ScreensController : MonoBehaviour
             //mWatermarker.CreateWatermark(mFullResolutionImage);
             //mWatermarker.AddWatermark();
             //mFullResolutionImage = mWatermarker.GetBytes();
-            mCamera.AutomaticRotation(mLog, mTimeout);
+            mCamera.AutomaticRotation(mTimeout);
 
             //		    // Save image with watermark
             //		    var bytes = watermark.GetTexture().EncodeToPNG();
@@ -361,19 +356,18 @@ public sealed class ScreensController : MonoBehaviour
             StopCoroutine(mTimeoutCoroutine);
 
             // For logs
-
-            mLog.WriteVisualizeAbandon();
+            Logger.Instance.WriteVisualizeAbandon();
 
             mSkyboxMng.ResetSkybox();
             mCurrentState = ScreensStates.WELCOME;
-            mCamera.AutomaticRotation(mLog, mTimeout);
+            mCamera.AutomaticRotation(mTimeout);
         }
         else if (IsButtonDown(InterfaceButtons.RETRY))
         {
             mTimeout.Reset();
 
             // For logs
-            mLog.WriteVisualizeRestart();
+            Logger.Instance.WriteVisualizeRestart();
             mOSCController.StartLivePreview();
             mCurrentState = ScreensStates.READY_TAKE_PHOTO;
         }
@@ -382,7 +376,7 @@ public sealed class ScreensController : MonoBehaviour
             mTimeout.Reset();
 
             // For logs
-            mLog.WriteVisualizeShare();
+            Logger.Instance.WriteVisualizeShare();
             mCurrentState = ScreensStates.SHARE_PHOTO;
         }
         else
@@ -403,7 +397,7 @@ public sealed class ScreensController : MonoBehaviour
 
             // For logs
 
-            mLog.WriteShareFacebook();
+            Logger.Instance.WriteShareFacebook();
 
             //mWifi.SaveAndShutdownWifi();
             mFB.StartConnection(mFullResolutionImage);
@@ -415,7 +409,7 @@ public sealed class ScreensController : MonoBehaviour
             StopCoroutine(mTimeoutCoroutine);
 
             // For logs
-            mLog.WriteShareAbandon();
+            Logger.Instance.WriteShareAbandon();
 
             //mWifi.RestoreWifi();
             //Thread.Sleep(3000);
