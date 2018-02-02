@@ -69,9 +69,10 @@ public sealed class ScreensController : MonoBehaviour
             // For logs
             if (countTimeout < 1)
             {
-                mLog.WriteTimeout(mCurrentState);
+                mLog.WriteError(mCurrentState);
                 countTimeout++;
             }
+            mCamera.StopRotation();
             mCurrentState = ScreensStates.ERROR;
             UpdateScreen();
         }

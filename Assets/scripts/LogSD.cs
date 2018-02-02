@@ -25,7 +25,6 @@ public sealed class LogSD
         try
         {
             StreamWriter streamWriter = new StreamWriter(Application.persistentDataPath + "/" + mFileDateStr + ".log", true);
-            Debug.Log(Application.persistentDataPath + "/" + mFileDateStr + ".log");
             streamWriter.WriteLine(toPrint);
             streamWriter.Close();
         }
@@ -55,9 +54,9 @@ public sealed class LogSD
         mState = enum_state.HQ;
     }
 
-    public void WriteTimeout(ScreensController.ScreensStates currentState)
+    public void WriteError(ScreensController.ScreensStates currentState)
     {
-        WriteFile("\t{\"event\": \"timeout\", \"time\": \"" + NewDate() + "\", \"state\": \"" + currentState + "\"}");
+        WriteFile("\t{\"event\": \"error_state\", \"time\": \"" + NewDate() + "\", \"state\": \"" + currentState + "\"}");
         WriteFile("]");
     }
 

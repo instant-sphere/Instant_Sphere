@@ -3,12 +3,13 @@ using UnityEngine;
 
 /**
  * This class control camera rotations for both automatic and manual mode
- // **/
+ **/
 public class CameraRotation : MonoBehaviour
 {
     float mTurnSpeed = 5.0f;
     Vector2 mDelta;
-    bool mIsAutomaticRotationEnable = false;
+    enum ECameraState { MANUAL, AUTO, OFF};
+    ECameraState mRotationMode = ECameraState.MANUAL;
     const float threshold = 2.0f; // value in degrees for camera rotation in automatic mode
 
     public Transform container; // camera container
@@ -22,40 +23,46 @@ public class CameraRotation : MonoBehaviour
     /* Called once per frame */
     private void Update()
     {
-        if (Input.touchCount > 0)
+        if (mRotationMode == ECameraState.MANUAL)
         {
-            //For logs
-            if (DateTime.Now > mDate.AddSeconds(2))
+            if (Input.touchCount > 0)
             {
-                mDate = DateTime.Now;
-                if (mLog.State() == LogSD.enum_state.RT)
+                //For logs
+                if (DateTime.Now > mDate.AddSeconds(2))
                 {
-                    mLog.WriteNavigateRT();
-                }
-                else if (mLog.State() == LogSD.enum_state.HQ)
-                {
-                    mLog.WriteNavigateHD();
+                    mDate = DateTime.Now;
+                    if (mLog.State() == LogSD.enum_state.RT)
+                    {
+                        mLog.WriteNavigateRT();
+                    }
+                    else if (mLog.State() == LogSD.enum_state.HQ)
+                    {
+                        mLog.WriteNavigateHD();
+                    }
+
                 }
 
+                mScreenTimeout.Reset();
+                Vector2 tmp = Input.GetTouch(0).deltaPosition;
+                tmp /= 5.0f;
+                mDelta.x = tmp.y;
+                mDelta.y = -tmp.x;
             }
+            else if (Input.GetMouseButton(0))
+            {
+                mScreenTimeout.Reset();
 
-            mScreenTimeout.Reset();
-            Vector2 tmp = Input.GetTouch(0).deltaPosition;
-            tmp /= 5.0f;
-            mDelta.x = tmp.y;
-            mDelta.y = -tmp.x;
-            ManualRotation();
+                mDelta.x = Input.GetAxis("Mouse Y") * 10.0f;
+                mDelta.y = -Input.GetAxis("Mouse X") * 10.0f;
+            }
         }
-        else if (Input.GetMouseButton(0))
+        else if (mRotationMode == ECameraState.AUTO)
         {
-            mScreenTimeout.Reset();
-
-            mDelta.x = Input.GetAxis("Mouse Y") * 10.0f;
-            mDelta.y = -Input.GetAxis("Mouse X") * 10.0f;
-            ManualRotation();
-        }
-        else if (mIsAutomaticRotationEnable)
             mDelta = ComputeDelta();
+            if (Input.GetMouseButton(0) || Input.touchCount > 0)
+                ManualRotation();
+        }
+
 
         Vector2 cam = Vector2.zero, cont = Vector2.zero;
         cam.y = mDelta.y;
@@ -87,7 +94,7 @@ public class CameraRotation : MonoBehaviour
     /* Enable automatic rotation */
     public void AutomaticRotation(LogSD logger, Timeout screenTimeout)
     {
-        mIsAutomaticRotationEnable = true;
+        mRotationMode = ECameraState.AUTO;
         mLog = logger;
         mScreenTimeout = screenTimeout;
     }
@@ -95,6 +102,12 @@ public class CameraRotation : MonoBehaviour
     /* Enable manual rotation */
     public void ManualRotation()
     {
-        mIsAutomaticRotationEnable = false;
+        mRotationMode = ECameraState.MANUAL;
+    }
+
+    /* Disable rotation */
+    public void StopRotation()
+    {
+        mRotationMode = ECameraState.OFF;
     }
 }
