@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<!--
+	Dimension by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Viewer Instant Sphere</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="/assets/css/main.css" />
+		<!--[if lte IE 9]><link rel="stylesheet" href="assets/css/ie9.css" /><![endif]-->
+		<noscript><link rel="stylesheet" href="/assets/css/noscript.css" /></noscript>
+		<link rel="stylesheet" href="http://photo-sphere-viewer.js.org/dist/Photo-Sphere-Viewer/dist/photo-sphere-viewer.min.css">
+<script src="http://photo-sphere-viewer.js.org/dist/three.js/three.min.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/D.js/lib/D.min.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/doT/doT.min.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/uevent/uevent.min.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/three.js-examples/examples/js/renderers/CanvasRenderer.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/three.js-examples/examples/js/renderers/Projector.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/Photo-Sphere-Viewer/dist/photo-sphere-viewer.min.js"></script>
+
+	</head>
+	<body>
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="logo">
+							<span> <img alt="logo"  width="60" height="60" src="//resizer.gandi.ws/01/82/01820d20-97e0-4706-8497-e1db0cdfa043.png?w=960"  />
+</span>
+						</div>
+						<div class="content">
+							<div class="inner">
+								<h1>Instant Sphere</h1>
+								<p>Le fichier <%= nom_fichier %> a correctement été envoyé.</p>
+
+							</div>
+							<div id="photosphere"></div>
+						</div>
+						<nav>
+							<ul>
+								<li><a href="#intro">Accueil</a></li>
+								<li><a href="#work">Le Projet</a></li>
+								<li><a href="#contact">Contact</a></li>
+								<!--<li><a href="#elements">Elements</a></li>-->
+							</ul>
+						</nav>
+					</header>
+
+				
+
+								
+
+
+								
+
+
+				<!-- Footer -->
+					
+
+			</div>
+
+		<!-- BG -->
+			<div id="bg"></div>
+<script>
+ var PSV = new PhotoSphereViewer({
+    panorama: '<%= fullUrl %><%= nom_fichier %>',
+    container: 'photosphere',
+    caption: 'Gare Saint Jean</b>',
+    loading_img: 'http://resizer.gandi.ws/01/82/01820d20-97e0-4706-8497-e1db0cdfa043.png?w=960',
+    navbar: 'autorotate zoom download caption fullscreen',
+    default_fov: 70,
+    mousewheel: false,
+    size: {
+      height: 500
+    }
+  });
+  </script>
+		<!-- Scripts -->
+			<script src="/assets/js/jquery.min.js"></script>
+			<script src="/assets/js/skel.min.js"></script>
+			<script src="/assets/js/util.js"></script>
+			<script src="/assets/js/main.js"></script>
+
+	</body>
+</html>

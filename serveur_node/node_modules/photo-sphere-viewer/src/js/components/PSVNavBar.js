@@ -1,0 +1,176 @@
+/**
+ * Navigation bar class
+ * @param {PhotoSphereViewer} psv
+ * @constructor
+ * @extends module:components.PSVComponent
+ * @memberof module:components
+ */
+function PSVNavBar(psv) {
+  PSVComponent.call(this, psv);
+
+  /**
+   * @member {Object}
+   * @readonly
+   * @private
+   */
+  this.config = this.psv.config.navbar;
+
+  /**
+   * @summary List of buttons of the navbar
+   * @member {Array.<module:components/buttons.PSVNavBarButton>}
+   * @readonly
+   */
+  this.items = [];
+
+  // all buttons
+  if (this.config === true) {
+    this.config = PSVUtils.clone(PhotoSphereViewer.DEFAULTS.navbar);
+  }
+  // space separated list
+  else if (typeof this.config == 'string') {
+    this.config = this.config.split(' ');
+  }
+  // migration from object
+  else if (!Array.isArray(this.config)) {
+    console.warn('PhotoSphereViewer: hashmap form of "navbar" is deprecated, use an array instead.');
+
+    var config = this.config;
+    this.config = [];
+    for (var key in config) {
+      if (config[key]) {
+        this.config.push(key);
+      }
+    }
+
+    this.config.sort(function(a, b) {
+      return PhotoSphereViewer.DEFAULTS.navbar.indexOf(a) - PhotoSphereViewer.DEFAULTS.navbar.indexOf(b);
+    });
+  }
+
+  this.create();
+}
+
+PSVNavBar.prototype = Object.create(PSVComponent.prototype);
+PSVNavBar.prototype.constructor = PSVNavBar;
+
+PSVNavBar.className = 'psv-navbar psv-navbar--open';
+PSVNavBar.publicMethods = ['showNavbar', 'hideNavbar', 'toggleNavbar', 'getNavbarButton'];
+
+/**
+ * @override
+ * @throws {PSVError} when the configuration is incorrect
+ */
+PSVNavBar.prototype.create = function() {
+  PSVComponent.prototype.create.call(this);
+
+  this.config.forEach(function(button) {
+    if (typeof button == 'object') {
+      this.items.push(new PSVNavBarCustomButton(this, button));
+    }
+    else {
+      switch (button) {
+        case PSVNavBarAutorotateButton.id:
+          this.items.push(new PSVNavBarAutorotateButton(this));
+          break;
+
+        case PSVNavBarZoomButton.id:
+          this.items.push(new PSVNavBarZoomButton(this));
+          break;
+
+        case PSVNavBarDownloadButton.id:
+          this.items.push(new PSVNavBarDownloadButton(this));
+          break;
+
+        case PSVNavBarMarkersButton.id:
+          this.items.push(new PSVNavBarMarkersButton(this));
+          break;
+
+        case PSVNavBarFullscreenButton.id:
+          this.items.push(new PSVNavBarFullscreenButton(this));
+          break;
+
+        case PSVNavBarGyroscopeButton.id:
+          if (this.psv.config.gyroscope) {
+            this.items.push(new PSVNavBarGyroscopeButton(this));
+          }
+          break;
+
+        case 'caption':
+          this.items.push(new PSVNavBarCaption(this, this.psv.config.caption));
+          break;
+
+        case 'spacer':
+          button = 'spacer-5';
+        /* falls through */
+        default:
+          var matches = button.match(/^spacer\-([0-9]+)$/);
+          if (matches !== null) {
+            this.items.push(new PSVNavBarSpacer(this, matches[1]));
+          }
+          else {
+            throw new PSVError('Unknown button ' + button);
+          }
+          break;
+      }
+    }
+  }, this);
+};
+
+/**
+ * @override
+ */
+PSVNavBar.prototype.destroy = function() {
+  this.items.forEach(function(item) {
+    item.destroy();
+  });
+
+  delete this.items;
+  delete this.config;
+
+  PSVComponent.prototype.destroy.call(this);
+};
+
+/**
+ * @summary Returns a button by its identifier
+ * @param {string} id
+ * @param {boolean} [silent=false]
+ * @returns {module:components/buttons.PSVNavBarButton}
+ */
+PSVNavBar.prototype.getNavbarButton = function(id, silent) {
+  var button = null;
+
+  this.items.some(function(item) {
+    if (item.id === id) {
+      button = item;
+      return true;
+    }
+  });
+
+  if (!button && !silent) {
+    console.warn('PhotoSphereViewer: button "' + id + '" not found in the navbar.');
+  }
+
+  return button;
+};
+
+/**
+ * @summary Shows the navbar
+ */
+PSVNavBar.prototype.showNavbar = function() {
+  this.toggleNavbar(true);
+};
+
+/**
+ * @summary Hides the navbar
+ */
+PSVNavBar.prototype.hideNavbar = function() {
+  this.toggleNavbar(false);
+};
+
+/**
+ * @summary Toggles the navbar
+ * @param {boolean} active
+ */
+PSVNavBar.prototype.toggleNavbar = function(active) {
+  PSVUtils.toggleClass(this.container, 'psv-navbar--open', active);
+};

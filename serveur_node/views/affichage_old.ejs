@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+
+<link rel="stylesheet" href="http://photo-sphere-viewer.js.org/dist/Photo-Sphere-Viewer/dist/photo-sphere-viewer.min.css">
+<script src="http://photo-sphere-viewer.js.org/dist/three.js/three.min.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/D.js/lib/D.min.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/doT/doT.min.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/uevent/uevent.min.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/three.js-examples/examples/js/renderers/CanvasRenderer.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/three.js-examples/examples/js/renderers/Projector.js"></script>
+<script src="http://photo-sphere-viewer.js.org/dist/Photo-Sphere-Viewer/dist/photo-sphere-viewer.min.js"></script>
+
+	</head>
+
+	<body>
+		<header>
+			<h1>Le fichier <%= nom_fichier %> a correctement été envoyé.</h1>
+		</header>
+<div id="photosphere"></div>
+
+	</body>
+	<script>
+ var PSV = new PhotoSphereViewer({
+    panorama: 'http://10.211.55.8:2000/pictures/<%= nom_fichier %>',
+    container: 'photosphere',
+    caption: 'Gare Saint Jean</b>',
+    loading_img: 'http://resizer.gandi.ws/01/82/01820d20-97e0-4706-8497-e1db0cdfa043.png?w=960',
+    navbar: 'autorotate zoom download caption fullscreen',
+    default_fov: 70,
+    mousewheel: false,
+    size: {
+      height: 500
+    }
+  });
+  </script>
+</html>
