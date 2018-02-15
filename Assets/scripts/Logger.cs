@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Xml.Linq;
 using UnityEngine;
 
 public sealed class Logger
@@ -24,16 +25,26 @@ public sealed class Logger
         }
     }
 
+    public string GetCurrentFileName()
+    {
+        return mFileDateStr;
+    }
+
     private string NewDate()
     {
         return DateTime.Now.ToString("dd-MM-yyyy_HH.mm.ss");
+    }
+
+    private string GetFileName()
+    {
+        return Application.persistentDataPath + "/" + mFileDateStr + ".log";
     }
 
     private void WriteFile(string toPrint)
     {
         try
         {
-            StreamWriter streamWriter = new StreamWriter(Application.persistentDataPath + "/" + mFileDateStr + ".log", true);
+            StreamWriter streamWriter = new StreamWriter(GetFileName(), true);
             streamWriter.WriteLine(toPrint);
             streamWriter.Close();
         }
