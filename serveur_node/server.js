@@ -3,14 +3,14 @@ var Express = require('express');
  const helmet = require('helmet');
  const fs = require('fs');
 var randtoken = require('rand-token');
-const https = require('https');
+const https = require('http');
 const https_options = {
   key: fs.readFileSync("../isphere.key"),
   cert: fs.readFileSync("../certificate-593390.crt"),
 }; 
  var bodyParser = require('body-parser');
  var app = Express();
- app.use(helmet());
+ //app.use(helmet());
 
  app.use(bodyParser.json());
 function getDateTime() {
@@ -80,4 +80,4 @@ app.get('/assets/*', (req, res) => {
     res.sendFile(req.url, {root: './'})
 });
 
-https.createServer(https_options, app).listen(333);
+https.createServer(app).listen(333);

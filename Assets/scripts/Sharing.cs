@@ -1,9 +1,9 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using LitJson;
 using UnityEngine.Networking;
-
 public class Sharing : MonoBehaviour{
 	    UnityWebRequestAsyncOperation mWebRequest;  //object representing current connection for regular HTTP requests
 
@@ -14,11 +14,15 @@ public class Sharing : MonoBehaviour{
 	}
 	public IEnumerator Upload(byte[] img){
 		WWWForm form = new WWWForm();
-		form.AddField("somefield", "somedata");
+		byte[] tab = new byte[3];
+		form.AddBinaryData("imgUploader", img, "photo.jpg", "image/jpeg");
 
-		form.AddBinaryData ("imaaage", img, "immg", "multipart/form-data" );
+
+
+
 		Debug.Log ("********************************** SendToServe*******");
-		UnityWebRequest www = UnityWebRequest.Post("https://server.instant-sphere.com:333/api/Upload", form);
+		UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/Upload", form);
+        
 		yield return www.SendWebRequest();
 
 		if(www.isNetworkError || www.isHttpError) {
