@@ -1,7 +1,17 @@
 var Express = require('express');
  var multer = require('multer');
+ const helmet = require('helmet');
+ const fs = require('fs');
+var randtoken = require('rand-token');
+const https = require('https');
+const https_options = {
+  key: fs.readFileSync("../isphere.key"),
+  cert: fs.readFileSync("../certificate-593390.crt"),
+}; 
  var bodyParser = require('body-parser');
  var app = Express();
+ app.use(helmet());
+
  app.use(bodyParser.json());
 function getDateTime() {
 
@@ -32,7 +42,9 @@ function getDateTime() {
          callback(null, "./pictures");
      },
      filename: function(req, file, callback) {
-         callback(null, "pfa" + "_" + getDateTime() + "_" + file.originalname);
+        var token = randtoken.generate(5);
+
+         callback(null, token + ".jpg");
      }
  });
 
@@ -47,12 +59,14 @@ app.get("/", function(req, res) {
  app.post("/api/Upload", function(req, res) {
      upload(req, res, function(err) {
          if (err) {
+            console.log(req);
              return res.end("Something went wrong!");
          }
+         console.log(req);
          console.log(req.files[0].filename);
-
-         return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host') + '/pictures/', 
-nom_fichier: req.files[0].filename});
+//          return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host') + '/pictures/', 
+// nom_fichier: req.files[0].filename});
+    return res.json({ status : 1, code : req.files[0].filename });
      });
  });
 
@@ -66,6 +80,4 @@ app.get('/assets/*', (req, res) => {
     res.sendFile(req.url, {root: './'})
 });
 
- app.listen(2000, function(a) {
-     console.log("Listening to port 2000");
- });
+https.createServer(https_options, app).listen(333);

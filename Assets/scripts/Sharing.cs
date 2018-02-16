@@ -25,7 +25,7 @@ public class Sharing : MonoBehaviour{
 			Debug.Log(www.error);
 		}
 		else {
-			Debug.Log(www.responseCode);
+			Debug.Log(www.downloadHandler.text);
 		}
 	}
 		 
