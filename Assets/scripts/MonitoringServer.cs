@@ -25,7 +25,7 @@ public class MonitoringServer : MonoBehaviour
 	}
 
 	/*
-	 * Returns the list of logs files names 
+	 * Returns the list of logs files names
 	 */
 	private string[] GetLogsFilesNames()
 	{
@@ -39,7 +39,7 @@ public class MonitoringServer : MonoBehaviour
 			filesNames[i] = f.Name;
 			i++;
 		}
-		
+
 		Debug.Log("directory : " + Application.persistentDataPath + "/");
 
 		return filesNames;
@@ -54,7 +54,7 @@ public class MonitoringServer : MonoBehaviour
 		string res = "[";
 		int i = 1;
 		Logger logger = Logger.Instance;
-		
+
 		foreach (var f in filenames)
 		{
 			if (!string.IsNullOrEmpty(logger.GetCurrentFileName()) && f != ".log")
@@ -65,7 +65,7 @@ public class MonitoringServer : MonoBehaviour
 				{
 					res += GetFileContent(f);
 					res += ", ";
-				}			
+				}
 			}
 			i++;
 		}
@@ -74,9 +74,9 @@ public class MonitoringServer : MonoBehaviour
 		if (res.Length > 1)
 		{
 			Debug.Log("res : " + res);
-			res = res.Substring(0, res.Length - 2);	
+			res = res.Substring(0, res.Length - 2);
 		}
-		
+
 		res += " ]";
 
 		return res;
@@ -89,18 +89,16 @@ public class MonitoringServer : MonoBehaviour
 	{
 		while (true)
 		{
-//			Debug.Log("Camille est velue : " + GetLogs());
-			
-			// Creates a form containing the data sent
+    		// Creates a form containing the data sent
 			WWWForm form = new WWWForm();
 			form.AddField("data", GetLogs(), Encoding.UTF8);
 
 			Debug.Log(GetURL());
 			UnityWebRequest www = UnityWebRequest.Post(GetURL(), form);
-			
+
 			// Sends the request and yields until the send completes
-			yield return www.Send();
-			
+			yield return www.SendWebRequest();
+
 			// Suspends the coroutine execution for the given amount of seconds using scaled time.
 			yield return new WaitForSeconds(10.0f);
 
@@ -111,11 +109,10 @@ public class MonitoringServer : MonoBehaviour
 			else
 			{
 				Debug.Log("Sending report to server");
-			}	
+			}
 		}
-		
 	}
-	
+
 	public static string GetFileContent(string filename)
 	{
 		StreamReader streamReader = new StreamReader(Application.persistentDataPath + "/" + filename);
