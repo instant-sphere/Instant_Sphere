@@ -19,7 +19,7 @@ public sealed class ScreensController : MonoBehaviour
     public Watermark mWatermarker;
 
     //one state per screen
-    public enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, SHARE_PHOTO, ERROR };
+    public enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, DISPLAY_PHOTO_WITHOUT_INTERNET, SHARE_PHOTO, ERROR, PHOTO_CODE, GOODBYE };
     ScreensStates mCurrentState;
 
     //interface buttons
