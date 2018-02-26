@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
+using LitJson;
 using UnityEngine;
 using UnityEngine.Networking;
 using Debug = UnityEngine.Debug;
@@ -25,19 +26,21 @@ public class CameraData : MonoBehaviour
 
 	struct camera_data
 	{
-		public float batteryLevel; // (0.0, 0.33, 0.67, or 1.0)
+		public string batteryLevel; // (0.0, 0.33, 0.67, or 1.0)
 		public string batteryState; // "charging", "charged", "disconnect"
+		public string firmwareVersion;
+		public string cameraError;
 
 	}
 
 	private camera_data mCameraData;
 	
-/*	/* Camera error codes associated to event flags #1#
+	/* Camera error codes associated to event flags */
 	Dictionary<string, string> errorCodes = new Dictionary<string, string>();
 
 	/*
 	 * Initiates error codes according to the camera documentation
-	 #1#
+	 */
 	private void InitErrorCodes()
 	{
 		string[] flags =
@@ -59,7 +62,7 @@ public class CameraData : MonoBehaviour
 		{
 			errorCodes.Add(flags[i], codes[i]);
 		}
-	}*/
+	}
 	
 	void Start()
 	{	
@@ -75,8 +78,12 @@ public class CameraData : MonoBehaviour
 		while (true)
 		{
 			UnityWebRequest wwwInfo = new UnityWebRequest("http://192.168.1.1/osc/info");
+			// This object handles receipt, buffering and postprocessing of data received from the server
+			wwwInfo.downloadHandler = new DownloadHandlerBuffer();
+
 			// Sends the request and yields until the send completes
-			yield return wwwInfo.SendWebRequest();
+			UnityWebRequestAsyncOperation op = wwwInfo.SendWebRequest();
+			yield return op;
 			
 			if (wwwInfo.isNetworkError || wwwInfo.isHttpError)
 			{
@@ -84,12 +91,12 @@ public class CameraData : MonoBehaviour
 			}
 			else
 			{
-				Debug.Log("Sending report to server");
+				Debug.Log("Received camera info");
 			}
+
 
 			string info = wwwInfo.downloadHandler.text;
 			Debug.Log("CAMERA INFO : " + info);
-			
 			
 			
 			UnityWebRequest wwwState = UnityWebRequest.Post("http://192.168.1.1/osc/state", "");
@@ -101,16 +108,28 @@ public class CameraData : MonoBehaviour
 			}
 			else
 			{
-				Debug.Log("Sending report to server");
+				Debug.Log("Received camera state");
 			}
 			string state = wwwState.downloadHandler.text;
+			Debug.Log("CAMERA STATE : " + state);
+
 			
 			// Suspends the coroutine execution for the given amount of seconds using scaled time.
 			yield return new WaitForSeconds(10.0f);
 			
-		
-	
 		}
+	}
+
+	private void SaveCameraInfo(string info)
+	{
+		JsonData jsonData = HttpRequest.JSONStringToDictionary(info);
+		mCameraData.batteryLevel = jsonData["state"]["batteryLevel"].ToString();
+		Debug.Log("battery level " + mCameraData.batteryLevel);
+	}
+
+	private void SaveCameraState(string state)
+	{
+		
 	}
 
 }
