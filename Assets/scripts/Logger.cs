@@ -126,4 +126,9 @@ public sealed class Logger
         WriteFile("\t{\"event\": \"timeout\", \"time\": \"" + NewDate() + "\"},");
         WriteFile("]");
     }
+
+    public void WriteShareCode()
+    {
+        WriteFile("\n\t{\"event\": \"share\", \"time\": \"" + NewDate() + "\", \"choice\": \"code,mail\"},");
+    }
 }

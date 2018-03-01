@@ -237,8 +237,10 @@ public sealed class ScreensController : MonoBehaviour
                 ManageShareScreen();
                 break;
             case ScreensStates.PHOTO_CODE:
+                ManageShareCodeScreen();
                 break;
             case ScreensStates.GOODBYE:
+                ManageGoodbyeScreen();
                 break;
         }
     }
@@ -407,25 +409,22 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * On the share screen go back to display screen if user presses the BACK button
-     * and disconnect the user from Facebook
+     * On the share screen go back to welcome screen if user presses the ABORT button
+     * Share on Facebook or display the QRcode
+     * And disconnect the user from Facebook when living
      **/
     private void ManageShareScreen()
     {
         if (IsButtonDown(InterfaceButtons.SHARE_FB))
         {
             mTimeout.Reset();
-            //mWifi.SaveAndShutdownWifi();
 
             // For logs
-
             Logger.Instance.WriteShareFacebook();
 
-            //mWifi.SaveAndShutdownWifi();
             mFB.StartConnection(mFullResolutionImage);
         }
-
-        if (IsButtonDown(InterfaceButtons.BACK))
+        else if (IsButtonDown(InterfaceButtons.ABORT))
         {
             mTimeout.Reset();
             StopCoroutine(mTimeoutCoroutine);
@@ -433,14 +432,40 @@ public sealed class ScreensController : MonoBehaviour
             // For logs
             Logger.Instance.WriteShareAbandon();
 
-            //mWifi.RestoreWifi();
-            //Thread.Sleep(3000);
-            //mOSCController.RebootController();
             mSkyboxMng.ResetSkybox();
-            //mCamera.AutomaticRotation(mLog, mTimeout);
             mCurrentState = ScreensStates.WELCOME;
             UpdateScreen();
         }
+        else if (IsButtonDown(InterfaceButtons.SHARE_CODE))
+        {
+            mTimeout.Reset();
+
+            // For logs
+            Logger.Instance.WriteShareCode();
+            mCurrentState = ScreensStates.PHOTO_CODE;
+            UpdateScreen();
+        }
+    }
+
+    private void ManageShareCodeScreen()
+    {
+        if (IsButtonDown(InterfaceButtons.BACK))
+        {
+            mTimeout.Reset();
+            mCurrentState = ScreensStates.SHARE_PHOTO;
+            UpdateScreen();
+        }
+        else if (IsButtonDown(InterfaceButtons.SHARE_EMAIL_OK))
+        {
+            mTimeout.Reset();
+            mCurrentState = ScreensStates.GOODBYE;
+            UpdateScreen();
+        }
+    }
+
+    private void ManageGoodbyeScreen()
+    {
+        //TODO: go out from there after 5 sec
     }
 }
 
