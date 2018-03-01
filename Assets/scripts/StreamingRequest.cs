@@ -14,7 +14,6 @@ public class StreamingRequest
     ReaderWriterLockSlim mAccessImage;
     BinaryReader mReader;
     byte[] mLastFullImage;
-    string mData;
     bool mError = false;
 
     public StreamingRequest(string URL, string jsonData)
