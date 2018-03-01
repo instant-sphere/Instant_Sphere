@@ -798,7 +798,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 269364230}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -959.78296, y: 599.8644, z: 0}
+  m_LocalPosition: {x: -442.4, y: 276.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 497389617}
@@ -1556,7 +1556,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &497389614
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1622,7 +1622,7 @@ RectTransform:
   m_GameObject: {fileID: 497389613}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 10}
-  m_LocalScale: {x: 0.00962468, y: 0.00962468, z: 0.00962468}
+  m_LocalScale: {x: 0.02088066, y: 0.02088066, z: 0.02088066}
   m_Children:
   - {fileID: 269364231}
   - {fileID: 957156386}
@@ -2645,7 +2645,7 @@ GameObject:
   - component: {fileID: 957156388}
   - component: {fileID: 957156387}
   m_Layer: 5
-  m_Name: back_button
+  m_Name: back_abort
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2710,7 +2710,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 495322041}
-        m_MethodName: ButtonBack
+        m_MethodName: ButtonAbort
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3238,7 +3238,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1319458537}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -536, y: 97, z: 0}
+  m_LocalPosition: {x: -479, y: 83, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 40999082}
@@ -3247,8 +3247,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -536, y: 97}
-  m_SizeDelta: {x: 609, y: 166}
+  m_AnchoredPosition: {x: -479, y: 83}
+  m_SizeDelta: {x: 723, y: 166}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1319458539
 MonoBehaviour:
@@ -3596,7 +3596,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1586989976}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -536, y: 313, z: 0}
+  m_LocalPosition: {x: -479, y: 293, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1070793700}
@@ -3605,7 +3605,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -536, y: 313}
+  m_AnchoredPosition: {x: -479, y: 293}
   m_SizeDelta: {x: 609, y: 166}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1586989978
