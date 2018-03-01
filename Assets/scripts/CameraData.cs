@@ -24,6 +24,7 @@ public class CameraData : MonoBehaviour
 	Le statut et un code d'erreur correspondant (timeout caméra, ...)
 	*/
 
+/*
 	struct camera_data
 	{
 		public string batteryLevel; // (0.0, 0.33, 0.67, or 1.0)
@@ -32,8 +33,11 @@ public class CameraData : MonoBehaviour
 		public string cameraError;
 
 	}
+*/
 
-	private camera_data mCameraData;
+//	private camera_data mCameraData;
+	private static string _cameraState = "{}"; // Raw JSON camera state
+	private static string _cameraInfo = "{}"; // Raw JSON camera info
 	
 	/* Camera error codes associated to event flags */
 	Dictionary<string, string> errorCodes = new Dictionary<string, string>();
@@ -91,13 +95,8 @@ public class CameraData : MonoBehaviour
 			}
 			else
 			{
-				Debug.Log("Received camera info");
+				_cameraInfo = wwwInfo.downloadHandler.text;
 			}
-
-
-			string info = wwwInfo.downloadHandler.text;
-			Debug.Log("CAMERA INFO : " + info);
-			
 			
 			UnityWebRequest wwwState = UnityWebRequest.Post("http://192.168.1.1/osc/state", "");
 			yield return wwwState.SendWebRequest();
@@ -108,11 +107,9 @@ public class CameraData : MonoBehaviour
 			}
 			else
 			{
-				Debug.Log("Received camera state");
+				_cameraState = wwwState.downloadHandler.text;
 			}
-			string state = wwwState.downloadHandler.text;
-			Debug.Log("CAMERA STATE : " + state);
-
+			
 			
 			// Suspends the coroutine execution for the given amount of seconds using scaled time.
 			yield return new WaitForSeconds(10.0f);
@@ -120,16 +117,27 @@ public class CameraData : MonoBehaviour
 		}
 	}
 
-	private void SaveCameraInfo(string info)
+	/*private void SaveCameraInfo()
 	{
-		JsonData jsonData = HttpRequest.JSONStringToDictionary(info);
+		JsonData jsonData = HttpRequest.JSONStringToDictionary(mCameraInfo);
 		mCameraData.batteryLevel = jsonData["state"]["batteryLevel"].ToString();
 		Debug.Log("battery level " + mCameraData.batteryLevel);
 	}
 
-	private void SaveCameraState(string state)
+	private void SaveCameraState()
 	{
 		
+	}*/
+
+	public static string GetCameraInfo()
+	{
+		return _cameraInfo;
 	}
 
+	public static string GetCameraState()
+	{
+		return _cameraState;
+	}
+
+	
 }

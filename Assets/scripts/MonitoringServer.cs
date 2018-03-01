@@ -88,14 +88,18 @@ public class MonitoringServer : MonoBehaviour
 	IEnumerator SendRequest()
 	{
 		while (true)
-		{
-//			Debug.Log("Camille est velue : " + GetLogs());
-			
+		{			
 			// Creates a form containing the data sent
 			WWWForm form = new WWWForm();
-			form.AddField("data", GetLogs(), Encoding.UTF8);
+			string data = "[ " 
+				   + "{ \"logs\":" + GetLogs() + " }, "
+				   + "{ \"cameraInfo\": " + CameraData.GetCameraInfo() + "}, "
+				   + "{ \"cameraState\": " + CameraData.GetCameraState() + "} "
+				   + " ]";
 
-			Debug.Log(GetURL());
+			
+			form.AddField("data", data, Encoding.UTF8);
+
 			UnityWebRequest www = UnityWebRequest.Post(GetURL(), form);
 			
 			// Sends the request and yields until the send completes
@@ -110,8 +114,8 @@ public class MonitoringServer : MonoBehaviour
 			}
 			else
 			{
-				Debug.Log("Sending report to server");
-			}	
+				Debug.Log("SENDING REPORT : " + data);
+			}	 
 		}
 		
 	}

@@ -10,8 +10,8 @@ http.createServer((request, response) => {
 	}).on('end', () => {
 		// Then concatenates and stringifies it
 		body = Buffer.concat(body).toString();
-
-		console.log(decodeURIComponent(body.replace(/\+/g, " ")));
+		console.log(decodeURIComponent(body.replace(/\+/g, "")));
+		console.log("\n\n");
 		response.end(body);
 	});
 }).listen(PORT);
