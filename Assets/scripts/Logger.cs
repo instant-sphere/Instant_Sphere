@@ -65,6 +65,8 @@ public sealed class Logger
 
     public void WriteError(ScreensController.ScreensStates currentState)
     {
+        if (mFileDateStr == null) // handle error logging on startup
+            NewFile();
         WriteFile("\t{\"event\": \"error_state\", \"time\": \"" + NewDate() + "\", \"state\": \"" + currentState + "\"}");
         WriteFile("]");
     }
@@ -117,5 +119,11 @@ public sealed class Logger
     public void WriteNavigateHD()
     {
         WriteFile("\t{\"event\": \"navigate_HD\", \"time\": \"" + NewDate() + "\"},");
+    }
+
+    public void WriteTimeout()
+    {
+        WriteFile("\t{\"event\": \"timeout\", \"time\": \"" + NewDate() + "\"},");
+        WriteFile("]");
     }
 }

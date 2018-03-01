@@ -12,19 +12,19 @@ public sealed class ScreensController : MonoBehaviour
 {
     //Unity components set in inspector
     public List<Canvas> mScreens;
-    public Image mCountDown;
+    public Image mCountDownImg;
     public CameraRotation mCamera;
     public OSCController mOSCController;
     public SkyboxManager mSkyboxMng;
     public Watermark mWatermarker;
     public Sharing partage;
     //one state per screen
-    public enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, SHARE_PHOTO, ERROR };
+    public enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, DISPLAY_PHOTO_WITHOUT_INTERNET, SHARE_PHOTO, ERROR, PHOTO_CODE, GOODBYE };
     ScreensStates mCurrentState;
 
     //interface buttons
-    enum InterfaceButtons { TAKE_PHOTO = 0, ABORT, RETRY, OK, BACK, SHARE_FB };
-    bool[] mButtonsActivated = new bool[6]; //buffer
+    enum InterfaceButtons { TAKE_PHOTO = 0, ABORT, RETRY, SHARE, BACK, SHARE_FB, SHARE_CODE, SHARE_EMAIL_OK, BUTTON_ENUM_END };
+    bool[] mButtonsActivated = new bool[(int)InterfaceButtons.BUTTON_ENUM_END]; //buffer
 
     bool mIsOSCReady = false;
     FacebookConnector mFB;
@@ -40,7 +40,7 @@ public sealed class ScreensController : MonoBehaviour
     const float mTimeoutValue = 60.0f;
 
     // Logs
-    int countTimeout = 0;
+    int mErrorCount = 0;
 
     /* Use this for initialization */
     private void Start()
@@ -64,10 +64,10 @@ public sealed class ScreensController : MonoBehaviour
         if (!mOSCController.IsCameraOK())   //go to error state and stay inside
         {
             // For logs
-            if (countTimeout < 1)
+            if (mErrorCount < 1)
             {
                 Logger.Instance.WriteError(mCurrentState);
-                countTimeout++;
+                mErrorCount++;
             }
             mCamera.StopRotation();
             mCurrentState = ScreensStates.ERROR;
@@ -82,18 +82,22 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * Method to be used as callback when no action timeout
+     * Method to be used as callback when "no action" timeout
      **/
     public void TimeoutGoToWelcome()
     {
+        Logger.Instance.WriteTimeout();
         mOSCController.StopLivePreview();
         if (mTimeout != null)
             StopCoroutine(mTimeoutCoroutine);
         if (mCurrentState == ScreensStates.ERROR)
-            mOSCController.RebootController();
+        {
+            //mOSCController.RebootController();
+            return;
+        }
         mSkyboxMng.ResetSkybox();
-        mCamera.AutomaticRotation(mTimeout);
         mTimeout = new Timeout(mTimeoutValue, TimeoutGoToWelcome);
+        mCamera.AutomaticRotation(mTimeout);
         mCurrentState = ScreensStates.WELCOME;
         UpdateScreen();
     }
@@ -122,9 +126,9 @@ public sealed class ScreensController : MonoBehaviour
         SetButtonDown(InterfaceButtons.RETRY);
     }
 
-    public void ButtonOK()
+    public void ButtonShare()
     {
-        SetButtonDown(InterfaceButtons.OK);
+        SetButtonDown(InterfaceButtons.SHARE);
     }
 
     public void ButtonBack()
@@ -135,6 +139,16 @@ public sealed class ScreensController : MonoBehaviour
     public void ButtonShareFB()
     {
         SetButtonDown(InterfaceButtons.SHARE_FB);
+    }
+
+    public void ButtonShareCode()
+    {
+        SetButtonDown(InterfaceButtons.SHARE_CODE);
+    }
+
+    public void ButtonShareEmailOK()
+    {
+        SetButtonDown(InterfaceButtons.SHARE_EMAIL_OK);
     }
 
     /**
@@ -181,8 +195,8 @@ public sealed class ScreensController : MonoBehaviour
                 break;
         }
         Texture2D s = Resources.Load(imageLocation) as Texture2D;
-        Destroy(mCountDown.sprite);
-        mCountDown.sprite = Sprite.Create(s, mCountDown.sprite.rect, new Vector2(0.5f, 0.5f));
+        Destroy(mCountDownImg.sprite);
+        mCountDownImg.sprite = Sprite.Create(s, mCountDownImg.sprite.rect, new Vector2(0.5f, 0.5f));
     }
 
     /**
@@ -216,10 +230,15 @@ public sealed class ScreensController : MonoBehaviour
                 ManageWaitingScreen();
                 break;
             case ScreensStates.DISPLAY_PHOTO:
+            case ScreensStates.DISPLAY_PHOTO_WITHOUT_INTERNET:
                 ManageDisplayScreen();
                 break;
             case ScreensStates.SHARE_PHOTO:
                 ManageShareScreen();
+                break;
+            case ScreensStates.PHOTO_CODE:
+                break;
+            case ScreensStates.GOODBYE:
                 break;
         }
     }
@@ -240,7 +259,7 @@ public sealed class ScreensController : MonoBehaviour
                 mTimeoutCoroutine = StartCoroutine(mTimeout.StartTimer());
 
                 // For logs (new log)
-                countTimeout = 0;
+                mErrorCount = 0;
                 Logger.Instance.WriteStart();
 
                 mCurrentState = ScreensStates.READY_TAKE_PHOTO;
@@ -337,7 +356,10 @@ public sealed class ScreensController : MonoBehaviour
             //		    File.WriteAllBytes(Application.dataPath + "/final_picture.png", bytes);
 
             mSkyboxMng.DefineNewSkybox(mFullResolutionImage/*mWatermarker.GetTexture()*/);
-            mCurrentState = ScreensStates.DISPLAY_PHOTO;
+            if (true /* TODO ping OK */)
+                mCurrentState = ScreensStates.DISPLAY_PHOTO;
+            else
+                mCurrentState = ScreensStates.DISPLAY_PHOTO_WITHOUT_INTERNET;
             UpdateScreen();
         }
     }
@@ -371,7 +393,7 @@ public sealed class ScreensController : MonoBehaviour
             mOSCController.StartLivePreview();
             mCurrentState = ScreensStates.READY_TAKE_PHOTO;
         }
-        else if (IsButtonDown(InterfaceButtons.OK))
+        else if (IsButtonDown(InterfaceButtons.SHARE))
         {
             mTimeout.Reset();
 
