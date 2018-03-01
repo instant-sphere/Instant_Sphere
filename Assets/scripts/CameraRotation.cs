@@ -3,12 +3,13 @@ using UnityEngine;
 
 /**
  * This class control camera rotations for both automatic and manual mode
- // **/
+ **/
 public class CameraRotation : MonoBehaviour
 {
     float mTurnSpeed = 5.0f;
     Vector2 mDelta;
-    bool mIsAutomaticRotationEnable = false;
+    enum ECameraState { MANUAL, AUTO, OFF};
+    ECameraState mRotationMode = ECameraState.MANUAL;
     const float threshold = 2.0f; // value in degrees for camera rotation in automatic mode
 
     public Transform container; // camera container
@@ -16,49 +17,51 @@ public class CameraRotation : MonoBehaviour
     Timeout mScreenTimeout;
 
     //For logs
-    LogSD mLog;
     DateTime mDate = DateTime.Now;
 
     /* Called once per frame */
     private void Update()
     {
-        if (Input.touchCount > 0)
+        if (mRotationMode == ECameraState.MANUAL)
         {
-            //For logs
-            if (DateTime.Now > mDate.AddSeconds(2))
+            if (Input.touchCount > 0)
             {
-                //mDate = DateTime.Now;
-                //string nowStr = mDate.ToString("dd-MM-yyyy_HH.mm.ss");
-                if (mLog.State() == LogSD.enum_state.RT)
+                //For logs
+                if (DateTime.Now > mDate.AddSeconds(2))
                 {
-                    mLog.WriteNavigateRT();
-                    //mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_RT\", \"time\": \"" + nowStr + "\"},");
-                }
-                else if (mLog.State() == LogSD.enum_state.HQ)
-                {
-                    mLog.WriteNavigateHD();
-                    //mLog.WriteFile(mLog.mFileDataStr, "\t{\"event\": \"navigate_HD\", \"time\": \"" + nowStr + "\"},");
+                    mDate = DateTime.Now;
+                    if (Logger.Instance.State() == Logger.enum_state.RT)
+                    {
+                        Logger.Instance.WriteNavigateRT();
+                    }
+                    else if (Logger.Instance.State() == Logger.enum_state.HQ)
+                    {
+                        Logger.Instance.WriteNavigateHD();
+                    }
+
                 }
 
+                mScreenTimeout.Reset();
+                Vector2 tmp = Input.GetTouch(0).deltaPosition;
+                tmp /= 5.0f;
+                mDelta.x = tmp.y;
+                mDelta.y = -tmp.x;
             }
+            else if (Input.GetMouseButton(0))
+            {
+                mScreenTimeout.Reset();
 
-            mScreenTimeout.Reset();
-            Vector2 tmp = Input.GetTouch(0).deltaPosition;
-            tmp /= 5.0f;
-            mDelta.x = tmp.y;
-            mDelta.y = -tmp.x;
-            ManualRotation();
+                mDelta.x = Input.GetAxis("Mouse Y") * 10.0f;
+                mDelta.y = -Input.GetAxis("Mouse X") * 10.0f;
+            }
         }
-        else if (Input.GetMouseButton(0))
+        else if (mRotationMode == ECameraState.AUTO)
         {
-            mScreenTimeout.Reset();
-
-            mDelta.x = Input.GetAxis("Mouse Y") * 10.0f;
-            mDelta.y = -Input.GetAxis("Mouse X") * 10.0f;
-            ManualRotation();
-        }
-        else if (mIsAutomaticRotationEnable)
             mDelta = ComputeDelta();
+            if (Input.GetMouseButton(0) || Input.touchCount > 0)
+                ManualRotation();
+        }
+
 
         Vector2 cam = Vector2.zero, cont = Vector2.zero;
         cam.y = mDelta.y;
@@ -88,16 +91,21 @@ public class CameraRotation : MonoBehaviour
     }
 
     /* Enable automatic rotation */
-    public void AutomaticRotation(LogSD logger, Timeout screenTimeout)
+    public void AutomaticRotation(Timeout screenTimeout)
     {
-        mIsAutomaticRotationEnable = true;
-        mLog = logger;
+        mRotationMode = ECameraState.AUTO;
         mScreenTimeout = screenTimeout;
     }
 
     /* Enable manual rotation */
     public void ManualRotation()
     {
-        mIsAutomaticRotationEnable = false;
+        mRotationMode = ECameraState.MANUAL;
+    }
+
+    /* Disable rotation */
+    public void StopRotation()
+    {
+        mRotationMode = ECameraState.OFF;
     }
 }
