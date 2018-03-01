@@ -1,13 +1,13 @@
 var Express = require('express');
  var multer = require('multer');
- const helmet = require('helmet');
+ //const helmet = require('helmet');
  const fs = require('fs');
-var randtoken = require('rand-token');
+//var randtoken = require('rand-token');
 const https = require('http');
-const https_options = {
-  key: fs.readFileSync("../isphere.key"),
-  cert: fs.readFileSync("../certificate-593390.crt"),
-}; 
+// const https_options = {
+//   key: fs.readFileSync("../isphere.key"),
+//   cert: fs.readFileSync("../certificate-593390.crt"),
+// }; 
  var bodyParser = require('body-parser');
  var app = Express();
  //app.use(helmet());
@@ -42,8 +42,8 @@ function getDateTime() {
          callback(null, "./pictures");
      },
      filename: function(req, file, callback) {
-        var token = randtoken.generate(5);
-
+        //var token = randtoken.generate(5);
+        var token = getDateTime();
          callback(null, token + ".jpg");
      }
  });
@@ -80,4 +80,4 @@ app.get('/assets/*', (req, res) => {
     res.sendFile(req.url, {root: './'})
 });
 
-https.createServer(app).listen(333);
+https.createServer(app).listen(3333);
