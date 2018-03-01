@@ -86,6 +86,7 @@ public sealed class ScreensController : MonoBehaviour
      **/
     public void TimeoutGoToWelcome()
     {
+        Logger.Instance.WriteTimeout();
         mOSCController.StopLivePreview();
         if (mTimeout != null)
             StopCoroutine(mTimeoutCoroutine);
