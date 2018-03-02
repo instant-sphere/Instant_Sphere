@@ -8,7 +8,8 @@
         "ejs": "^2.5.7",
         "express": "^4.14.0",
         "multer": "^1.2.0",
-        "photo-sphere-viewer": "^3.2.4"
+        "photo-sphere-viewer": "^3.2.4",
+        "rand-token": "^0.4.0"
     },
     "author": {
         "name": "Simon"

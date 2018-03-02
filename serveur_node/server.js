@@ -2,7 +2,8 @@ var Express = require('express');
  var multer = require('multer');
  //const helmet = require('helmet');
  const fs = require('fs');
-//var randtoken = require('rand-token');
+var randtoken = require('rand-token').generator({
+  chars: 'a-z'});
 const https = require('http');
 // const https_options = {
 //   key: fs.readFileSync("../isphere.key"),
@@ -42,8 +43,8 @@ function getDateTime() {
          callback(null, "./pictures");
      },
      filename: function(req, file, callback) {
-        //var token = randtoken.generate(5);
-        var token = getDateTime();
+        var token = randtoken.generate(5);
+        //var token = getDateTime();
          callback(null, token + ".jpg");
      }
  });
@@ -64,20 +65,27 @@ app.get("/", function(req, res) {
          }
          console.log(req);
          console.log(req.files[0].filename);
-//          return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host') + '/pictures/', 
+//          return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host+ '/pictures/', 
 // nom_fichier: req.files[0].filename});
     return res.json({ status : 1, code : req.files[0].filename });
      });
  });
+
+app.get('/:id', function(req, res) {
+console.log(req);
+         return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host') + '/pictures/', 
+nom_fichier: req.params.id + ".jpg"});
+});
+
 
 app.get('/pictures/*', (req, res) => {
     res.sendFile(req.url, {root: './'})
 });
 app.get('/images/*', (req, res) => {
     res.sendFile(req.url, {root: './'})
-});
+1});
 app.get('/assets/*', (req, res) => {
     res.sendFile(req.url, {root: './'})
 });
 
-https.createServer(app).listen(3333);
+https.createServer(app).listen(333);
