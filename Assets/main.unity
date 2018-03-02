@@ -1535,7 +1535,7 @@ MonoBehaviour:
   - {fileID: 1988413802}
   - {fileID: 2039418505}
   mCountDownImg: {fileID: 457572890}
-  mQRcode: {fileID: 0}
+  mQRcode: {fileID: 748235816}
   mCamera: {fileID: 1900725532}
   mOSCController: {fileID: 1189230296}
   mSkyboxMng: {fileID: 584471693}
