@@ -17,7 +17,6 @@ http.createServer((request, response) => {
 		var data = decodeURIComponent(body.replace(/\+/g, ""));
 		data = data.substring(5, data.length); // removes "data="
 
-		console.log("Received logs from Instant Sphere application");
 		saveLogs(data);
 		response.end(body);
 	});
@@ -33,5 +32,6 @@ function saveLogs(data) {
 		if (err) {
 			console.log(err);
 		}
+		console.log("Saved logs in" + file);
 	});
 }
