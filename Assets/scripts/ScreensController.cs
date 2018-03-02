@@ -17,7 +17,7 @@ public sealed class ScreensController : MonoBehaviour
     public OSCController mOSCController;
     public SkyboxManager mSkyboxMng;
     public Watermark mWatermarker;
-    //public Sharing partage;
+    public Sharing partage;
     //one state per screen
     public enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, DISPLAY_PHOTO_WITHOUT_INTERNET, SHARE_PHOTO, ERROR, PHOTO_CODE, GOODBYE };
     ScreensStates mCurrentState;
@@ -403,7 +403,10 @@ public sealed class ScreensController : MonoBehaviour
             Logger.Instance.WriteVisualizeShare();
             mCurrentState = ScreensStates.SHARE_PHOTO;
             Debug.Log("**************** ON VA APPELER SendToServer*********");
-            //partage.SendToServer(mFullResolutionImage);
+            partage.SendToServer(mFullResolutionImage);
+			//partage.test();
+
+
         }
         else
             return;

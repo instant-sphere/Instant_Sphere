@@ -5,15 +5,16 @@ using System.Text.RegularExpressions;
 using LitJson;
 using UnityEngine.Networking;
 public class Sharing : MonoBehaviour{
-	    UnityWebRequestAsyncOperation mWebRequest;  //object representing current connection for regular HTTP requests
-
+	    //UnityWebRequestAsyncOperation mWebRequest;  //object representing current connection for regular HTTP requests
+	public void test(){
+		Debug.Log ("OK");
+	}
 	
-	    UnityWebRequest www;
 	public void SendToServer(byte[] img) {
 		StartCoroutine(Upload(img));
 				Debug.Log ("aftercorousstien");
 
-		Debug.Log(www.downloadHandler.text);
+		//Debug.Log(www.downloadHandler.text);
 
 	}
 	public IEnumerator Upload(byte[] img){
@@ -22,10 +23,11 @@ public class Sharing : MonoBehaviour{
 		form.AddBinaryData("imgUploader", img, "photo.jpg", "image/jpeg");
 
 
+	    
 
 
 		Debug.Log ("***********Sim*********************** SendToServe*******");
-		www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/Upload", form);
+		UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/Upload", form);
         //UnityWebRequest www = UnityWebRequest.Post("http://10.211.55.8:3333/api/Upload/", form);
 
 
