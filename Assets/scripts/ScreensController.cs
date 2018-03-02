@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using ZXing;
+using ZXing.QrCode;
 
 /**
 * This class handle which application screen is being shown
@@ -13,6 +15,7 @@ public sealed class ScreensController : MonoBehaviour
     //Unity components set in inspector
     public List<Canvas> mScreens;
     public Image mCountDownImg;
+    public Image mQRcode;
     public CameraRotation mCamera;
     public OSCController mOSCController;
     public SkyboxManager mSkyboxMng;
@@ -174,6 +177,31 @@ public sealed class ScreensController : MonoBehaviour
     {
         for (int i = 0; i < mButtonsActivated.Length; ++i)
             mButtonsActivated[i] = false;
+    }
+
+    /**
+     * Encode a text into a array of pixel describing a QRcode
+     **/
+    private static Color32[] Encode(string textForEncoding, int width, int height)
+    {
+        BarcodeWriter writer = new BarcodeWriter();
+        writer.Format = BarcodeFormat.QR_CODE;
+        writer.Options = new QrCodeEncodingOptions();
+        writer.Options.Height = height;
+        writer.Options.Width = width;
+        return writer.Write(textForEncoding);
+    }
+
+    /**
+     * Generate a QRcode texture from a string
+     **/
+    private Texture2D GenerateQRcode(string data)
+    {
+        Texture2D newTexture = new Texture2D(512, 512);
+        Color32[] color32 = Encode(data, newTexture.width, newTexture.height);
+        newTexture.SetPixels32(color32);
+        newTexture.Apply();
+        return newTexture;
     }
 
     /**
@@ -442,6 +470,9 @@ public sealed class ScreensController : MonoBehaviour
 
             // For logs
             Logger.Instance.WriteShareCode();
+
+            Destroy(mQRcode.sprite);
+            mQRcode.sprite = Sprite.Create(GenerateQRcode("TODO METTRE LE CODE"), mQRcode.sprite.rect, new Vector2(0.5f, 0.5f));
             mCurrentState = ScreensStates.PHOTO_CODE;
             UpdateScreen();
         }
