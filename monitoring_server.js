@@ -2,8 +2,9 @@
 
 const http = require('http');
 const fs = require('fs');
-var PORT = 2000;
-const LOGS_DIR = 'var/log/instant-sphere/';
+//var PORT = 2000; // local conf
+var PORT = 334;
+const LOGS_DIR = '/var/log/instant-sphere/';
 
 http.createServer((request, response) => {
 	var body = [];

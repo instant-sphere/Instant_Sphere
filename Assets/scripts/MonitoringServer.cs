@@ -11,9 +11,13 @@ using Debug = UnityEngine.Debug;
 
 public class MonitoringServer : MonoBehaviour
 {
-	private string ip = "127.0.0.1";
-	private string port = "2222";
+	// Local VM conf
+//	private string ip = "127.0.0.1";
+//	private string port = "2222";
 
+	private string ip = "92.243.29.132";
+	private string port = "334";
+	
 	public string GetURL()
 	{
 		return "http://" + ip + ":" + port + "/";
