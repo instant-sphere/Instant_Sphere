@@ -26,7 +26,9 @@ http.createServer((request, response) => {
 console.log('Server running');
 
 function saveLogs(data) {
-	var file = 'test.log';
+	var date = new Date();
+	var file = date.toUTCString().replace(/ /g,'_');
+	file = file.substring(5, file.length) + '.log';
 	fs.writeFile(LOGS_DIR + file, data, function(err) {
 		if (err) {
 			console.log(err);
