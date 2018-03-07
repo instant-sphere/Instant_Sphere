@@ -18,13 +18,14 @@ public sealed class OSCController : MonoBehaviour
     Action mCallBack = null;                                        //callback to signal that photo download is finish
 
     byte[] mBuffer;
-    enum OSCStates { INIT, DISCONNECTED, IDLE, LIVE_PREVIEW, TAKE_PHOTO, DOWNLOAD_PHOTO, DELETE_PHOTO, ERROR };
+    enum OSCStates { INIT, DISCONNECTED, IDLE, LIVE_PREVIEW, TAKE_PHOTO, DOWNLOAD_PHOTO, DELETE_PHOTO, ERROR, SEND_CAMERA_INFO };
     OSCStates mCurrentState;
 
     /* Actions associated with the method name */
     enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE, LIVE_PREVIEW, CAMERA_STATE };
     string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskCameraInfo", "AskDeletePhoto", "AskStartLivePreview", "AskCameraState" };
-
+ 
+    
     // Use this for initialization
     private void Start()
     {
@@ -314,6 +315,7 @@ public sealed class OSCController : MonoBehaviour
         mCurrentState = OSCStates.IDLE;
     }
 
+
     /* After this line all methods are actions to be enqueued */
 
     /**
@@ -536,6 +538,8 @@ public sealed class OSCController : MonoBehaviour
         mHTTP.SetJSONData("{}");
         mHTTP.Execute();
     }
+    
+
 }
 
 

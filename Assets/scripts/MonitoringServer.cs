@@ -11,8 +11,12 @@ using Debug = UnityEngine.Debug;
 
 public class MonitoringServer : MonoBehaviour
 {
-	private string ip = "127.0.0.1";
-	private string port = "2222";
+	// Local VM conf
+//	private string ip = "127.0.0.1";
+//	private string port = "2222";
+
+	private string ip = "92.243.29.132";
+	private string port = "334";
 
 	public string GetURL()
 	{
@@ -89,11 +93,17 @@ public class MonitoringServer : MonoBehaviour
 	{
 		while (true)
 		{
-    		// Creates a form containing the data sent
+			// Creates a form containing the data sent
 			WWWForm form = new WWWForm();
-			form.AddField("data", GetLogs(), Encoding.UTF8);
+			string data = "[ "
+				   + "{ \"logs\":" + GetLogs() + " }, "
+				   + "{ \"cameraInfo\": " + CameraData.GetCameraInfo() + "}, "
+				   + "{ \"cameraState\": " + CameraData.GetCameraState() + "} "
+				   + " ]";
 
-			Debug.Log(GetURL());
+
+			form.AddField("data", data, Encoding.UTF8);
+
 			UnityWebRequest www = UnityWebRequest.Post(GetURL(), form);
 
 			// Sends the request and yields until the send completes
@@ -108,7 +118,7 @@ public class MonitoringServer : MonoBehaviour
 			}
 			else
 			{
-				Debug.Log("Sending report to server");
+				Debug.Log("SENDING REPORT : " + data);
 			}
 		}
 	}
