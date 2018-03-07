@@ -14,3 +14,5 @@
    - `Android SDK Platform 22`
 10. Relancer Unity
 11. Dans `File` > `Build Settings` sélectionner `Android`
+12. Dans `Facebook` > `Edit Settings`,  renseigner les champs `App Id`et `Client token` avec les informations de la page développeur de Facebook
+13. Renseigner les informations de la section `Android Build Facebook Settings `dans la page développeur de Facebook
