@@ -1,10 +1,9 @@
-﻿using System;
+﻿using QRCoder;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using ZXing;
-using ZXing.QrCode;
 
 /**
 * This class handle which application screen is being shown
@@ -49,7 +48,7 @@ public sealed class ScreensController : MonoBehaviour
     private void Start()
     {
         mWifi = new WifiManager();
-        if (!mWifi.WaitForWifi())                       //ensure that wifi is ON when app starts or quit
+        if (!mWifi.WaitForWifi())        //ensure that wifi is ON when app starts or quit
         {
             Application.Quit();
         }
@@ -180,28 +179,16 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * Encode a text into a array of pixel describing a QRcode
-     **/
-    private static Color32[] Encode(string textForEncoding, int width, int height)
-    {
-        BarcodeWriter writer = new BarcodeWriter();
-        writer.Format = BarcodeFormat.QR_CODE;
-        writer.Options = new QrCodeEncodingOptions();
-        writer.Options.Height = height;
-        writer.Options.Width = width;
-        return writer.Write(textForEncoding);
-    }
-
-    /**
      * Generate a QRcode texture from a string
      **/
     private Texture2D GenerateQRcode(string data)
     {
-        Texture2D newTexture = new Texture2D(512, 512);
-        Color32[] color32 = Encode(data, newTexture.width, newTexture.height);
-        newTexture.SetPixels32(color32);
-        newTexture.Apply();
-        return newTexture;
+        QRCodeGenerator qrGenerator = new QRCodeGenerator();
+        QRCodeData qrCodeData = qrGenerator.CreateQrCode(data, QRCodeGenerator.ECCLevel.Q);
+        UnityQRCode qrCode = new UnityQRCode(qrCodeData);
+        Texture2D qrCodeImage = qrCode.GetGraphic(32);
+
+        return qrCodeImage;
     }
 
     /**
@@ -472,7 +459,9 @@ public sealed class ScreensController : MonoBehaviour
             Logger.Instance.WriteShareCode();
 
             Destroy(mQRcode.sprite);
-            mQRcode.sprite = Sprite.Create(GenerateQRcode("TODO METTRE LE CODE"), mQRcode.sprite.rect, new Vector2(0.5f, 0.5f));
+            Texture2D tex = GenerateQRcode("TODO METTRE LE CODE");
+            mQRcode.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+
             mCurrentState = ScreensStates.PHOTO_CODE;
             UpdateScreen();
         }
