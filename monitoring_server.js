@@ -19,6 +19,8 @@ http.createServer((request, response) => {
 
 		saveLogs(data);
 		response.end(body);
+	}).on('error', (err) => {
+	    console.log(err);
 	});
 }).listen(PORT);
 
