@@ -229,9 +229,6 @@
     <Reference Include="Facebook.Unity.Settings">
       <HintPath>Assets\FacebookSDK\Plugins\Settings\Facebook.Unity.Settings.dll</HintPath>
     </Reference>
-    <Reference Include="QRCoder">
-      <HintPath>Assets\thirdparty\QRCoder.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\FacebookSDK\Examples\Scripts\ConsoleBase.cs" />
@@ -268,6 +265,14 @@
     <Compile Include="Assets\thirdparty\litjson-master\src\LitJson\JsonWriter.cs" />
     <Compile Include="Assets\thirdparty\litjson-master\src\LitJson\Lexer.cs" />
     <Compile Include="Assets\thirdparty\litjson-master\src\LitJson\ParserToken.cs" />
+    <Compile Include="Assets\thirdparty\QRCoder\AbstractQRCode.cs" />
+    <Compile Include="Assets\thirdparty\QRCoder\ASCIIQRCode.cs" />
+    <Compile Include="Assets\thirdparty\QRCoder\BitmapByteQRCode.cs" />
+    <Compile Include="Assets\thirdparty\QRCoder\Framework4.0Methods\Stream4Methods.cs" />
+    <Compile Include="Assets\thirdparty\QRCoder\Framework4.0Methods\String4Methods.cs" />
+    <Compile Include="Assets\thirdparty\QRCoder\QRCodeData.cs" />
+    <Compile Include="Assets\thirdparty\QRCoder\QRCodeGenerator.cs" />
+    <Compile Include="Assets\thirdparty\QRCoder\UnityQRCode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\FacebookSDK\link.xml" />
