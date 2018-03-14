@@ -20,6 +20,8 @@ public sealed class ScreensController : MonoBehaviour
     public SkyboxManager mSkyboxMng;
     public Watermark mWatermarker;
     public Sharing partage;
+
+    public Text mail;
     //one state per screen
     public enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, DISPLAY_PHOTO_WITHOUT_INTERNET, SHARE_PHOTO, ERROR, PHOTO_CODE, GOODBYE };
     ScreensStates mCurrentState;
@@ -375,8 +377,8 @@ public sealed class ScreensController : MonoBehaviour
             mSkyboxMng.DefineNewSkybox(mFullResolutionImage/*mWatermarker.GetTexture()*/);
             if (true /* TODO ping OK */)
                 mCurrentState = ScreensStates.DISPLAY_PHOTO;
-            else
-                mCurrentState = ScreensStates.DISPLAY_PHOTO_WITHOUT_INTERNET;
+            // else
+            //     mCurrentState = ScreensStates.DISPLAY_PHOTO_WITHOUT_INTERNET;
             UpdateScreen();
         }
     }
@@ -483,6 +485,13 @@ public sealed class ScreensController : MonoBehaviour
         else if (IsButtonDown(InterfaceButtons.SHARE_EMAIL_OK))
         {
             mTimeout.Reset();
+            //Send email:
+            Debug.Log("**************** ON VA APPELER SendToServerMail*********");
+
+            string mail_s = mail.GetComponent<Text>().text;
+            Debug.Log(mail_s);
+            partage.SendToServerMail(mail_s);
+
             mCurrentState = ScreensStates.GOODBYE;
             UpdateScreen();
         }
