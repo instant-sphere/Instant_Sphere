@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Xml.Linq;
 using UnityEngine;
 
 public sealed class Logger
