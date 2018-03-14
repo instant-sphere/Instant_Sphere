@@ -1540,6 +1540,7 @@ MonoBehaviour:
   mOSCController: {fileID: 1189230296}
   mSkyboxMng: {fileID: 584471693}
   mWatermarker: {fileID: 1392651764}
+  partage: {fileID: 0}
 --- !u!1 &497389613
 GameObject:
   m_ObjectHideFlags: 0
@@ -2368,7 +2369,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 784969401}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -960, y: 620.3077, z: 0}
+  m_LocalPosition: {x: -959.78296, y: 599.8644, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1988413803}
@@ -3854,7 +3855,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1668862467}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -442.4, y: 276.5, z: 0}
+  m_LocalPosition: {x: -50, y: 50, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2039418506}
@@ -3908,7 +3909,7 @@ GameObject:
   - component: {fileID: 1749817166}
   - component: {fileID: 1749817165}
   m_Layer: 0
-  m_Name: share
+  m_Name: ShareServer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4559,7 +4560,7 @@ RectTransform:
   m_GameObject: {fileID: 1988413799}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 10}
-  m_LocalScale: {x: 0.009307482, y: 0.009307482, z: 0.009307482}
+  m_LocalScale: {x: 0.00962468, y: 0.00962468, z: 0.00962468}
   m_Children:
   - {fileID: 784969402}
   - {fileID: 432156640}
