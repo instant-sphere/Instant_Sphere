@@ -8,10 +8,11 @@ const https = require('http');
 // const https_options = {
 //   key: fs.readFileSync("../isphere.key"),
 //   cert: fs.readFileSync("../certificate-593390.crt"),
-// }; 
+// };
  var bodyParser = require('body-parser');
  var app = Express();
  //app.use(helmet());
+ const nodemailer = require('nodemailer');
 
  app.use(bodyParser.json());
 function getDateTime() {
@@ -57,6 +58,7 @@ function getDateTime() {
 app.get("/", function(req, res) {
   res.sendFile(__dirname + '/index.html');
  });
+
  app.post("/api/Upload", function(req, res) {
      upload(req, res, function(err) {
          if (err) {
@@ -65,17 +67,59 @@ app.get("/", function(req, res) {
          }
          console.log(req);
          console.log(req.files[0].filename);
-//          return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host+ '/pictures/', 
+//          return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host+ '/pictures/',
 // nom_fichier: req.files[0].filename});
     return res.json({ status : 1, code : req.files[0].filename });
      });
  });
 
+ app.get('/test_mail', function(req, res) {
+ console.log(req);
+          return res.render('test_mail.ejs');
+ });
+
 app.get('/:id', function(req, res) {
 console.log(req);
-         return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host') + '/pictures/', 
+         return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host') + '/pictures/',
 nom_fichier: req.params.id + ".jpg"});
 });
+
+// Partage par Mail
+var transporter = nodemailer.createTransport({
+        service: "GandiMail",
+        auth: {
+            user: "noreply@instant-sphere.com",
+            pass: "Eirb18:PFA"
+        }
+      }
+);
+
+//Send mail:
+
+app.post('/Email:mail', function(req, res, next) {
+  console.log(req);
+
+  console.log(req.params.mail)
+/*req.files[0].filename,*/
+  var mailOptions = {
+          from: "noreply@instant-sphere.com",
+          to: req.params.mail,
+          subject: "new test",
+          text: "new test",
+          html: "<b>" + "new test" + "</b>"
+  };
+
+  transporter.sendMail(mailOptions, function(error, info){
+   if(error){
+      return console.log(error);
+   }
+   console.log('Message sent: ' + info.response);
+});
+
+transporter.close();
+});
+
+
 
 
 app.get('/pictures/*', (req, res) => {
