@@ -1,0 +1,17 @@
+.inner {
+  text-align: center;
+}
+
+#photosphere{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#image_name{
+  text-align: center;
+  color: rgb(79, 129, 189);
+  white-space: nowrap;
+  margin-left: 11em;
+  margin-top: 1.2em;
+}

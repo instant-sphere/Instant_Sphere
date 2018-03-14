@@ -1,0 +1,17 @@
+{
+    "name": "node_js_file_upload",
+    "version": "0.0.1",
+    "description": "Node_JS_File_Upload",
+    "main": "server.js",
+    "dependencies": {
+        "body-parser": "^1.15.2",
+        "ejs": "^2.5.7",
+        "express": "^4.14.0",
+        "multer": "^1.2.0",
+        "photo-sphere-viewer": "^3.2.4",
+        "rand-token": "^0.4.0"
+    },
+    "author": {
+        "name": "Simon"
+    }
+}

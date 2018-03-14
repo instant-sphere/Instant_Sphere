@@ -1,0 +1,51 @@
+@mixin user-select($value) {
+  -webkit-touch-callout: $value;
+  -webkit-user-select: $value;
+  -khtml-user-select: $value;
+  -moz-user-select: $value;
+  -ms-user-select: $value;
+  user-select: $value;
+}
+
+@mixin flexbox {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+@mixin flex-grow($int: 0) {
+  -webkit-box-flex: $int;
+  -webkit-flex-grow: $int;
+  -moz-flex-grow: $int;
+  -ms-flex-positive: $int;
+  flex-grow: $int;
+}
+
+@mixin flex-shrink($int: 1) {
+  -webkit-flex-shrink: $int;
+  -moz-flex-shrink: $int;
+  -ms-flex-negative: $int;
+  flex-shrink: $int;
+}
+
+@function make-dot-shadow($color, $width, $height) {
+  $val: 1px 0 $color;
+  $x: 3;
+  $y: 0;
+  $w: $width / 1px;
+  $h: $height / 1px;
+
+  @while $y < $h {
+    @if $x > $w {
+      $x: 1;
+      $y: $y + 2;
+    } @else {
+      $val: #{$val}, #{$x}px #{$y}px #{$color};
+      $x: $x + 2;
+    }
+  }
+
+  @return $val;
+}

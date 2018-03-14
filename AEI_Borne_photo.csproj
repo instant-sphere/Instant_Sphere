@@ -251,6 +251,7 @@
     <Compile Include="Assets\scripts\MonitoringServer.cs" />
     <Compile Include="Assets\scripts\OSCController.cs" />
     <Compile Include="Assets\scripts\ScreensController.cs" />
+    <Compile Include="Assets\scripts\Sharing.cs" />
     <Compile Include="Assets\scripts\SkyboxManager.cs" />
     <Compile Include="Assets\scripts\StreamingRequest.cs" />
     <Compile Include="Assets\scripts\Timeout.cs" />
