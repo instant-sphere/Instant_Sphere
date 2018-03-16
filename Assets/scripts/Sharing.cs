@@ -4,6 +4,8 @@ using UnityEngine.Networking;
 
 public class Sharing : MonoBehaviour
 {
+    private string token;
+
     public void SendToServer(byte[] img)
     {
         StartCoroutine(Upload(img));
@@ -27,6 +29,7 @@ public class Sharing : MonoBehaviour
             Debug.Log(www.error);
         else
             Debug.Log(www.downloadHandler.text);
+            token = www.downloadHandler.text.Substring(20,5);
     }
 
     private IEnumerator Email(string mail)
@@ -46,4 +49,7 @@ public class Sharing : MonoBehaviour
           Debug.Log(www.downloadHandler.text);
     }
 
+    public string GetToken(){
+      return token;
+    }
 }

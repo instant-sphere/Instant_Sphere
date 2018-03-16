@@ -22,6 +22,7 @@ public sealed class ScreensController : MonoBehaviour
     public Sharing partage;
 
     public Text mail;
+    public Text code;
     //one state per screen
     public enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, DISPLAY_PHOTO_WITHOUT_INTERNET, SHARE_PHOTO, ERROR, PHOTO_CODE, GOODBYE };
     ScreensStates mCurrentState;
@@ -466,8 +467,12 @@ public sealed class ScreensController : MonoBehaviour
             Logger.Instance.WriteShareCode();
 
             Destroy(mQRcode.sprite);
-            Texture2D tex = GenerateQRcode("TODO METTRE LE CODE");
+            string token = partage.GetToken();
+            Texture2D tex = GenerateQRcode(token);
             mQRcode.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+
+            code = code.GetComponent<Text>();
+            code.text=token;
 
             mCurrentState = ScreensStates.PHOTO_CODE;
             UpdateScreen();

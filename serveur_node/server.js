@@ -12,7 +12,9 @@ const https = require('http');
  var bodyParser = require('body-parser');
  var app = Express();
  //app.use(helmet());
- const nodemailer = require('nodemailer');
+
+const nodemailer = require('nodemailer');
+var token;
 
  app.use(bodyParser.json());
 function getDateTime() {
@@ -44,7 +46,7 @@ function getDateTime() {
          callback(null, "./pictures");
      },
      filename: function(req, file, callback) {
-        var token = randtoken.generate(5);
+        token = randtoken.generate(5);
         //var token = getDateTime();
          callback(null, token + ".jpg");
      }
@@ -99,14 +101,13 @@ var transporter = nodemailer.createTransport({
 app.post('/Email:mail', function(req, res, next) {
   console.log(req);
 
-  console.log(req.params.mail)
-/*req.files[0].filename,*/
   var mailOptions = {
           from: "noreply@instant-sphere.com",
           to: req.params.mail,
-          subject: "new test",
-          text: "new test",
-          html: "<b>" + "new test" + "</b>"
+          subject: "instant-sphere",
+          text: token,
+          html: "Découvrez votre photo à 360° en vous connectant sur le site d'Instant \
+          Sphere: http://server.instant-sphere.com:333/ et entrez le code suivant:" + "<b>" + token + "</b>"
   };
 
   transporter.sendMail(mailOptions, function(error, info){

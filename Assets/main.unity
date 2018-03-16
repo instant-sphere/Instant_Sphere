@@ -1490,8 +1490,9 @@ GameObject:
   m_PrefabInternal: {fileID: 0}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 495322040}
+  - component: {fileID: 495322042}
   - component: {fileID: 495322041}
+  - component: {fileID: 495322040}
   m_Layer: 0
   m_Name: Screens_controller
   m_TagString: Untagged
@@ -1499,19 +1500,12 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &495322040
-Transform:
+--- !u!222 &495322040
+CanvasRenderer:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 495322039}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 12
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &495322041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1540,7 +1534,27 @@ MonoBehaviour:
   mOSCController: {fileID: 1189230296}
   mSkyboxMng: {fileID: 584471693}
   mWatermarker: {fileID: 1392651764}
-  partage: {fileID: 0}
+  partage: {fileID: 1749817165}
+  mail: {fileID: 1111249962}
+  code: {fileID: 303621368}
+--- !u!224 &495322042
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 495322039}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 12
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &497389613
 GameObject:
   m_ObjectHideFlags: 0
@@ -2369,7 +2383,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 784969401}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -959.78296, y: 599.8644, z: 0}
+  m_LocalPosition: {x: -959.5524, y: 599.7202, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1988413803}
@@ -2964,7 +2978,7 @@ GameObject:
   - component: {fileID: 1111249963}
   - component: {fileID: 1111249962}
   m_Layer: 5
-  m_Name: Text
+  m_Name: mail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4560,7 +4574,7 @@ RectTransform:
   m_GameObject: {fileID: 1988413799}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 10}
-  m_LocalScale: {x: 0.00962468, y: 0.00962468, z: 0.00962468}
+  m_LocalScale: {x: 0.009626993, y: 0.009626993, z: 0.009626993}
   m_Children:
   - {fileID: 784969402}
   - {fileID: 432156640}
@@ -4753,7 +4767,7 @@ RectTransform:
   m_GameObject: {fileID: 2039418502}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 10}
-  m_LocalScale: {x: 0.02088066, y: 0.02088066, z: 0.02088066}
+  m_LocalScale: {x: 0.02154292, y: 0.02154292, z: 0.02154292}
   m_Children:
   - {fileID: 1668862468}
   m_Father: {fileID: 0}
