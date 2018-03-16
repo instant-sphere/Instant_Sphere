@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,7 +20,8 @@ public sealed class ScreensController : MonoBehaviour
     public OSCController mOSCController;
     public SkyboxManager mSkyboxMng;
     public Watermark mWatermarker;
-    public Sharing partage;
+    public Sharing mSharingServer;
+    public PingTester mPingTester;
 
     public Text mail;
     public Text code;
@@ -376,10 +378,10 @@ public sealed class ScreensController : MonoBehaviour
             //		    File.WriteAllBytes(Application.dataPath + "/final_picture.png", bytes);
 
             mSkyboxMng.DefineNewSkybox(mFullResolutionImage/*mWatermarker.GetTexture()*/);
-            if (true /* TODO ping OK */)
+            if (mPingTester.CheckServer())
                 mCurrentState = ScreensStates.DISPLAY_PHOTO;
-            // else
-            //     mCurrentState = ScreensStates.DISPLAY_PHOTO_WITHOUT_INTERNET;
+            else
+                mCurrentState = ScreensStates.DISPLAY_PHOTO_WITHOUT_INTERNET;
             UpdateScreen();
         }
     }
@@ -420,11 +422,8 @@ public sealed class ScreensController : MonoBehaviour
             // For logs
             Logger.Instance.WriteVisualizeShare();
             mCurrentState = ScreensStates.SHARE_PHOTO;
-            Debug.Log("**************** ON VA APPELER SendToServer*********");
-            partage.SendToServer(mFullResolutionImage);
-			//partage.test();
-
-
+            Debug.Log("Sending photo to server");
+            mSharingServer.SendToServer(mFullResolutionImage);
         }
         else
             return;
@@ -467,14 +466,18 @@ public sealed class ScreensController : MonoBehaviour
             Logger.Instance.WriteShareCode();
 
             Destroy(mQRcode.sprite);
-            string token = partage.GetToken();
-            Texture2D tex = GenerateQRcode(token);
-            mQRcode.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            string token = mSharingServer.GetToken();
+            if (token == null)
+                mCurrentState = ScreensStates.SHARE_PHOTO;
+            else
+            {
+                Texture2D tex = GenerateQRcode(token);
+                mQRcode.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                code = code.GetComponent<Text>();
+                code.text = token;
 
-            code = code.GetComponent<Text>();
-            code.text=token;
-
-            mCurrentState = ScreensStates.PHOTO_CODE;
+                mCurrentState = ScreensStates.PHOTO_CODE;
+            }
             UpdateScreen();
         }
     }
@@ -490,12 +493,12 @@ public sealed class ScreensController : MonoBehaviour
         else if (IsButtonDown(InterfaceButtons.SHARE_EMAIL_OK))
         {
             mTimeout.Reset();
-            //Send email:
-            Debug.Log("**************** ON VA APPELER SendToServerMail*********");
+
+            Debug.Log("Sending email to server");
 
             string mail_s = mail.GetComponent<Text>().text;
             Debug.Log(mail_s);
-            partage.SendToServerMail(mail_s);
+            mSharingServer.SendToServerMail(mail_s);
 
             mCurrentState = ScreensStates.GOODBYE;
             UpdateScreen();
@@ -504,7 +507,8 @@ public sealed class ScreensController : MonoBehaviour
 
     private void ManageGoodbyeScreen()
     {
-        //TODO: go out from there after 5 sec
+        Thread.Sleep(5000);
+        TimeoutGoToWelcome();
     }
 }
 
