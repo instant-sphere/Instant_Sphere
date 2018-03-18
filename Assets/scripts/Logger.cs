@@ -1,11 +1,15 @@
 using System;
 using System.IO;
 using UnityEngine;
+using LitJson;
+using System.Text;
 
 public sealed class Logger
 {
     static readonly Logger mInstance = new Logger();
     string mFileDateStr;
+    StringBuilder mSB = new StringBuilder();
+    JsonWriter mJsonWriter;
 
     // RT = Real Time; HQ = High Quality
     public enum enum_state { RT, HQ };
@@ -20,6 +24,8 @@ public sealed class Logger
     {
         get
         {
+            if (mInstance.mJsonWriter == null)
+                mInstance.mJsonWriter = new JsonWriter(mInstance.mSB);
             return mInstance;
         }
     }
@@ -39,13 +45,15 @@ public sealed class Logger
         return Application.persistentDataPath + "/" + mFileDateStr + ".log";
     }
 
-    private void WriteFile(string toPrint)
+    private void WriteFile()
     {
         try
         {
             StreamWriter streamWriter = new StreamWriter(GetFileName(), true);
-            streamWriter.WriteLine(toPrint);
+            streamWriter.WriteLine(mSB.ToString());
             streamWriter.Close();
+            mJsonWriter.Reset();
+            mFileDateStr = null;
         }
         catch (Exception ex)
         {
@@ -76,69 +84,143 @@ public sealed class Logger
     public void WriteError(ScreensController.ScreensStates currentState)
     {
         if (mFileDateStr == null) // handle error logging on startup
+        {
             NewFile();
-        WriteFile("\t{\"event\": \"error_state\", \"time\": \"" + NewDate() + "\", \"state\": \"" + currentState + "\"}");
-        WriteFile("]");
+            mJsonWriter.WriteArrayStart();
+        }
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("error");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WritePropertyName("state");
+        mJsonWriter.Write((int)currentState);
+        mJsonWriter.WriteObjectEnd();
+        mJsonWriter.WriteArrayEnd();
+        WriteFile();
     }
 
     public void WriteStart()
     {
         NewFile();
         mState = enum_state.RT;
-        WriteFile("[");
-        WriteFile("\t{\"event\": \"start\", \"time\": \"" + NewDate() + "\"},");
+        mJsonWriter.WriteArrayStart();
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("start");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WriteObjectEnd();
     }
 
     public void WriteCapture()
     {
-        WriteFile("\n\t{\"event\": \"capture\", \"time\": \"" + NewDate() + "\"},");
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("capture");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WriteObjectEnd();
     }
 
     public void WriteVisualizeAbandon()
     {
-        WriteFile("\n\t{\"event\": \"visualize\", \"time\": \"" + NewDate() + "\", \"choice\": \"abandon\"}");
-        WriteFile("]");
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("visualize");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WritePropertyName("choice");
+        mJsonWriter.Write("abandon");
+        mJsonWriter.WriteObjectEnd();
+        mJsonWriter.WriteArrayEnd();
+        WriteFile();
     }
 
     public void WriteVisualizeRestart()
     {
-        WriteFile("\n\t{\"event\": \"visualize\", \"time\": \"" + NewDate() + "\", \"choice\": \"restart\"},");
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("visualize");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WritePropertyName("choice");
+        mJsonWriter.Write("restart");
+        mJsonWriter.WriteObjectEnd();
     }
 
     public void WriteVisualizeShare()
     {
-        WriteFile("\n\t{\"event\": \"visualize\", \"time\": \"" + NewDate() + "\", \"choice\": \"share\"},");
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("visualize");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WritePropertyName("choice");
+        mJsonWriter.Write("share");
+        mJsonWriter.WriteObjectEnd();
     }
 
     public void WriteShareFacebook()
     {
-        WriteFile("\n\t{\"event\": \"share\", \"time\": \"" + NewDate() + "\", \"choice\": \"facebook\"},");
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("share");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WritePropertyName("choice");
+        mJsonWriter.Write("facebook");
+        mJsonWriter.WriteObjectEnd();
     }
 
     public void WriteShareAbandon()
     {
-        WriteFile("\n\t{\"event\": \"share\", \"time\": \"" + NewDate() + "\", \"choice\": \"abandon\"}");
-        WriteFile("]");
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("share");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WritePropertyName("choice");
+        mJsonWriter.Write("abandon");
+        mJsonWriter.WriteObjectEnd();
+        mJsonWriter.WriteArrayEnd();
+        WriteFile();
     }
 
-    public void WriteNavigateRT()
+    public void WriteNavigate()
     {
-        WriteFile("\t{\"event\": \"navigate_RT\", \"time\": \"" + NewDate() + "\"},");
-    }
-
-    public void WriteNavigateHD()
-    {
-        WriteFile("\t{\"event\": \"navigate_HD\", \"time\": \"" + NewDate() + "\"},");
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        if (mState == enum_state.RT)
+            mJsonWriter.Write("navigate_RT");
+        else
+            mJsonWriter.Write("navigate_HD");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WriteObjectEnd();
     }
 
     public void WriteTimeout()
     {
-        WriteFile("\t{\"event\": \"timeout\", \"time\": \"" + NewDate() + "\"},");
-        WriteFile("]");
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("timeout");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WriteObjectEnd();
+        mJsonWriter.WriteArrayEnd();
+        WriteFile();
     }
 
     public void WriteShareCode()
     {
-        WriteFile("\n\t{\"event\": \"share\", \"time\": \"" + NewDate() + "\", \"choice\": \"code,mail\"},");
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("share");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WritePropertyName("choice");
+        mJsonWriter.Write("code,mail");
+        mJsonWriter.WriteObjectEnd();
     }
 }

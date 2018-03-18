@@ -30,15 +30,7 @@ public class CameraRotation : MonoBehaviour
                 if (DateTime.Now > mDate.AddSeconds(2))
                 {
                     mDate = DateTime.Now;
-                    if (Logger.Instance.State() == Logger.enum_state.RT)
-                    {
-                        Logger.Instance.WriteNavigateRT();
-                    }
-                    else if (Logger.Instance.State() == Logger.enum_state.HQ)
-                    {
-                        Logger.Instance.WriteNavigateHD();
-                    }
-
+                    Logger.Instance.WriteNavigate();
                 }
 
                 mScreenTimeout.Reset();
@@ -49,8 +41,14 @@ public class CameraRotation : MonoBehaviour
             }
             else if (Input.GetMouseButton(0))
             {
-                mScreenTimeout.Reset();
+                //For logs
+                if (DateTime.Now > mDate.AddSeconds(2))
+                {
+                    mDate = DateTime.Now;
+                    Logger.Instance.WriteNavigate();
+                }
 
+                mScreenTimeout.Reset();
                 mDelta.x = Input.GetAxis("Mouse Y") * 10.0f;
                 mDelta.y = -Input.GetAxis("Mouse X") * 10.0f;
             }

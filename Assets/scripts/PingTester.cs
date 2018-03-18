@@ -24,13 +24,13 @@ public class PingTester : MonoBehaviour
         catch (System.Exception e)
         {
             Debug.Log(e.Message);
-            mServerIP = "";
+            mServerIP = null;
         }
     }
 
     private void Update()
     {
-        if (mServerIP == null || mServerIP == "")
+        if (mServerIP == null)
             ResolveServerIP();
     }
 
