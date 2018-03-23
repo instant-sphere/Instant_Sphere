@@ -6,6 +6,7 @@ const fs = require('fs');
 var PORT = 334;
 const LOGS_DIR = '/var/log/instant-sphere/';
 
+
 http.createServer((request, response) => {
 	var body = [];
 	// Collects the data in a array
@@ -19,8 +20,6 @@ http.createServer((request, response) => {
 
 		saveLogs(data);
 		response.end(body);
-	}).on('error', (err) => {
-	    console.log(err);
 	});
 }).listen(PORT);
 
@@ -36,4 +35,49 @@ function saveLogs(data) {
 		}
 		console.log("Saved logs in" + file);
 	});
+}
+
+
+function countEventOccurrences(log, eventName) {
+	var count = 0;
+	var entry = log["log_entry"];
+	if (entry) {
+
+		// Used to store non duplicate events
+		var events = [];
+
+		entry.forEach(function(e) {
+			if (e["event"] == eventName && !events.some(k => isEquivalent(k, e))) {
+				events.push(e);
+				count++;
+			}
+		});
+	}
+	return count;
+}
+
+function isEquivalent(a, b) {
+	// Create arrays of property names
+	var aProps = Object.getOwnPropertyNames(a);
+	var bProps = Object.getOwnPropertyNames(b);
+
+	// If number of properties is different,
+	// objects are not equivalent
+	if (aProps.length != bProps.length) {
+		return false;
+	}
+
+	for (var i = 0; i < aProps.length; i++) {
+		var propName = aProps[i];
+
+		// If values of same property are not equal,
+		// objects are not equivalent
+		if (a[propName] !== b[propName]) {
+			return false;
+		}
+	}
+
+	// If we made it this far, objects
+	// are considered equivalent
+	return true;
 }
