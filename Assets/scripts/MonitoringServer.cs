@@ -15,8 +15,8 @@ public class MonitoringServer : MonoBehaviour
 //	private string ip = "127.0.0.1";
 //	private string port = "2222";
 
-	private string ip = "92.243.29.132";
-	private string port = "334";
+	string ip = "92.243.29.132";
+	string port = "334";
 
 	public string GetURL()
 	{
@@ -77,7 +77,6 @@ public class MonitoringServer : MonoBehaviour
 		// Removes last comma
 		if (res.Length > 1)
 		{
-			Debug.Log("res : " + res);
 			res = res.Substring(0, res.Length - 2);
 		}
 
@@ -95,7 +94,7 @@ public class MonitoringServer : MonoBehaviour
 		{
 			// Creates a form containing the data sent
 			WWWForm form = new WWWForm();
-			string data = "[ "
+			string data = "{\"data\":[ "
 				   + "{ \"logs\":" + GetLogs() + " }, "
 				   + "{ \"cameraInfo\": " + CameraData.GetCameraInfo() + "}, "
 				   + "{ \"cameraState\": " + CameraData.GetCameraState() + "} "
@@ -130,5 +129,4 @@ public class MonitoringServer : MonoBehaviour
 		streamReader.Close();
 		return res;
 	}
-
 }

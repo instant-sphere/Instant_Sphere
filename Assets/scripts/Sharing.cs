@@ -26,30 +26,36 @@ public class Sharing : MonoBehaviour
         yield return www.SendWebRequest();
 
         if (www.isNetworkError || www.isHttpError)
+        {
             Debug.Log(www.error);
+            token = null;
+        }
         else
+        {
             Debug.Log(www.downloadHandler.text);
-            token = www.downloadHandler.text.Substring(20,5);
+            token = www.downloadHandler.text.Substring(20, 5);
+        }
     }
 
     private IEnumerator Email(string mail)
     {
-      // WWWForm form = new WWWForm();
-      //
-      // form.AddBinaryData("mail", System.Text.Encoding.UTF8.GetBytes(mail));
-      // form.AddField("Mail", mail);
-      //  // form.Add(new MultipartFormDataSection("mail", mail));
-      UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/Email:" + mail, mail);
+        WWWForm form = new WWWForm();
+        //
+        //form.AddBinaryData("Mail", System.Text.Encoding.UTF8.GetBytes(mail), "mail", "text/plain");
+        //form.AddField("Mail", mail);
+//        form.Add(new MultipartFormDataSection("mail", mail));
+        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/Email", form);
 
-      yield return www.SendWebRequest();
+        yield return www.SendWebRequest();
 
-      if (www.isNetworkError || www.isHttpError)
-          Debug.Log(www.error);
-      else
-          Debug.Log(www.downloadHandler.text);
+        if (www.isNetworkError || www.isHttpError)
+            Debug.Log(www.error);
+        else
+            Debug.Log(www.downloadHandler.text);
     }
 
-    public string GetToken(){
-      return token;
+    public string GetToken()
+    {
+        return token;
     }
 }
