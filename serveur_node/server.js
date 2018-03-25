@@ -120,9 +120,16 @@ app.post('/Email:mail', function(req, res, next) {
 transporter.close();
 });
 
-
-
-
+app.post('/supprimer_img', function(req, res, next) {
+      fs.unlink('D:\\Utilisateurs\\Jérémy\\Documents\\Programmation\\PFA\\free-instant-sphere-PFA\\serveur_node\\pictures\\'+req.headers.referer.substring(21, 25)+'.jpg', function(error) {
+      if (error) {
+         console.log(req);
+         return res.end("Something went wrong!");
+        }
+        console.log('Deleted ' + req.headers.referer.substring(21, 25));
+        res.redirect('http://server.instant-sphere.com/')
+  });
+});
 app.get('/pictures/*', (req, res) => {
     res.sendFile(req.url, {root: './'})
 });
