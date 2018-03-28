@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/**
+ * This class is used to get information about the tablet battery
+ **/
 public class BatteryManager
 {
     AndroidJavaObject mBatteryCtrl;    //native Java code object used to manipulate battery settings
@@ -13,6 +16,9 @@ public class BatteryManager
 #endif
     }
 
+    /**
+     * Return the current battery level
+     **/
     public int GetCurrentBatteryLevel()
     {
 #if !UNITY_EDITOR
