@@ -5,7 +5,9 @@ const fs = require('fs');
 //var PORT = 2000; // local conf
 var PORT = 334;
 const LOGS_DIR = '/var/log/instant-sphere/';
+const LOGS_KIBANA_DIR = '/var/log/instant-sphere/kibana/';
 
+// nbDailyCaptures();
 
 http.createServer((request, response) => {
 	var body = [];
@@ -25,10 +27,20 @@ http.createServer((request, response) => {
 
 console.log('Server running');
 
+/**
+* Returns formatted date
+*/
+function getDate() {
+	var date = new Date()
+	date = date.toUTCString().replace(/ /g,'_');
+	return date.substring(5, date.length);
+}
+
+/**
+* Saves daily logs in
+*/
 function saveLogs(data) {
-	var date = new Date();
-	var file = date.toUTCString().replace(/ /g,'_');
-	file = file.substring(5, file.length) + '.log';
+	var file = getDate() + '.log';
 	fs.writeFile(LOGS_DIR + file, data, function(err) {
 		if (err) {
 			console.log(err);
@@ -37,12 +49,92 @@ function saveLogs(data) {
 	});
 }
 
+/**
+* Number of daily captures
+*/
+function nbDailyCaptures() {
+	var captures = {};
+	var shareActions = {};
+	var visualizeActions = {};
+
+	var dir = __dirname + "/test/unity_logs/";
+	fs.readdir(dir, function(err, files) {
+		if (err) {
+			console.log(err);
+		}
+
+		else {
+
+			for (var i in files) {
+				var file = files[i];
+
+				if (file.substring(file.length - 4) == ".log") {
+					var day = file.substring(0, 10);
+					var log = fs.readFileSync(dir + file, 'utf8');
+					var logJSON = JSON.parse(log);
+
+					var nbCaptures = countEventOccurrences(logJSON, "capture");
+
+					if (captures[day]) {
+						captures[day] += nbCaptures;
+					}
+
+					else {
+						captures[day] = nbCaptures;
+					}
+					shareActions[day] = shareAction(logJSON);
+					visualizeActions[day] = visualizeAction(logJSON);
+				}
+			}
+
+			console.log("Captures: %j", captures);
+			console.log("Share actions %j", shareActions);
+			console.log("Visualize actions %j", visualizeActions);
+
+			for (var day in captures) {
+				var content = '{ "dailyCaptures": ' + captures[day] + ', "shareActions": ' + JSON.stringify(shareActions[day]) + ', "visualizeActions": ' + JSON.stringify(visualizeActions[day]) + ' } \n';
+
+				// var logFile = LOGS_KIBANA_DIR + day + '.log';
+				var logFile = __dirname + '/test/kibana/' + day + '.log';
+				fs.writeFile(logFile, content, function(err) {
+					if (err) {
+						console.log(err);
+					}
+				});
+			}
+		}
+	});
+}
+
+function shareAction(log) {
+	var entry = log["log_entry"];
+	var actions = { "code,mail": 0, "facebook": 0, "abandon": 0 }
+	entry.forEach(function(e) {
+		if (e["event"] == "share") {
+			var action = e["choice"];
+			actions[action]++;
+		}
+	});
+	return actions;
+}
+
+function visualizeAction(log) {
+	var entry = log["log_entry"];
+	var actions = { "share": 0, "restart": 0, "abandon": 0 };
+	entry.forEach(function(e) {
+		if (e["event"] == "visualize") {
+			var action = e["choice"];
+			actions[action]++;
+		}
+	});
+	return actions;
+}
 
 function countEventOccurrences(log, eventName) {
 	var count = 0;
 	var entry = log["log_entry"];
-	if (entry) {
 
+	if (entry) {
 		// Used to store non duplicate events
 		var events = [];
 
