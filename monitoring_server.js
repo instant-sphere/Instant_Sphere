@@ -7,7 +7,7 @@ var PORT = 334;
 const LOGS_DIR = '/var/log/instant-sphere/';
 const LOGS_KIBANA_DIR = '/var/log/instant-sphere/kibana/';
 
-// nbDailyCaptures();
+// writeKibanaLogs();
 
 http.createServer((request, response) => {
 	var body = [];
@@ -52,7 +52,7 @@ function saveLogs(data) {
 /**
 * Number of daily captures
 */
-function nbDailyCaptures() {
+function writeKibanaLogs() {
 	var captures = {};
 	var shareActions = {};
 	var visualizeActions = {};
