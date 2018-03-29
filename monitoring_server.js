@@ -50,7 +50,7 @@ function saveLogs(data) {
 }
 
 /**
-* Number of daily captures
+* Generates formatted stats for Kibana
 */
 function writeKibanaLogs() {
 	var captures = {};
@@ -68,6 +68,7 @@ function writeKibanaLogs() {
 			for (var i in files) {
 				var file = files[i];
 
+				// Treats only logs files
 				if (file.substring(file.length - 4) == ".log") {
 					var day = file.substring(0, 10);
 					var log = fs.readFileSync(dir + file, 'utf8');
@@ -82,8 +83,9 @@ function writeKibanaLogs() {
 					else {
 						captures[day] = nbCaptures;
 					}
-					shareActions[day] = shareAction(logJSON);
-					visualizeActions[day] = visualizeAction(logJSON);
+
+					shareActions[day] = countChoices(logJSON, "share", { "code,mail": 0, "facebook": 0, "abandon": 0 });
+					visualizeActions[day] = countChoices(logJSON, "visualize", { "share": 0, "restart": 0, "abandon": 0 });
 				}
 			}
 
@@ -91,43 +93,66 @@ function writeKibanaLogs() {
 			console.log("Share actions %j", shareActions);
 			console.log("Visualize actions %j", visualizeActions);
 
-			for (var day in captures) {
-				var content = '{ "dailyCaptures": ' + captures[day] + ', "shareActions": ' + JSON.stringify(shareActions[day]) + ', "visualizeActions": ' + JSON.stringify(visualizeActions[day]) + ' } \n';
+			saveCaptures(captures);
+			saveChoices("visualize", visualizeActions);
+			saveChoices("share", shareActions);
+		}
+	});
+}
 
-				// var logFile = LOGS_KIBANA_DIR + day + '.log';
-				var logFile = __dirname + '/test/kibana/' + day + '.log';
-				fs.writeFile(logFile, content, function(err) {
-					if (err) {
-						console.log(err);
-					}
-				});
+/**
+* Saves formatted logs for Kibana --> Number of daily captures
+*/
+function saveCaptures(captures) {
+	for (var day in captures) {
+		var dailyCaptures = '';
+
+		for (var i = 0; i<captures[day]; i++) {
+			dailyCaptures += '{ "captures": 1 }\n';
+		}
+
+		var logFile = __dirname + '/test/kibana/capture/' + day + '.log';
+		fs.writeFile(logFile, dailyCaptures, function(err) {
+			if (err) {
+				console.log(err);
+			}
+		});
+	}
+}
+
+/**
+* Saves formatted logs for Kibana --> Proportion of choices for a given event
+*/
+function saveChoices(eventName, choices) {
+	for (var day in choices) {
+		var res = '';
+
+		for (var choice in choices[day]) {
+			for (var j = 0; j<choices[day][choice]; j++) {
+				res += '{ "' + eventName + '": "' + choice + '" }\n';
 			}
 		}
-	});
+		var logFile = __dirname + '/test/kibana/' + eventName + '/' + day + '.log';
+		fs.writeFile(logFile, res, function(err) {
+			if (err) {
+				console.log(err);
+			}
+		});
+	}
 }
 
-function shareAction(log) {
+/**
+* Counts occurrences of choices for the event @eventName
+*/
+function countChoices(log, eventName, choices) {
 	var entry = log["log_entry"];
-	var actions = { "code,mail": 0, "facebook": 0, "abandon": 0 }
 	entry.forEach(function(e) {
-		if (e["event"] == "share") {
-			var action = e["choice"];
-			actions[action]++;
+		if (e["event"] == eventName) {
+			var choice = e["choice"];
+			choices[choice]++;
 		}
 	});
-	return actions;
-}
-
-function visualizeAction(log) {
-	var entry = log["log_entry"];
-	var actions = { "share": 0, "restart": 0, "abandon": 0 };
-	entry.forEach(function(e) {
-		if (e["event"] == "visualize") {
-			var action = e["choice"];
-			actions[action]++;
-		}
-	});
-	return actions;
+	return choices;
 }
 
 function countEventOccurrences(log, eventName) {
