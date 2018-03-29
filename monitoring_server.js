@@ -49,8 +49,6 @@ app.listen(PORT, function() {
 	});
 }).listen(PORT);*/
 
-console.log('Server running');
-
 /**
 * Returns formatted date
 */
