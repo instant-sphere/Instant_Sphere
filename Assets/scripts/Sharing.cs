@@ -42,9 +42,11 @@ public class Sharing : MonoBehaviour
         WWWForm form = new WWWForm();
         //
         //form.AddBinaryData("Mail", System.Text.Encoding.UTF8.GetBytes(mail), "mail", "text/plain");
-        //form.AddField("Mail", mail);
 //        form.Add(new MultipartFormDataSection("mail", mail));
-        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/Email", form);
+
+        form.AddField("mail", mail);
+
+        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/email", form);
 
         yield return www.SendWebRequest();
 

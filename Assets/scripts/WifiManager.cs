@@ -1,6 +1,10 @@
 ﻿using UnityEngine;
 
-public class WifiManager {
+/**
+ * This class is used to control wifi
+ **/
+public class WifiManager
+{
     AndroidJavaObject mWifiCtrl;    //native Java code object used to manipulate Wifi settings
     string mSSID;                   //SSID of camera network
     const float mWifiTimeout = 10;  //10 sec to wait wifi turning ON
@@ -14,6 +18,10 @@ public class WifiManager {
 #endif
     }
 
+    /**
+     * Enable wifi and wait until it is up or timeout expires
+     * Returns true if wifi is enable and false otherwise
+     **/
 	public bool WaitForWifi()
     {
 #if !UNITY_EDITOR
@@ -35,6 +43,9 @@ public class WifiManager {
         return true;
     }
 
+    /**
+     * Save the current SSID and disable wifi
+     **/
     public void SaveAndShutdownWifi()
     {
 #if !UNITY_EDITOR
@@ -43,6 +54,9 @@ public class WifiManager {
 #endif
     }
 
+    /**
+     * Re-enable wifi and try to connect to the saved SSID
+     **/
     public bool RestoreWifi()
     {
 #if !UNITY_EDITOR

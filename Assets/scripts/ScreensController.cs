@@ -471,9 +471,9 @@ public sealed class ScreensController : MonoBehaviour
                 mCurrentState = ScreensStates.SHARE_PHOTO;
             else
             {
-                Texture2D tex = GenerateQRcode(token);
+                Texture2D tex = GenerateQRcode("https://instant-sphere.com/" + token);
                 mQRcode.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                code = code.GetComponent<Text>();
+                //code = code.GetComponent<Text>();
                 code.text = token;
 
                 mCurrentState = ScreensStates.PHOTO_CODE;

@@ -1,4 +1,5 @@
 var Express = require('express');
+
  var multer = require('multer');
  //const helmet = require('helmet');
  const fs = require('fs');
@@ -15,6 +16,7 @@ const https = require('http');
 
 const nodemailer = require('nodemailer');
 var token;
+app.use(bodyParser.urlencoded({ extended: false }));
 
  app.use(bodyParser.json());
 function getDateTime() {
@@ -97,13 +99,21 @@ var transporter = nodemailer.createTransport({
 );
 
 //Send mail:
+app.post('/testmail', function(req, res) {
+  var m = req.body.mail;
 
-app.post('/Email:mail', function(req, res, next) {
-  console.log(req);
+  console.log(req.body);
+   
+
+    res.send("le mail est " + m);
+});
+
+app.post('/email', function(req, res, next) {
+  var mail = req.body.mail;
 
   var mailOptions = {
           from: "noreply@instant-sphere.com",
-          to: req.params.mail,
+          to: mail,
           subject: "instant-sphere",
           text: token,
           html: "Découvrez votre photo à 360° en vous connectant sur le site d'Instant \
@@ -120,9 +130,16 @@ app.post('/Email:mail', function(req, res, next) {
 transporter.close();
 });
 
-
-
-
+app.post('/supprimer_img', function(req, res, next) {
+      fs.unlink('D:\\Utilisateurs\\Jérémy\\Documents\\Programmation\\PFA\\free-instant-sphere-PFA\\serveur_node\\pictures\\'+req.headers.referer.substring(21, 25)+'.jpg', function(error) {
+      if (error) {
+         console.log(req);
+         return res.end("Something went wrong!");
+        }
+        console.log('Deleted ' + req.headers.referer.substring(21, 25));
+        res.redirect('http://server.instant-sphere.com/')
+  });
+});
 app.get('/pictures/*', (req, res) => {
     res.sendFile(req.url, {root: './'})
 });
