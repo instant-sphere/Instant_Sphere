@@ -8,7 +8,7 @@ var app = express();
 // local conf
 const PORT = 334;
 const LOGS_DIR = '/var/log/instant-sphere/';
-const LOGS_KIBANA_DIR = '/var/log/instant-sphere/kibana/';
+const LOGS_KIBANA_DIR = '/var/log/instant-sphere/logstash/';
 
 var Storage = multer.diskStorage({
   destination: function (req, file, callback) {
@@ -21,13 +21,13 @@ var Storage = multer.diskStorage({
 
 var upload = multer({ storage : Storage}).single('logUploader');
 
-// writeKibanaLogs();
 
 app.post('/',function(req,res){
     upload(req,res,function(err) {
         if(err) {
             return res.end("Error uploading file: " + err);
         }
+        writeKibanaLogs();
         res.end("File is uploaded");
     });
 });
@@ -81,7 +81,7 @@ function writeKibanaLogs() {
 	var shareActions = {};
 	var visualizeActions = {};
 
-	var dir = __dirname + "/test/unity_logs/";
+	var dir = LOGS_DIR;
 	fs.readdir(dir, function(err, files) {
 		if (err) {
 			console.log(err);
@@ -135,7 +135,7 @@ function saveCaptures(captures) {
 			dailyCaptures += '{ "captures": 1 }\n';
 		}
 
-		var logFile = __dirname + '/test/kibana/capture/' + day + '.log';
+		var logFile = LOGS_KIBANA_DIR + 'capture/' + day + '.log';
 		fs.writeFile(logFile, dailyCaptures, function(err) {
 			if (err) {
 				console.log(err);
@@ -156,7 +156,7 @@ function saveChoices(eventName, choices) {
 				res += '{ "' + eventName + '": "' + choice + '" }\n';
 			}
 		}
-		var logFile = __dirname + '/test/kibana/' + eventName + '/' + day + '.log';
+		var logFile = LOGS_KIBANA_DIR + eventName + '/' + day + '.log';
 		fs.writeFile(logFile, res, function(err) {
 			if (err) {
 				console.log(err);
