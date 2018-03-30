@@ -167,8 +167,7 @@ function saveChoices(eventName, choices) {
 * Counts occurrences of choices for the event @eventName
 */
 function countChoices(log, eventName, choices) {
-	var entry = log["log_entry"];
-	entry.forEach(function(e) {
+	log.forEach(function(e) {
 		if (e["event"] == eventName) {
 			var choice = e["choice"];
 			choices[choice]++;
@@ -179,12 +178,11 @@ function countChoices(log, eventName, choices) {
 
 function countEventOccurrences(log, eventName) {
 	var count = 0;
-	var entry = log["log_entry"];
 
-	if (entry) {
+	if (log) {
 		// Used to store non duplicate events
 		var events = [];
-		entry.forEach(function(e) {
+		log.forEach(function(e) {
 			if (e["event"] == eventName && !events.some(k => isEquivalent(k, e))) {
 				events.push(e);
 				count++;
