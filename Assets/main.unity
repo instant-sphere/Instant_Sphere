@@ -1539,7 +1539,6 @@ MonoBehaviour:
   mPingTester: {fileID: 676527409}
   mail: {fileID: 1111249962}
   code: {fileID: 303621368}
-  auth_file: \..\..\auth_file.txt
 --- !u!224 &495322042
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4107,7 +4106,7 @@ RectTransform:
   m_GameObject: {fileID: 1693948240}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 10}
-  m_LocalScale: {x: 0.02154292, y: 0.02154292, z: 0.02154292}
+  m_LocalScale: {x: 0.024106482, y: 0.024106482, z: 0.024106482}
   m_Children:
   - {fileID: 995012292}
   m_Father: {fileID: 0}

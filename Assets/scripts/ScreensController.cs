@@ -49,6 +49,7 @@ public sealed class ScreensController : MonoBehaviour
 
     // Logs
     int mErrorCount = 0;
+
     /* Use this for initialization */
     private void Start()
     {
@@ -274,35 +275,38 @@ public sealed class ScreensController : MonoBehaviour
      **/
     private void ManageWelcomeScreen()
     {
-      // string auth_file = "auth_file.txt";
-      if (System.IO.File.Exists(Application.dataPath+"/auth_file.txt")) {
-        mCamera.AutomaticRotation(mTimeout);
-        if (Input.touchCount > 0 || Input.GetMouseButton(0))
+        // string auth_file = "auth_file.txt";
+        if (System.IO.File.Exists(Application.dataPath + "/auth_file.txt"))
         {
-          try
-          {
-            mOSCController.StartLivePreview();
             mCamera.AutomaticRotation(mTimeout);
-            mTimeoutCoroutine = StartCoroutine(mTimeout.StartTimer());
+            if (Input.touchCount > 0 || Input.GetMouseButton(0))
+            {
+                try
+                {
+                    mOSCController.StartLivePreview();
+                    mCamera.AutomaticRotation(mTimeout);
+                    mTimeoutCoroutine = StartCoroutine(mTimeout.StartTimer());
 
-            // For logs (new log)
-            mErrorCount = 0;
-            Logger.Instance.WriteStart();
+                    // For logs (new log)
+                    mErrorCount = 0;
+                    Logger.Instance.WriteStart();
 
-            mCurrentState = ScreensStates.READY_TAKE_PHOTO;
-            UpdateScreen();
-          }
-          catch (Exception e)
-          {
-            Debug.Log(e.Message);
-          }
+                    mCurrentState = ScreensStates.READY_TAKE_PHOTO;
+                    UpdateScreen();
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e.Message);
+                }
+            }
         }
-      }
-      else{
-        System.IO.File.Create(Application.dataPath+"/auth_file.txt");
-        mCurrentState = ScreensStates.REGISTRATION;
-        UpdateScreen();
-      }
+        else
+        {
+            Debug.Log("creating auth.txt");
+            System.IO.File.Create(Application.dataPath + "/auth_file.txt");
+            mCurrentState = ScreensStates.REGISTRATION;
+            UpdateScreen();
+        }
     }
 
     /**
@@ -518,9 +522,11 @@ public sealed class ScreensController : MonoBehaviour
 
     private void ManageRegistrationScreen()
     {
-      Thread.Sleep(5000);
-      mCurrentState = ScreensStates.WELCOME;
-      UpdateScreen();
+        if (Time.realtimeSinceStartup > 5)
+        {
+            mCurrentState = ScreensStates.WELCOME;
+            UpdateScreen();
+        }
     }
 
     private void ManageGoodbyeScreen()
