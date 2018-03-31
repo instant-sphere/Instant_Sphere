@@ -25,8 +25,9 @@ public sealed class ScreensController : MonoBehaviour
 
     public Text mail;
     public Text code;
+
     //one state per screen
-    public enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, DISPLAY_PHOTO_WITHOUT_INTERNET, SHARE_PHOTO, ERROR, PHOTO_CODE, GOODBYE };
+    public enum ScreensStates { WELCOME = 0, READY_TAKE_PHOTO, TAKING_PHOTO, WAITING, DISPLAY_PHOTO, DISPLAY_PHOTO_WITHOUT_INTERNET, SHARE_PHOTO, ERROR, PHOTO_CODE, GOODBYE, REGISTRATION };
     ScreensStates mCurrentState;
 
     //interface buttons
@@ -259,6 +260,9 @@ public sealed class ScreensController : MonoBehaviour
             case ScreensStates.PHOTO_CODE:
                 ManageShareCodeScreen();
                 break;
+            case ScreensStates.REGISTRATION:
+                ManageRegistrationScreen();
+                break;
             case ScreensStates.GOODBYE:
                 ManageGoodbyeScreen();
                 break;
@@ -271,26 +275,37 @@ public sealed class ScreensController : MonoBehaviour
      **/
     private void ManageWelcomeScreen()
     {
-        mCamera.AutomaticRotation(mTimeout);
-        if (Input.touchCount > 0 || Input.GetMouseButton(0))
+        // string auth_file = "auth_file.txt";
+        if (System.IO.File.Exists(Application.dataPath + "/auth_file.txt"))
         {
-            try
+            mCamera.AutomaticRotation(mTimeout);
+            if (Input.touchCount > 0 || Input.GetMouseButton(0))
             {
-                mOSCController.StartLivePreview();
-                mCamera.AutomaticRotation(mTimeout);
-                mTimeoutCoroutine = StartCoroutine(mTimeout.StartTimer());
+                try
+                {
+                    mOSCController.StartLivePreview();
+                    mCamera.AutomaticRotation(mTimeout);
+                    mTimeoutCoroutine = StartCoroutine(mTimeout.StartTimer());
 
-                // For logs (new log)
-                mErrorCount = 0;
-                Logger.Instance.WriteStart();
+                    // For logs (new log)
+                    mErrorCount = 0;
+                    Logger.Instance.WriteStart();
 
-                mCurrentState = ScreensStates.READY_TAKE_PHOTO;
-                UpdateScreen();
+                    mCurrentState = ScreensStates.READY_TAKE_PHOTO;
+                    UpdateScreen();
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e.Message);
+                }
             }
-            catch (Exception e)
-            {
-                Debug.Log(e.Message);
-            }
+        }
+        else
+        {
+            Debug.Log("creating auth.txt");
+            System.IO.File.Create(Application.dataPath + "/auth_file.txt");
+            mCurrentState = ScreensStates.REGISTRATION;
+            UpdateScreen();
         }
     }
 
@@ -501,6 +516,15 @@ public sealed class ScreensController : MonoBehaviour
             mSharingServer.SendToServerMail(mail_s);
 
             mCurrentState = ScreensStates.GOODBYE;
+            UpdateScreen();
+        }
+    }
+
+    private void ManageRegistrationScreen()
+    {
+        if (Time.realtimeSinceStartup > 5)
+        {
+            mCurrentState = ScreensStates.WELCOME;
             UpdateScreen();
         }
     }
