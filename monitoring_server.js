@@ -12,6 +12,7 @@ const LOGS_KIBANA_DIR = '/var/log/instant-sphere/logstash/';
 
 var Storage = multer.diskStorage({
   destination: function (req, file, callback) {
+      // TODO check if it's normal logs or battery logs
     callback(null, '/var/log/instant-sphere/');
   },
   filename: function (req, file, callback) {
@@ -22,8 +23,8 @@ var Storage = multer.diskStorage({
 var upload = multer({ storage : Storage}).single('logUploader');
 
 
-app.post('/',function(req,res){
-    upload(req,res,function(err) {
+app.post('/logs', function(req, res){
+    upload(req, res, function(err) {
         if(err) {
             return res.end("Error uploading file: " + err);
         }
@@ -31,6 +32,12 @@ app.post('/',function(req,res){
         res.end("File is uploaded");
     });
 });
+
+app.post('/battery', function(req, res){
+    var batteryLog = req.body.data;
+    saveBattery(batteryLog);
+});
+
 app.listen(PORT, function() {
 	console.log("Server running on port " + PORT);
 });
@@ -58,8 +65,13 @@ function getDate() {
 	return date.substring(5, date.length);
 }
 
+function getTimestamp() {
+    var date = new Date();
+    return date.toUTCString().replace(/ /g,'_');
+}
+
 /**
-* Saves daily logs in
+* Saves daily logs
 */
 function saveLogs(data) {
 	var file = getDate() + '.log';
@@ -161,6 +173,15 @@ function saveChoices(eventName, choices) {
 			}
 		});
 	}
+}
+
+/**
+* Saves formatted logs for Kibana --> Camera battery and tablet battery per timestamp
+*/
+function saveBattery(batteryLog) {
+    fs.appendFile(LOGS_KIBANA_DIR + 'battery/battery.log', batteryLog, function (err) {
+        if (err) throw err;
+    });
 }
 
 /**
