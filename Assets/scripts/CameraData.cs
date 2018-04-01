@@ -12,33 +12,15 @@ using Debug = UnityEngine.Debug;
 
 public class CameraData : MonoBehaviour
 {
-
-	/*Son identifiant aléatoire (ID) généré au premier lancement de l'application
-	La version de l'application, du firmware camera
-	Le niveau de charge de la batterie de la tablette
-	Le niveau de charge de la batterie de la caméra
-	La présence (ou non) de l'alimentation secteur
-	Les coordonnées GPS de la borne
-	Le nombre de prises de vue les 30 dernières minutes
-	Le nombre de partage sur chaque réseau social les 15 dernières minutes
-	Le statut et un code d'erreur correspondant (timeout caméra, ...)
-	*/
-
-/*
 	struct camera_data
 	{
-		public string batteryLevel; // (0.0, 0.33, 0.67, or 1.0)
+		public float batteryLevel; // (0.0, 0.33, 0.67, or 1.0)
 		public string batteryState; // "charging", "charged", "disconnect"
-		public string firmwareVersion;
 		public string cameraError;
-
 	}
-*/
 
-//	private camera_data mCameraData;
-	private static string _cameraState = "{}"; // Raw JSON camera state
-	private static string _cameraInfo = "{}"; // Raw JSON camera info
-	
+    camera_data mCameraData;
+
 	/* Camera error codes associated to event flags */
 	Dictionary<string, string> errorCodes = new Dictionary<string, string>();
 
@@ -67,9 +49,9 @@ public class CameraData : MonoBehaviour
 			errorCodes.Add(flags[i], codes[i]);
 		}
 	}
-	
+
 	void Start()
-	{	
+	{
 		StartCoroutine(SendRequest());
 	}
 
@@ -81,63 +63,56 @@ public class CameraData : MonoBehaviour
 	{
 		while (true)
 		{
-			UnityWebRequest wwwInfo = new UnityWebRequest("http://192.168.1.1/osc/info");
-			// This object handles receipt, buffering and postprocessing of data received from the server
+			/*UnityWebRequest wwwInfo = new UnityWebRequest("192.168.1.1/osc/info");
 			wwwInfo.downloadHandler = new DownloadHandlerBuffer();
 
 			// Sends the request and yields until the send completes
-			UnityWebRequestAsyncOperation op = wwwInfo.SendWebRequest();
-			yield return op;
-			
+			yield return wwwInfo.SendWebRequest();
+
 			if (wwwInfo.isNetworkError || wwwInfo.isHttpError)
 			{
 				Debug.Log(wwwInfo.error);
 			}
 			else
 			{
-				_cameraInfo = wwwInfo.downloadHandler.text;
-			}
-			
-			UnityWebRequest wwwState = UnityWebRequest.Post("http://192.168.1.1/osc/state", "");
+                JsonData json = HttpRequest.JSONStringToDictionary(wwwInfo.downloadHandler.text);
+			}*/
+
+			UnityWebRequest wwwState = UnityWebRequest.Post("192.168.1.1/osc/state", "");
+            wwwState.downloadHandler = new DownloadHandlerBuffer();
 			yield return wwwState.SendWebRequest();
-			
+
 			if (wwwState.isNetworkError || wwwState.isHttpError)
 			{
 				Debug.Log(wwwState.error);
 			}
 			else
 			{
-				_cameraState = wwwState.downloadHandler.text;
+                JsonData json = HttpRequest.JSONStringToDictionary(wwwState.downloadHandler.text);
+                mCameraData.batteryLevel = float.Parse(json["state"]["batteryLevel"].ToString());
+                mCameraData.batteryState = json["state"]["_batteryState"].ToString();
+                try
+                {
+                    mCameraData.cameraError = json["state"]["_cameraError"].ToString();
+                }
+                catch(Exception e)
+                { }
 			}
-			
-			
+
+            Debug.Log("CAMERA DATA : " + mCameraData.batteryLevel + mCameraData.batteryState + mCameraData.cameraError);
 			// Suspends the coroutine execution for the given amount of seconds using scaled time.
 			yield return new WaitForSeconds(10.0f);
-			
+
 		}
 	}
 
-	/*private void SaveCameraInfo()
+	public float GetCameraBattery()
 	{
-		JsonData jsonData = HttpRequest.JSONStringToDictionary(mCameraInfo);
-		mCameraData.batteryLevel = jsonData["state"]["batteryLevel"].ToString();
-		Debug.Log("battery level " + mCameraData.batteryLevel);
+		return mCameraData.batteryLevel;
 	}
 
-	private void SaveCameraState()
+	public string GetCameraBatteryState()
 	{
-		
-	}*/
-
-	public static string GetCameraInfo()
-	{
-		return _cameraInfo;
+        return mCameraData.batteryState;
 	}
-
-	public static string GetCameraState()
-	{
-		return _cameraState;
-	}
-
-	
 }
