@@ -243,6 +243,7 @@
     <Compile Include="Assets\FacebookSDK\Examples\Scripts\SubMenus\GraphRequest.cs" />
     <Compile Include="Assets\FacebookSDK\Examples\Scripts\SubMenus\MainMenu.cs" />
     <Compile Include="Assets\FacebookSDK\Examples\Scripts\SubMenus\Pay.cs" />
+    <Compile Include="Assets\scripts\AndroidSecureID.cs" />
     <Compile Include="Assets\scripts\BatteryManager.cs" />
     <Compile Include="Assets\scripts\CameraData.cs" />
     <Compile Include="Assets\scripts\CameraRotation.cs" />
