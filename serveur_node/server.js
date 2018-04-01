@@ -1,24 +1,34 @@
 var Express = require('express');
 
- var multer = require('multer');
- //const helmet = require('helmet');
- const fs = require('fs');
-var randtoken = require('rand-token').generator({
-  chars: 'a-z'});
+var multer = require('multer');
+//const helmet = require('helmet');
+const fs = require('fs');
+var randtoken = require('rand-token').generator({chars: 'a-z'});
 const https = require('http');
 // const https_options = {
 //   key: fs.readFileSync("../isphere.key"),
 //   cert: fs.readFileSync("../certificate-593390.crt"),
 // };
- var bodyParser = require('body-parser');
- var app = Express();
- //app.use(helmet());
+var bodyParser = require('body-parser');
+var app = Express();
+var RateLimit = require('express-rate-limit');
+
+app.enable('trust proxy');
+
+var limiter = new RateLimit({
+    windowMs: 4*60*1000,
+    max: 10,
+    delayMs: 5*1000
+});
+
+//app.use(helmet());
+
 
 const nodemailer = require('nodemailer');
 var token;
 app.use(bodyParser.urlencoded({ extended: false }));
 
- app.use(bodyParser.json());
+app.use(bodyParser.json());
 function getDateTime() {
 
     var date = new Date();
@@ -130,14 +140,15 @@ app.post('/email', function(req, res, next) {
 transporter.close();
 });
 
-app.post('/supprimer_img', function(req, res, next) {
-      fs.unlink('D:\\Utilisateurs\\Jérémy\\Documents\\Programmation\\PFA\\free-instant-sphere-PFA\\serveur_node\\pictures\\'+req.headers.referer.substring(21, 25)+'.jpg', function(error) {
+app.post('/supprimer_img', limiter, function(req, res, next) {
+	console.log('**************' + req.headers.referer.substring(37,42));
+      fs.unlink('/home/isphere/NodeJs_isphere/pictures/'+req.headers.referer.substring(37, 42)+'.jpg', function(error) {
       if (error) {
          console.log(req);
          return res.end("Something went wrong!");
         }
-        console.log('Deleted ' + req.headers.referer.substring(21, 25));
-        res.redirect('http://server.instant-sphere.com/')
+        console.log('Deleted ' + req.headers.referer.substring(37, 42));
+        res.redirect(req.protocol + '://' + req.get('host'));
   });
 });
 app.get('/pictures/*', (req, res) => {
