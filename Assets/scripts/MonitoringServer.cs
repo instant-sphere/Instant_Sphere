@@ -1,9 +1,8 @@
-﻿using System;
+﻿using LitJson;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -15,6 +14,8 @@ public class MonitoringServer : MonoBehaviour
     //	private string ip = "127.0.0.1";
     //	private string port = "2222";
 
+    public CameraData mCamData;
+    BatteryManager mTabletBattery = new BatteryManager();
     static string PORT = "334";
 
     public string GetURL()
@@ -116,7 +117,29 @@ public class MonitoringServer : MonoBehaviour
                     Debug.Log("SENDING LOG FILE : " + f);
                 }
             }
-            // Suspends the coroutine execution for the given amount of seconds using scaled time.
+
+            StringBuilder sb = new StringBuilder();
+            JsonWriter json = new JsonWriter(sb);
+            json.WriteObjectStart();
+            json.WritePropertyName("timestamp");
+            json.Write(DateTime.Now.ToString());
+            json.WritePropertyName("cameraBattery");
+            json.Write(mCamData.GetCameraBattery());
+            json.WritePropertyName("tabletBattery");
+            json.Write(mTabletBattery.GetCurrentBatteryLevel());
+            json.WriteObjectEnd();
+
+            WWWForm form2 = new WWWForm();
+            form2.AddField("data", sb.ToString());
+
+            UnityWebRequest www2 = UnityWebRequest.Post(GetURL(), form2);
+            yield return www2.SendWebRequest();
+
+            if (www2.isNetworkError || www2.isHttpError)
+            {
+                Debug.Log(www2.error);
+            }
+
             yield return new WaitForSeconds(10.0f);
         }
     }

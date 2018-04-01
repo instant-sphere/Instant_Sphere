@@ -275,7 +275,7 @@ public sealed class ScreensController : MonoBehaviour
      **/
     private void ManageWelcomeScreen()
     {
-        // string auth_file = "auth_file.txt";
+        string auth_file = "auth_file.txt";
         if (System.IO.File.Exists(Application.dataPath + "/auth_file.txt"))
         {
             mCamera.AutomaticRotation(mTimeout);
