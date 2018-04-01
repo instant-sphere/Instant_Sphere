@@ -50,6 +50,10 @@ public sealed class ScreensController : MonoBehaviour
     // Logs
     int mErrorCount = 0;
 
+    int authentification_state = 0;
+
+    private DateTime timeStart = DateTime.Now.AddSeconds(-30);
+
     /* Use this for initialization */
     private void Start()
     {
@@ -283,8 +287,7 @@ public sealed class ScreensController : MonoBehaviour
      **/
     private void ManageWelcomeScreen()
     {
-        string auth_file = "auth_file.txt";
-        if (System.IO.File.Exists(Application.dataPath + "/auth_file.txt"))
+        if (authentification_state == 2)
         {
             mCamera.AutomaticRotation(mTimeout);
             if (Input.touchCount > 0 || Input.GetMouseButton(0))
@@ -310,8 +313,6 @@ public sealed class ScreensController : MonoBehaviour
         }
         else
         {
-            Debug.Log("creating auth.txt");
-            System.IO.File.Create(Application.dataPath + "/auth_file.txt");
             mCurrentState = ScreensStates.REGISTRATION;
             UpdateScreen();
         }
@@ -531,11 +532,53 @@ public sealed class ScreensController : MonoBehaviour
 
     private void ManageRegistrationScreen()
     {
-        if (Time.realtimeSinceStartup > 5)
-        {
-            mCurrentState = ScreensStates.WELCOME;
-            UpdateScreen();
+        if (!System.IO.File.Exists(Application.dataPath + "/auth_file.txt")){
+          Debug.Log("creating auth.txt");
+          System.IO.File.Create(Application.dataPath + "/auth_file.txt");
         }
+        else{
+          if (new System.IO.FileInfo( Application.dataPath + "/auth_file.txt" ).Length == 0 && timeStart.AddSeconds(10) < DateTime.Now){
+            timeStart = DateTime.Now;
+            if(authentification_state == 0){
+              try
+              {
+                // AndroidJavaClass clsUnity = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                // AndroidJavaObject objActivity = clsUnity.GetStatic<AndroidJavaObject>("currentActivity");
+                // AndroidJavaObject objResolver = objActivity.Call<AndroidJavaObject>("getContentResolver");
+                // AndroidJavaClass clsSecure = new AndroidJavaClass("android.provider.Settings$Secure");
+                // string android_id = clsSecure.CallStatic<string>("getString", objResolver, "android_id");
+                string android_id = "COUCOU";
+                Debug.Log(android_id);
+                mSharingServer.SendToServerAuthentification(android_id);
+                bool auth = mSharingServer.GetAuth();
+                if(auth == true){
+                  authentification_state = 1;
+                  Debug.Log("yess" + authentification_state);
+                }
+              }
+              catch (Exception e)
+              {
+                  Debug.Log(e.Message);
+              }
+
+            }
+            else{
+              using (System.IO.StreamWriter outputFile = new System.IO.StreamWriter(Application.dataPath + "/auth_file.txt")) {
+                  outputFile.WriteLine("YOUPI");
+              }
+              authentification_state = 2;
+              mCurrentState = ScreensStates.WELCOME;
+            }
+          }
+
+        }
+        UpdateScreen();
+        //
+        // if (Time.realtimeSinceStartup > 5)
+        // {
+        //     mCurrentState = ScreensStates.WELCOME;
+        //     UpdateScreen();
+        // }
     }
 
     private void ManageGoodbyeScreen()
