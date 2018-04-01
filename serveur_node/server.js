@@ -13,6 +13,31 @@ var bodyParser = require('body-parser');
 var app = Express();
 var RateLimit = require('express-rate-limit');
 
+////AUTH
+var bodyParser  = require('body-parser');
+var morgan      = require('morgan');
+var mongoose    = require('mongoose');
+
+var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
+var config = require('./config'); // get our config file
+var Tablette   = require('./app/models/tablette.js'); // get our mongoose model
+
+
+// =======================
+// configuration =========
+// =======================
+console.log(mongoose.connect(config.database)); // connect to database
+app.set('superSecret', config.secret); // secret variable
+
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+////
+
+/// infos console
+app.use(morgan('dev'));
+///
+
 app.enable('trust proxy');
 
 var limiter = new RateLimit({
@@ -21,46 +46,17 @@ var limiter = new RateLimit({
     delayMs: 5*1000
 });
 
-//app.use(helmet());
-
-
 const nodemailer = require('nodemailer');
-var token;
-app.use(bodyParser.urlencoded({ extended: false }));
+var token_img;
 
-app.use(bodyParser.json());
-function getDateTime() {
 
-    var date = new Date();
-
-    var hour = date.getHours();
-    hour = (hour < 10 ? "0" : "") + hour;
-
-    var min  = date.getMinutes();
-    min = (min < 10 ? "0" : "") + min;
-
-    var sec  = date.getSeconds();
-    sec = (sec < 10 ? "0" : "") + sec;
-
-    var year = date.getFullYear();
-
-    var month = date.getMonth() + 1;
-    month = (month < 10 ? "0" : "") + month;
-
-    var day  = date.getDate();
-    day = (day < 10 ? "0" : "") + day;
-
-    return year + ":" + month + ":" + day + ":" + hour + ":" + min + ":" + sec;
-
-}
   var Storage = multer.diskStorage({
      destination: function(req, file, callback) {
          callback(null, "./pictures");
      },
      filename: function(req, file, callback) {
-        token = randtoken.generate(5);
-        //var token = getDateTime();
-         callback(null, token + ".jpg");
+        token_img = randtoken.generate(5);
+         callback(null, token_img + ".jpg");
      }
  });
 
@@ -69,11 +65,125 @@ function getDateTime() {
  }).array("imgUploader", 3); //Field name and max count
 
 
-app.get("/", function(req, res) {
-  res.sendFile(__dirname + '/index.html');
- });
+//app.use(helmet());
+//// =================
+/// Partie authentification 
+////=============
+app.post('/enregistrement', function(req, res) {
 
- app.post("/api/Upload", function(req, res) {
+  // create a sample user
+  if (!req.body.id_tablette) {
+        res.json({ success: false });
+
+  }
+  else {
+  var tab = new Tablette({ 
+    id_tablette: req.body.id_tablette, 
+    nom: '',
+    already_given: false,
+    autorisee: false 
+  });
+
+  // save the sample user
+  tab.save(function(err) {
+    if (err) {
+        res.json({ success: false, reason: "voir log" })
+    } else{
+    console.log('User saved successfully');
+    res.json({ success: true });
+}
+  });
+}});
+
+var apiRoutes = Express.Router(); 
+ 
+
+apiRoutes.post('/demandetoken', function(req, res) {
+
+  // find the user
+    console.log(req.body.id_tablette);
+
+  Tablette.findOne({
+    id_tablette: req.body.id_tablette
+  }, function(err, tablette) {
+
+    if (err) throw err;
+    console.log(tablette);
+    if (!tablette) {
+
+      res.json({ success: false, message: 'Tablette non enregistrée' });
+
+    } else if (!tablette.autorisee) {
+              res.json({ success: false, message: "Tablette non autorisée. Contactez l'administrateur pour l'activer" });
+            }
+            else if (tablette.already_given) {
+                res.json({ success: false, message: "Token déjà délivré" });
+            }
+
+                else {
+
+                const payload = {
+                    id_tablette: req.body.id_tablette
+                    };
+                var token = jwt.sign(payload, app.get('superSecret'), {
+        });
+                tablette.already_given = true;
+                tablette.save();
+
+        // return the information including token as JSON
+                res.json({
+                  success: true,
+                  message: 'Voici le joli token! ',
+                  token: token
+                });
+      }   
+
+    }
+
+  );
+});
+
+
+apiRoutes.use(function(req, res, next) {
+
+  // check header or url parameters or post parameters for token
+  var token = req.body.token || req.query.token || req.headers['x-access-token'];
+
+  // decode token
+  if (token) {
+
+    // verifies secret and checks exp
+    jwt.verify(token, app.get('superSecret'), function(err, decoded) {      
+      if (err) {
+        return res.json({ success: false, message: 'Failed to authenticate token.' });    
+      } else {
+        // if everything is good, save to request for use in other routes
+        req.decoded = decoded;    
+        console.log(req.decoded);
+        next();
+      }
+    });
+
+  } else {
+
+    // if there is no token
+    // return an error
+    return res.status(403).send({ 
+        success: false, 
+        message: 'No token provided.' 
+    });
+
+  }
+});
+
+
+apiRoutes.get('/users', function(req, res) {
+  Tablette.find({}, function(err, tablettes) {
+    res.json(tablettes);
+  });
+});  
+
+apiRoutes.post("Upload", function(req, res) {
      upload(req, res, function(err) {
          if (err) {
             console.log(req);
@@ -87,16 +197,6 @@ app.get("/", function(req, res) {
      });
  });
 
- app.get('/test_mail', function(req, res) {
- console.log(req);
-          return res.render('test_mail.ejs');
- });
-
-app.get('/:id', function(req, res) {
-console.log(req);
-         return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host') + '/pictures/',
-nom_fichier: req.params.id + ".jpg"});
-});
 
 // Partage par Mail
 var transporter = nodemailer.createTransport({
@@ -109,25 +209,18 @@ var transporter = nodemailer.createTransport({
 );
 
 //Send mail:
-app.post('/testmail', function(req, res) {
-  var m = req.body.mail;
 
-  console.log(req.body);
-   
 
-    res.send("le mail est " + m);
-});
-
-app.post('/email', function(req, res, next) {
+apiRoutes.post('/email', function(req, res, next) {
   var mail = req.body.mail;
 
   var mailOptions = {
           from: "noreply@instant-sphere.com",
           to: mail,
           subject: "instant-sphere",
-          text: token,
+          text: token_img,
           html: "Découvrez votre photo à 360° en vous connectant sur le site d'Instant \
-          Sphere: http://server.instant-sphere.com:333/ et entrez le code suivant:" + "<b>" + token + "</b>"
+          Sphere: http://server.instant-sphere.com:333/ et entrez le code suivant: " + "<b>" + req.body.token_img + "</b>"
   };
 
   transporter.sendMail(mailOptions, function(error, info){
@@ -135,10 +228,35 @@ app.post('/email', function(req, res, next) {
       return console.log(error);
    }
    console.log('Message sent: ' + info.response);
+   return res.json({ status : 1, message : "email envoyé" });
 });
 
 transporter.close();
 });
+
+
+app.use('/api', apiRoutes);
+
+/////====
+//// fin auth
+
+
+
+app.get("/", function(req, res) {
+  res.sendFile(__dirname + '/index.html');
+ });
+
+ 
+
+
+
+app.get('/:id', function(req, res) {
+console.log(req);
+         return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host') + '/pictures/',
+nom_fichier: req.params.id + ".jpg"});
+});
+
+
 
 app.post('/supprimer_img', limiter, function(req, res, next) {
 	console.log('**************' + req.headers.referer.substring(37,42));
