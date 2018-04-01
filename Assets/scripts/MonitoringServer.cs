@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
-using Debug = UnityEngine.Debug;
 
 public class MonitoringServer : MonoBehaviour
 {
@@ -15,16 +14,18 @@ public class MonitoringServer : MonoBehaviour
     //	private string port = "2222";
 
     public CameraData mCamData;
-    BatteryManager mTabletBattery = new BatteryManager();
+    BatteryManager mTabletBattery;
     static string PORT = "334";
+
 
     public string GetURL()
     {
-        return "server.instant-sphere.com:" + PORT;
+        return "http://server.instant-sphere.com:" + PORT;
     }
 
     void Start()
     {
+        mTabletBattery = new BatteryManager();
         StartCoroutine(SendRequest());
     }
 

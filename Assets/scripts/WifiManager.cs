@@ -22,7 +22,7 @@ public class WifiManager
      * Enable wifi and wait until it is up or timeout expires
      * Returns true if wifi is enable and false otherwise
      **/
-	public bool WaitForWifi()
+    public bool WaitForWifi()
     {
 #if !UNITY_EDITOR
         float t = Time.realtimeSinceStartup;
