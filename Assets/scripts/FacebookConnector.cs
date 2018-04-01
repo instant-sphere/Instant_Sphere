@@ -10,14 +10,15 @@ using System;
 public class FacebookConnector
 {
     byte[] mPhotoToShare;
-
+    Action<bool> mShareResultCallback;
 
     /**
      * Initiate a new connection with facebook in order to share the photo passed in parameter
      * Initialize facebook SDK if it is not otherwise call Connection()
      **/
-    public void StartConnection(byte[] photo)
+    public void StartConnection(byte[] photo, Action<bool> shareResultCallback)
     {
+        mShareResultCallback = shareResultCallback;
         mPhotoToShare = photo;
         if (!FB.IsInitialized)
             InitSDK();
@@ -25,7 +26,7 @@ public class FacebookConnector
             Connection();
     }
 
-    /*
+    /**
      * Destroy the local copy of the photo and logout any connected user
      **/
     public void Disconnection()
@@ -56,15 +57,13 @@ public class FacebookConnector
 
     /**
      * Callback for authentication
-     * Share a link on user facebook account and try to upload a photo
+     * Share a photo on user's journal
      **/
     private void AuthCallback(ILoginResult res)
     {
         if (FB.IsLoggedIn)
         {
-            //FB.ShareLink(contentURL: new Uri("http://www.instant-sphere.com/"));    //share a link OK
-
-            WWWForm data = new WWWForm();   //upload an image: need publish permissions, need facebook validation
+            WWWForm data = new WWWForm();
             data.AddBinaryData("image", mPhotoToShare, "photo.jpg", "image/jpeg");
             data.AddField("allow_spherical_photo", "true");
             FB.API("me/photos", HttpMethod.POST, ShareCallback, data);
@@ -81,7 +80,10 @@ public class FacebookConnector
      **/
     private void ShareCallback(IGraphResult res)
     {
-        Debug.Log(res.RawResult);   //TODO check if publication was successful
+        if(res.Cancelled || !string.IsNullOrEmpty(res.Error))
+            mShareResultCallback(false);
+        else
+            mShareResultCallback(true);
         Disconnection();
     }
 }

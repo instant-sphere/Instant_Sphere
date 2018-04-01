@@ -118,6 +118,14 @@ public sealed class ScreensController : MonoBehaviour
         mIsOSCReady = true;
     }
 
+    public void TriggerFBShareTerminated(bool success)
+    {
+        mTimeout.Reset();
+        if (success)
+            mCurrentState = ScreensStates.GOODBYE;
+        UpdateScreen();
+    }
+
     /* Theses are public methods called when user presses the corresponding button */
     public void ButtonTakePhoto()
     {
@@ -393,6 +401,7 @@ public sealed class ScreensController : MonoBehaviour
             //		    File.WriteAllBytes(Application.dataPath + "/final_picture.png", bytes);
 
             mSkyboxMng.DefineNewSkybox(mFullResolutionImage/*mWatermarker.GetTexture()*/);
+
             if (mPingTester.CheckServer())
                 mCurrentState = ScreensStates.DISPLAY_PHOTO;
             else
@@ -459,7 +468,7 @@ public sealed class ScreensController : MonoBehaviour
             // For logs
             Logger.Instance.WriteShareFacebook();
 
-            mFB.StartConnection(mFullResolutionImage);
+            mFB.StartConnection(mFullResolutionImage, TriggerFBShareTerminated);
         }
         else if (IsButtonDown(InterfaceButtons.ABORT))
         {
@@ -511,7 +520,7 @@ public sealed class ScreensController : MonoBehaviour
 
             Debug.Log("Sending email to server");
 
-            string mail_s = mail.GetComponent<Text>().text;
+            string mail_s = mail.text;
             Debug.Log(mail_s);
             mSharingServer.SendToServerMail(mail_s);
 
