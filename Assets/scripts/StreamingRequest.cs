@@ -75,7 +75,7 @@ public class StreamingRequest
 
     /**
      * Read the stream until the beginning of the data
-     * Return the size of the data in octet to be read
+     * Return the size of the data in bytes to be read
      **/
     private int SkipHeaderAndGetSize()
     {

@@ -289,7 +289,7 @@ public sealed class ScreensController : MonoBehaviour
      **/
     private void ManageWelcomeScreen()
     {
-        if (authentification_state == 2)
+        if (authentification_state == 3)
         {
             mCamera.AutomaticRotation(mTimeout);
             if (Input.touchCount > 0 || Input.GetMouseButton(0))
@@ -390,6 +390,7 @@ public sealed class ScreensController : MonoBehaviour
      **/
     private void ManageWaitingScreen()
     {
+
         if (mIsOSCReady)
         {
             mTimeout.Reset();
@@ -493,14 +494,14 @@ public sealed class ScreensController : MonoBehaviour
             Logger.Instance.WriteShareCode();
 
             Destroy(mQRcode.sprite);
-            string token = mSharingServer.GetToken();
-            if (token == null)
+            string token_img = mSharingServer.GetToken_img();
+            if (token_img == null)
                 mCurrentState = ScreensStates.SHARE_PHOTO;
             else
             {
-                Texture2D tex = GenerateQRcode("https://instant-sphere.com/" + token);
+                Texture2D tex = GenerateQRcode("https://instant-sphere.com/" + token_img);
                 mQRcode.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                code.text = token;
+                code.text = token_img;
 
                 mCurrentState = ScreensStates.PHOTO_CODE;
             }
@@ -534,6 +535,7 @@ public sealed class ScreensController : MonoBehaviour
 
     private void ManageRegistrationScreen()
     {
+        mTimeout.Reset();
         if (!System.IO.File.Exists(Application.persistentDataPath + "/auth_file.txt"))
         {
             Debug.Log("creating auth.txt");
@@ -543,21 +545,24 @@ public sealed class ScreensController : MonoBehaviour
         {
             if (new System.IO.FileInfo(Application.persistentDataPath + "/auth_file.txt").Length == 0 && timeStart.AddSeconds(10) < DateTime.Now)
             {
+                string androidID = mAndroidSID.GetSID();
+                Debug.Log("SID is " + androidID);
                 timeStart = DateTime.Now;
                 if (authentification_state == 0)
                 {
                     try
                     {
-                        string androidID = mAndroidSID.GetSID();
-                        Debug.Log("SID is " + androidID);
-                        mSharingServer.SendToServerAuthentification(androidID);
-
                         bool auth = mSharingServer.GetAuth();
+
                         if (auth == true)
                         {
                             authentification_state = 1;
-                            Debug.Log("yess" + authentification_state);
                         }
+                        else{
+                          mSharingServer.SendToServerAuthentification(androidID);
+                        }
+
+
                     }
                     catch (Exception e)
                     {
@@ -567,15 +572,29 @@ public sealed class ScreensController : MonoBehaviour
                 }
                 else
                 {
-                    using (System.IO.StreamWriter outputFile = new System.IO.StreamWriter(Application.persistentDataPath + "/auth_file.txt"))
-                    {
-                        outputFile.WriteLine("YOUPI");
+                    string token = mSharingServer.GetToken();
+                    if (token != null){
+                      using (System.IO.StreamWriter outputFile = new System.IO.StreamWriter(Application.persistentDataPath + "/auth_file.txt"))
+                      {
+                          outputFile.WriteLine(token);
+                      }
+                      authentification_state = 2;
                     }
-                    authentification_state = 2;
-                    mCurrentState = ScreensStates.WELCOME;
-                    UpdateScreen();
+                    else{
+                      mSharingServer.SendToServerDemandeToken(androidID);
+                    }
+                  }
                 }
-            }
+                else if (new System.IO.FileInfo(Application.persistentDataPath + "/auth_file.txt").Length != 0) {
+
+                  System.IO.StreamReader file = new System.IO.StreamReader(Application.persistentDataPath + "/auth_file.txt");
+                  string line = file.ReadLine();
+                  Debug.Log(line);
+                  mSharingServer.SetToken(line);
+                  authentification_state = 3;
+                  mCurrentState = ScreensStates.WELCOME;
+                  UpdateScreen();
+                }
         }
     }
 
