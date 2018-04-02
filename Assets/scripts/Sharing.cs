@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 public class Sharing : MonoBehaviour
 {
     private string token;
+    private string token_img;
     private bool auth;
 
     public void SendToServer(byte[] img)
@@ -22,9 +23,16 @@ public class Sharing : MonoBehaviour
         StartCoroutine(Authentification(android_id));
     }
 
+    public void SendToServerDemandeToken(string android_id)
+    {
+        StartCoroutine(DemandeToken(android_id));
+    }
+
+
     private IEnumerator Upload(byte[] img)
     {
         WWWForm form = new WWWForm();
+        form.AddField("token", token);
         form.AddBinaryData("imgUploader", img, "photo.jpg", "image/jpeg");
 
         UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/Upload", form);
@@ -34,12 +42,12 @@ public class Sharing : MonoBehaviour
         if (www.isNetworkError || www.isHttpError)
         {
             Debug.Log(www.error);
-            token = null;
+            token_img = null;
         }
         else
         {
             Debug.Log(www.downloadHandler.text);
-            token = www.downloadHandler.text.Substring(20, 5);
+            token_img = www.downloadHandler.text.Substring(20, 5);
         }
     }
 
@@ -47,6 +55,7 @@ public class Sharing : MonoBehaviour
     {
         WWWForm form = new WWWForm();
 
+        form.AddField("token", token);
         form.AddField("mail", mail);
 
         UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/email", form);
@@ -59,9 +68,9 @@ public class Sharing : MonoBehaviour
             Debug.Log(www.downloadHandler.text);
     }
 
-    public string GetToken()
+    public string GetToken_img()
     {
-        return token;
+        return token_img;
     }
 
     private IEnumerator Authentification(string id_tablette)
@@ -78,7 +87,7 @@ public class Sharing : MonoBehaviour
             Debug.Log(www.error);
         else
         {
-            Debug.Log("++++++++++++++++++" + www.downloadHandler.text);
+            Debug.Log(www.downloadHandler.text);
             if (www.downloadHandler.text.Substring(11, 4) == "true")
             {
                 auth = true;
@@ -93,6 +102,43 @@ public class Sharing : MonoBehaviour
     public bool GetAuth()
     {
         return auth;
+    }
+
+    private IEnumerator DemandeToken(string id_tablette)
+    {
+        WWWForm form = new WWWForm();
+
+        form.AddField("id_tablette", id_tablette);
+
+        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/demandetoken", form);
+
+        yield return www.SendWebRequest();
+
+        if (www.isNetworkError || www.isHttpError)
+            Debug.Log(www.error);
+        else
+        {
+            Debug.Log(www.downloadHandler.text);
+            if (www.downloadHandler.text.Substring(11, 4) == "true")
+            {
+                token = www.downloadHandler.text.Substring(59, 139);
+                Debug.Log(token);
+            }
+            else
+            {
+                token = null;
+            }
+        }
+    }
+
+    public string GetToken()
+    {
+        return token;
+    }
+
+    public void SetToken(string _token)
+    {
+        token = _token;
     }
 
 }
