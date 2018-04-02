@@ -187,7 +187,7 @@ apiRoutes.get('/users', function(req, res) {
   });
 });  
 
-apiRoutes.post("Upload", function(req, res) {
+apiRoutes.post("/upload", function(req, res) {
      upload(req, res, function(err) {
          if (err) {
             console.log(req);
