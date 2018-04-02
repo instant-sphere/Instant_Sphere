@@ -17,7 +17,7 @@ public sealed class Watermark : MonoBehaviour
     public void CreateWatermark(byte[] picture)
     {
         // Creates a new texture for the final picture
-        if(mFinalPicture == null)
+        if (mFinalPicture == null)
             mFinalPicture = new Texture2D(2, 2);
         mFinalPicture.LoadImage(picture);
         mLogo = Resources.Load("logo_blanc") as Texture2D;

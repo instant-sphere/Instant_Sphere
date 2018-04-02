@@ -17,7 +17,7 @@ public sealed class BatteryManager
     }
 
     /**
-     * Return the current battery level
+     * Return the current battery level or 0 in editor mode
      **/
     public int GetCurrentBatteryLevel()
     {

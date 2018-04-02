@@ -4,7 +4,6 @@ using UnityEngine;
 using LitJson;
 using System;
 using System.Text;
-using System.Threading;
 
 /**
  * This class is intended to handle an 360 degrees camera that provide OSC API 2
@@ -24,8 +23,8 @@ public sealed class OSCController : MonoBehaviour
     /* Actions associated with the method name */
     enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE, LIVE_PREVIEW, CAMERA_STATE };
     string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskCameraInfo", "AskDeletePhoto", "AskStartLivePreview", "AskCameraState" };
- 
-    
+
+
     // Use this for initialization
     private void Start()
     {
@@ -538,7 +537,7 @@ public sealed class OSCController : MonoBehaviour
         mHTTP.SetJSONData("{}");
         mHTTP.Execute();
     }
-    
+
 
 }
 

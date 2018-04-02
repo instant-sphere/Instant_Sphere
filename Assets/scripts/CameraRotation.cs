@@ -2,7 +2,7 @@
 using UnityEngine;
 
 /**
- * This class control camera rotations for both automatic and manual mode
+ * This class controls the camera rotation for both automatic and manual mode
  **/
 public sealed class CameraRotation : MonoBehaviour
 {
@@ -19,11 +19,14 @@ public sealed class CameraRotation : MonoBehaviour
     //For logs
     DateTime mDate = DateTime.Now;
 
-    /* Called once per frame */
+    /**
+     * Moves the camera according to the current mode
+     **/
     private void Update()
     {
         if (mRotationMode == ECameraState.MANUAL)
         {
+            /* Tablet mode */
             if (Input.touchCount > 0)
             {
                 //For logs
@@ -39,6 +42,7 @@ public sealed class CameraRotation : MonoBehaviour
                 mDelta.x = tmp.y;
                 mDelta.y = -tmp.x;
             }
+            /* PC mode */
             else if (Input.GetMouseButton(0))
             {
                 //For logs
@@ -73,7 +77,9 @@ public sealed class CameraRotation : MonoBehaviour
         mDelta = Vector2.zero;
     }
 
-    /* Compute delta vector for automatic rotation */
+    /**
+     * Computes the delta vector for automatic rotation
+     **/
     private Vector2 ComputeDelta()
     {
         Vector2 d = Vector2.zero;
@@ -88,20 +94,26 @@ public sealed class CameraRotation : MonoBehaviour
         return d;
     }
 
-    /* Enable automatic rotation */
+    /**
+     * Enable automatic rotation mode
+     **/
     public void AutomaticRotation(Timeout screenTimeout)
     {
         mRotationMode = ECameraState.AUTO;
         mScreenTimeout = screenTimeout;
     }
 
-    /* Enable manual rotation */
+    /**
+     * Enable manual rotation mode
+     **/
     public void ManualRotation()
     {
         mRotationMode = ECameraState.MANUAL;
     }
 
-    /* Disable rotation */
+    /**
+     * Disable rotation (user can't move the screen)
+     **/
     public void StopRotation()
     {
         mRotationMode = ECameraState.OFF;

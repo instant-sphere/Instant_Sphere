@@ -128,8 +128,11 @@ public sealed class ScreensController : MonoBehaviour
     {
         mTimeout.Reset();
         if (success)
+        {
+            Logger.Instance.WriteFacebookSuccess();
             mCurrentState = ScreensStates.GOODBYE;
-        UpdateScreen();
+            UpdateScreen();
+        }
     }
 
     /* Theses are public methods called when user presses the corresponding button */
@@ -558,8 +561,9 @@ public sealed class ScreensController : MonoBehaviour
                         {
                             authentification_state = 1;
                         }
-                        else{
-                          mSharingServer.SendToServerAuthentification(androidID);
+                        else
+                        {
+                            mSharingServer.SendToServerAuthentification(androidID);
                         }
 
 
@@ -573,28 +577,31 @@ public sealed class ScreensController : MonoBehaviour
                 else
                 {
                     string token = mSharingServer.GetToken();
-                    if (token != null){
-                      using (System.IO.StreamWriter outputFile = new System.IO.StreamWriter(Application.persistentDataPath + "/auth_file.txt"))
-                      {
-                          outputFile.WriteLine(token);
-                      }
-                      authentification_state = 2;
+                    if (token != null)
+                    {
+                        using (System.IO.StreamWriter outputFile = new System.IO.StreamWriter(Application.persistentDataPath + "/auth_file.txt"))
+                        {
+                            outputFile.WriteLine(token);
+                        }
+                        authentification_state = 2;
                     }
-                    else{
-                      mSharingServer.SendToServerDemandeToken(androidID);
+                    else
+                    {
+                        mSharingServer.SendToServerDemandeToken(androidID);
                     }
-                  }
                 }
-                else if (new System.IO.FileInfo(Application.persistentDataPath + "/auth_file.txt").Length != 0) {
+            }
+            else if (new System.IO.FileInfo(Application.persistentDataPath + "/auth_file.txt").Length != 0)
+            {
 
-                  System.IO.StreamReader file = new System.IO.StreamReader(Application.persistentDataPath + "/auth_file.txt");
-                  string line = file.ReadLine();
-                  Debug.Log(line);
-                  mSharingServer.SetToken(line);
-                  authentification_state = 3;
-                  mCurrentState = ScreensStates.WELCOME;
-                  UpdateScreen();
-                }
+                System.IO.StreamReader file = new System.IO.StreamReader(Application.persistentDataPath + "/auth_file.txt");
+                string line = file.ReadLine();
+                Debug.Log(line);
+                mSharingServer.SetToken(line);
+                authentification_state = 3;
+                mCurrentState = ScreensStates.WELCOME;
+                UpdateScreen();
+            }
         }
     }
 
@@ -604,6 +611,7 @@ public sealed class ScreensController : MonoBehaviour
      **/
     private void ManageGoodbyeScreen()
     {
+        Logger.Instance.WriteGoodbye();
         Thread.Sleep(5000);
         TimeoutGoToWelcome();
     }
