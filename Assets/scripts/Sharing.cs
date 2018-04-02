@@ -46,9 +46,6 @@ public class Sharing : MonoBehaviour
     private IEnumerator Email(string mail)
     {
         WWWForm form = new WWWForm();
-        //
-        //form.AddBinaryData("Mail", System.Text.Encoding.UTF8.GetBytes(mail), "mail", "text/plain");
-//        form.Add(new MultipartFormDataSection("mail", mail));
 
         form.AddField("mail", mail);
 
@@ -79,13 +76,16 @@ public class Sharing : MonoBehaviour
 
         if (www.isNetworkError || www.isHttpError)
             Debug.Log(www.error);
-        else{
+        else
+        {
             Debug.Log("++++++++++++++++++" + www.downloadHandler.text);
-            if (www.downloadHandler.text.Substring(11, 4) == "true"){
-              auth = true;
+            if (www.downloadHandler.text.Substring(11, 4) == "true")
+            {
+                auth = true;
             }
-            else{
-              auth = false;
+            else
+            {
+                auth = false;
             }
         }
     }

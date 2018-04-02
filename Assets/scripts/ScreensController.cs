@@ -37,6 +37,7 @@ public sealed class ScreensController : MonoBehaviour
     bool mIsOSCReady = false;
     FacebookConnector mFB;
     WifiManager mWifi;
+    AndroidSecureID mAndroidSID;
     byte[] mFullResolutionImage;
 
     //count down used when taking a photo
@@ -63,9 +64,10 @@ public sealed class ScreensController : MonoBehaviour
             Application.Quit();
         }
         mFB = new FacebookConnector();
+        mAndroidSID = new AndroidSecureID();
         mTimeout = new Timeout(mTimeoutValue, TimeoutGoToWelcome);
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  //device screen should never turn off
-        mCurrentState = ScreensStates.WELCOME;          //start application on welcome screen
+        mCurrentState = ScreensStates.REGISTRATION;          //start application on registration screen
         mCamera.AutomaticRotation(mTimeout);   //use automatic rotation of welcome photo
         UpdateScreen();
     }
@@ -498,7 +500,6 @@ public sealed class ScreensController : MonoBehaviour
             {
                 Texture2D tex = GenerateQRcode("https://instant-sphere.com/" + token);
                 mQRcode.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                //code = code.GetComponent<Text>();
                 code.text = token;
 
                 mCurrentState = ScreensStates.PHOTO_CODE;
@@ -507,6 +508,10 @@ public sealed class ScreensController : MonoBehaviour
         }
     }
 
+    /**
+     * If the user presses the back button go back to the share screen
+     * else if user presses the OK button next to the email field, send his mail to the server and go to the goodbye screen
+     **/
     private void ManageShareCodeScreen()
     {
         if (IsButtonDown(InterfaceButtons.BACK))
@@ -519,10 +524,7 @@ public sealed class ScreensController : MonoBehaviour
         {
             mTimeout.Reset();
 
-            Debug.Log("Sending email to server");
-
             string mail_s = mail.text;
-            Debug.Log(mail_s);
             mSharingServer.SendToServerMail(mail_s);
 
             mCurrentState = ScreensStates.GOODBYE;
@@ -532,55 +534,55 @@ public sealed class ScreensController : MonoBehaviour
 
     private void ManageRegistrationScreen()
     {
-        if (!System.IO.File.Exists(Application.dataPath + "/auth_file.txt")){
-          Debug.Log("creating auth.txt");
-          System.IO.File.Create(Application.dataPath + "/auth_file.txt");
+        if (!System.IO.File.Exists(Application.persistentDataPath + "/auth_file.txt"))
+        {
+            Debug.Log("creating auth.txt");
+            System.IO.File.Create(Application.persistentDataPath + "/auth_file.txt");
         }
-        else{
-          if (new System.IO.FileInfo( Application.dataPath + "/auth_file.txt" ).Length == 0 && timeStart.AddSeconds(10) < DateTime.Now){
-            timeStart = DateTime.Now;
-            if(authentification_state == 0){
-              try
-              {
-                // AndroidJavaClass clsUnity = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-                // AndroidJavaObject objActivity = clsUnity.GetStatic<AndroidJavaObject>("currentActivity");
-                // AndroidJavaObject objResolver = objActivity.Call<AndroidJavaObject>("getContentResolver");
-                // AndroidJavaClass clsSecure = new AndroidJavaClass("android.provider.Settings$Secure");
-                // string android_id = clsSecure.CallStatic<string>("getString", objResolver, "android_id");
-                string android_id = "COUCOU";
-                Debug.Log(android_id);
-                mSharingServer.SendToServerAuthentification(android_id);
-                bool auth = mSharingServer.GetAuth();
-                if(auth == true){
-                  authentification_state = 1;
-                  Debug.Log("yess" + authentification_state);
+        else
+        {
+            if (new System.IO.FileInfo(Application.persistentDataPath + "/auth_file.txt").Length == 0 && timeStart.AddSeconds(10) < DateTime.Now)
+            {
+                timeStart = DateTime.Now;
+                if (authentification_state == 0)
+                {
+                    try
+                    {
+                        string androidID = mAndroidSID.GetSID();
+                        Debug.Log("SID is " + androidID);
+                        mSharingServer.SendToServerAuthentification(androidID);
+
+                        bool auth = mSharingServer.GetAuth();
+                        if (auth == true)
+                        {
+                            authentification_state = 1;
+                            Debug.Log("yess" + authentification_state);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Log(e.Message);
+                    }
+
                 }
-              }
-              catch (Exception e)
-              {
-                  Debug.Log(e.Message);
-              }
-
+                else
+                {
+                    using (System.IO.StreamWriter outputFile = new System.IO.StreamWriter(Application.persistentDataPath + "/auth_file.txt"))
+                    {
+                        outputFile.WriteLine("YOUPI");
+                    }
+                    authentification_state = 2;
+                    mCurrentState = ScreensStates.WELCOME;
+                    UpdateScreen();
+                }
             }
-            else{
-              using (System.IO.StreamWriter outputFile = new System.IO.StreamWriter(Application.dataPath + "/auth_file.txt")) {
-                  outputFile.WriteLine("YOUPI");
-              }
-              authentification_state = 2;
-              mCurrentState = ScreensStates.WELCOME;
-            }
-          }
-
         }
-        UpdateScreen();
-        //
-        // if (Time.realtimeSinceStartup > 5)
-        // {
-        //     mCurrentState = ScreensStates.WELCOME;
-        //     UpdateScreen();
-        // }
     }
 
+    /**
+     * Display this confirmation screen during 5 seconds
+     * then go back to welcome screen
+     **/
     private void ManageGoodbyeScreen()
     {
         Thread.Sleep(5000);
