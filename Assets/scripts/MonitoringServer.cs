@@ -9,7 +9,8 @@ using UnityEngine.Networking;
 
 public class MonitoringServer : MonoBehaviour
 {
-    CameraData mCamData;
+    public CameraData mCamData;
+
     BatteryManager mTabletBattery;
     static string PORT = "334";
     static string URL = "http://server.instant-sphere.com";

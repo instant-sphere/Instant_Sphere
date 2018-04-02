@@ -4,7 +4,7 @@
  * This class is used to add watermarking to a photo
  * It adds 4 watermarks at the bottom
  **/
-public class Watermark : MonoBehaviour
+public sealed class Watermark : MonoBehaviour
 {
     Texture2D mLogo;
     Texture2D mFinalPicture;

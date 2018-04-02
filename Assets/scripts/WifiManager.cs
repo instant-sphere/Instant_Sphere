@@ -3,7 +3,7 @@
 /**
  * This class is used to control wifi
  **/
-public class WifiManager
+public sealed class WifiManager
 {
     AndroidJavaObject mWifiCtrl;    //native Java code object used to manipulate Wifi settings
     string mSSID;                   //SSID of camera network
