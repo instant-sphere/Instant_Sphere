@@ -3673,7 +3673,7 @@ GameObject:
   - component: {fileID: 1496583922}
   - component: {fileID: 1496583921}
   m_Layer: 0
-  m_Name: Monitoring
+  m_Name: MonitoringServer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
