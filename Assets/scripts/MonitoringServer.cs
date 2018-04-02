@@ -12,17 +12,17 @@ public class MonitoringServer : MonoBehaviour
     CameraData mCamData;
     BatteryManager mTabletBattery;
     static string PORT = "334";
-    static string URL = "http://server.instant-sphere.com/";
+    static string URL = "http://server.instant-sphere.com";
 
 
     private string GetLogURL()
     {
-        return URL + "api/logs:" + PORT;
+        return URL + ":" + PORT + "/api/logs";
     }
 
     private string GetHardwareURL()
     {
-        return URL + "api/hardware:" + PORT;
+        return URL + ":" + PORT + "/api/hardware";
     }
 
     void Start()
@@ -31,9 +31,9 @@ public class MonitoringServer : MonoBehaviour
         StartCoroutine(SendRequest());
     }
 
-    /*
+    /**
 	 * Returns the list of logs files names
-	 */
+	 **/
     private string[] GetLogsFilesNames()
     {
         DirectoryInfo dir = new DirectoryInfo(Application.persistentDataPath + "/");
@@ -51,8 +51,8 @@ public class MonitoringServer : MonoBehaviour
     }
 
     /**
-	 * Coroutine sending log files every [10 seconds]
-	 */
+	 * Coroutine sending log files and hardware values every [10 seconds]
+	 **/
     IEnumerator SendRequest()
     {
         Logger logger = Logger.Instance;
