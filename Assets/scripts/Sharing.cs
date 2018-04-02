@@ -32,10 +32,11 @@ public class Sharing : MonoBehaviour
     private IEnumerator Upload(byte[] img)
     {
         WWWForm form = new WWWForm();
-        form.AddField("token", token);
+
         form.AddBinaryData("imgUploader", img, "photo.jpg", "image/jpeg");
 
         UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/Upload", form);
+        www.SetRequestHeader("x-access-token", token);
 
         yield return www.SendWebRequest();
 
@@ -55,10 +56,11 @@ public class Sharing : MonoBehaviour
     {
         WWWForm form = new WWWForm();
 
-        form.AddField("token", token);
         form.AddField("mail", mail);
+        form.AddField("token_img", token_img);
 
         UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/email", form);
+        www.SetRequestHeader("x-access-token", token);
 
         yield return www.SendWebRequest();
 

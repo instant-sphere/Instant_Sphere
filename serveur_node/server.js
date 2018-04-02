@@ -150,9 +150,8 @@ apiRoutes.post('/demandetoken', function(req, res) {
 /////////
 apiRoutes.use(function(req, res, next) {
 
-  // check header or url parameters or post parameters for token
+    // check header or url parameters or post parameters for token
   var token = req.body.token || req.query.token || req.headers['x-access-token'];
-
   // decode token
   if (token) {
 
@@ -187,7 +186,7 @@ apiRoutes.get('/users', function(req, res) {
   });
 });  
 
-apiRoutes.post("Upload", function(req, res) {
+apiRoutes.post("/Upload", function(req, res) {
      upload(req, res, function(err) {
          if (err) {
             console.log(req);
@@ -217,14 +216,15 @@ var transporter = nodemailer.createTransport({
 
 apiRoutes.post('/email', function(req, res, next) {
   var mail = req.body.mail;
-
+  token_img = req.body.token_img;
   var mailOptions = {
           from: "noreply@instant-sphere.com",
           to: mail,
           subject: "instant-sphere",
-          text: token_img,
+          text: "Découvrez votre photo à 360° en vous connectant sur le site d'Instant \
+          Sphere: https://server.instant-sphere.com/" + req.body.token_img,
           html: "Découvrez votre photo à 360° en vous connectant sur le site d'Instant \
-          Sphere: http://server.instant-sphere.com:333/ et entrez le code suivant: " + "<b>" + req.body.token_img + "</b>"
+          Sphere: https://server.instant-sphere.com/" + req.body.token_img
   };
 
   transporter.sendMail(mailOptions, function(error, info){
@@ -266,7 +266,7 @@ apiRoutes.post('/logs', function(req, res){
     });
 });
 
-apiRoutes.post('/hardware', function(req, res){
+apiRoutes.post('/battery', function(req, res){
     var batteryLog = req.body.data;
     saveBattery(batteryLog);
 });
