@@ -9,6 +9,8 @@ const https = require('http');
 //   key: fs.readFileSync("../isphere.key"),
 //   cert: fs.readFileSync("../certificate-593390.crt"),
 // };
+const basicAuth = require('express-basic-auth')
+
 var bodyParser = require('body-parser');
 var app = Express();
 var RateLimit = require('express-rate-limit');
@@ -69,6 +71,9 @@ var token_img;
 //// =================
 /// Partie authentification 
 ////=============
+
+////// Les routes ci dessous ne sont pas protégées (jusqu'à apiRoutes.use(...))
+///////
 app.post('/enregistrement', function(req, res) {
 
   // create a sample user
@@ -95,13 +100,12 @@ app.post('/enregistrement', function(req, res) {
   });
 }});
 
-var apiRoutes = Express.Router(); 
- 
 
+
+/// Debut API
+var apiRoutes = Express.Router(); 
 apiRoutes.post('/demandetoken', function(req, res) {
 
-  // find the user
-    console.log(req.body.id_tablette);
 
   Tablette.findOne({
     id_tablette: req.body.id_tablette
@@ -137,13 +141,13 @@ apiRoutes.post('/demandetoken', function(req, res) {
                   token: token
                 });
       }   
-
     }
-
   );
 });
-
-
+//
+//////// ==== Verification Token. ====
+//////// Toutes les routes en dessous sont protégées
+/////////
 apiRoutes.use(function(req, res, next) {
 
   // check header or url parameters or post parameters for token
@@ -234,6 +238,38 @@ apiRoutes.post('/email', function(req, res, next) {
 transporter.close();
 });
 
+////// PARTIE MONITORING 
+////// =======
+const LOGS_DIR = '/var/log/instant-sphere/';
+const LOGS_KIBANA_DIR = '/var/log/instant-sphere/logstash/';
+
+var Storage_monitoring = multer.diskStorage({
+  destination: function (req, file, callback) {
+      // TODO check if it's normal logs or battery logs
+    callback(null, '/var/log/instant-sphere/');
+  },
+  filename: function (req, file, callback) {
+    callback(null, file.originalname);
+  }
+});
+
+var upload_monitoring = multer({ storage : Storage_monitoring}).single('logUploader');
+
+
+apiRoutes.post('/logs', function(req, res){
+    upload_monitoring(req, res, function(err) {
+        if(err) {
+            return res.end("Error uploading file: " + err);
+        }
+        writeKibanaLogs();
+        res.end("File is uploaded");
+    });
+});
+
+apiRoutes.post('/battery', function(req, res){
+    var batteryLog = req.body.data;
+    saveBattery(batteryLog);
+});
 
 app.use('/api', apiRoutes);
 
@@ -241,17 +277,51 @@ app.use('/api', apiRoutes);
 //// fin auth
 
 
-
 app.get("/", function(req, res) {
   res.sendFile(__dirname + '/index.html');
  });
 
- 
+var adminRoute=Express.Router();
 
+adminRoute.use(basicAuth({
+    users: { 'admin': 'Eirb18' },
+        challenge: true
+
+}))
+
+adminRoute.post('/activer',function(req,res){
+    Tablette.findOne({
+    id_tablette: req.body.id_tablette
+  }, function(err, tablette) {
+    console.log(tablette.already_given);
+
+    tablette.autorisee = true;
+    tablette.save();
+    return res.redirect('/admin');
+})});
+
+adminRoute.post('/desactiver',function(req,res){
+    Tablette.findOne({
+    id_tablette: req.body.id_tablette
+  }, function(err, tablette) {
+    console.log("**statut :"+ tablette.already_given);
+
+    tablette.autorisee = false;
+    tablette.save();
+    return res.redirect('/admin');
+})});
+adminRoute.get('/',function(req,res) {
+    console.log("on rentre dans /admin");
+    Tablette.find({}, function(err, tablettes) {
+    console.log(tablettes);
+        return res.render('admin.ejs',{ tablettes_liste: tablettes});
+
+  });
+});
+app.use('/admin', adminRoute);
 
 
 app.get('/:id', function(req, res) {
-console.log(req);
          return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host') + '/pictures/',
 nom_fichier: req.params.id + ".jpg"});
 });
@@ -280,3 +350,191 @@ app.get('/assets/*', (req, res) => {
 });
 
 https.createServer(app).listen(333);
+
+///////=======
+/////// Monitoring functions
+
+
+
+/**
+* Returns formatted date
+*/
+function getDate() {
+    var date = new Date()
+    date = date.toUTCString().replace(/ /g,'_');
+    return date.substring(5, date.length);
+}
+
+function getTimestamp() {
+    var date = new Date();
+    return date.toUTCString().replace(/ /g,'_');
+}
+
+/**
+* Saves daily logs
+*/
+function saveLogs(data) {
+    var file = getDate() + '.log';
+    fs.writeFile(LOGS_DIR + file, data, function(err) {
+        if (err) {
+            console.log(err);
+        }
+        console.log("Saved logs in" + file);
+    });
+}
+
+/**
+* Generates formatted stats for Kibana
+*/
+function writeKibanaLogs() {
+    var captures = {};
+    var shareActions = {};
+    var visualizeActions = {};
+
+    var dir = LOGS_DIR;
+    fs.readdir(dir, function(err, files) {
+        if (err) {
+            console.log(err);
+        }
+
+        else {
+
+            for (var i in files) {
+                var file = files[i];
+
+                // Treats only logs files
+                if (file.substring(file.length - 4) == ".log") {
+                    var day = file.substring(0, 10);
+                    var log = fs.readFileSync(dir + file, 'utf8');
+                    var logJSON = JSON.parse(log);
+
+                    var nbCaptures = countEventOccurrences(logJSON, "capture");
+
+                    if (captures[day]) {
+                        captures[day] += nbCaptures;
+                    }
+
+                    else {
+                        captures[day] = nbCaptures;
+                    }
+
+                    shareActions[day] = countChoices(logJSON, "share", { "code,mail": 0, "facebook": 0, "abandon": 0 });
+                    visualizeActions[day] = countChoices(logJSON, "visualize", { "share": 0, "restart": 0, "abandon": 0 });
+                }
+            }
+
+            console.log("Captures: %j", captures);
+            console.log("Share actions %j", shareActions);
+            console.log("Visualize actions %j", visualizeActions);
+
+            saveCaptures(captures);
+            saveChoices("visualize", visualizeActions);
+            saveChoices("share", shareActions);
+        }
+    });
+}
+
+/**
+* Saves formatted logs for Kibana --> Number of daily captures
+*/
+function saveCaptures(captures) {
+    for (var day in captures) {
+        var dailyCaptures = '';
+
+        for (var i = 0; i<captures[day]; i++) {
+            dailyCaptures += '{ "captures": 1 }\n';
+        }
+
+        var logFile = LOGS_KIBANA_DIR + 'capture/' + day + '.log';
+        fs.writeFile(logFile, dailyCaptures, function(err) {
+            if (err) {
+                console.log(err);
+            }
+        });
+    }
+}
+
+/**
+* Saves formatted logs for Kibana --> Proportion of choices for a given event
+*/
+function saveChoices(eventName, choices) {
+    for (var day in choices) {
+        var res = '';
+
+        for (var choice in choices[day]) {
+            for (var j = 0; j<choices[day][choice]; j++) {
+                res += '{ "' + eventName + '": "' + choice + '" }\n';
+            }
+        }
+        var logFile = LOGS_KIBANA_DIR + eventName + '/' + day + '.log';
+        fs.writeFile(logFile, res, function(err) {
+            if (err) {
+                console.log(err);
+            }
+        });
+    }
+}
+
+/**
+* Saves formatted logs for Kibana --> Camera battery and tablet battery per timestamp
+*/
+function saveBattery(batteryLog) {
+    fs.appendFile(LOGS_KIBANA_DIR + 'battery/battery.log', batteryLog, function (err) {
+        if (err) throw err;
+    });
+}
+
+/**
+* Counts occurrences of choices for the event @eventName
+*/
+function countChoices(log, eventName, choices) {
+    log.forEach(function(e) {
+        if (e["event"] == eventName) {
+            var choice = e["choice"];
+            choices[choice]++;
+        }
+    });
+    return choices;
+}
+
+function countEventOccurrences(log, eventName) {
+    var count = 0;
+
+    if (log) {
+        // Used to store non duplicate events
+        var events = [];
+        log.forEach(function(e) {
+            if (e["event"] == eventName && !events.some(k => isEquivalent(k, e))) {
+                events.push(e);
+                count++;
+            }
+        });
+    }
+    return count;
+}
+
+function isEquivalent(a, b) {
+    // Create arrays of property names
+    var aProps = Object.getOwnPropertyNames(a);
+    var bProps = Object.getOwnPropertyNames(b);
+    // If number of properties is different,
+    // objects are not equivalent
+    if (aProps.length != bProps.length) {
+        return false;
+    }
+    for (var i = 0; i < aProps.length; i++) {
+        var propName = aProps[i];
+        // If values of same property are not equal,
+        // objects are not equivalent
+        if (a[propName] !== b[propName]) {
+            return false;
+        }
+    }
+    // If we made it this far, objects
+    // are considered equivalent
+    return true;
+}
+
+////======== END Monitoring Func======
+
+
