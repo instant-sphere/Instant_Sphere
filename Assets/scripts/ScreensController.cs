@@ -390,6 +390,7 @@ public sealed class ScreensController : MonoBehaviour
      **/
     private void ManageWaitingScreen()
     {
+
         if (mIsOSCReady)
         {
             mTimeout.Reset();

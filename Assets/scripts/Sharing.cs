@@ -58,7 +58,7 @@ public class Sharing : MonoBehaviour
         form.AddField("token", token);
         form.AddField("mail", mail);
 
-        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/email", form);
+        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/email", form);
 
         yield return www.SendWebRequest();
 
