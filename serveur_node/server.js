@@ -266,7 +266,7 @@ apiRoutes.post('/logs', function(req, res){
     });
 });
 
-apiRoutes.post('/battery', function(req, res){
+apiRoutes.post('/hardware', function(req, res){
     var batteryLog = req.body.data;
     saveBattery(batteryLog);
 });
