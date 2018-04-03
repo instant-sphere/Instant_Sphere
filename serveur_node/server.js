@@ -266,7 +266,7 @@ apiRoutes.post('/logs', function(req, res){
     });
 });
 
-apiRoutes.post('/battery', function(req, res){
+apiRoutes.post('/hardware', function(req, res){
     var batteryLog = req.body.data;
     saveBattery(batteryLog);
 });
@@ -322,20 +322,20 @@ app.use('/admin', adminRoute);
 
 
 app.get('/:id', function(req, res) {
-         return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host') + '/pictures/',
+         return res.render('affichage.ejs',{ fullUrl: 'https://' + req.get('host') + '/pictures/',
 nom_fichier: req.params.id + ".jpg"});
 });
 
 
 
 app.post('/supprimer_img', limiter, function(req, res, next) {
-	console.log('**************' + req.headers.referer.substring(37,42));
-      fs.unlink('/home/isphere/NodeJs_isphere/pictures/'+req.headers.referer.substring(37, 42)+'.jpg', function(error) {
+	console.log('**************' + req.headers.referer.substring(34,39));
+      fs.unlink('/home/isphere/NodeJs_isphere/pictures/'+req.headers.referer.substring(34, 39)+'.jpg', function(error) {
       if (error) {
          console.log(req);
          return res.end("Something went wrong!");
         }
-        console.log('Deleted ' + req.headers.referer.substring(37, 42));
+        console.log('Deleted ' + req.headers.referer.substring(34, 39));
         res.redirect(req.protocol + '://' + req.get('host'));
   });
 });
