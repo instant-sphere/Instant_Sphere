@@ -35,7 +35,7 @@ public class Sharing : MonoBehaviour
 
         form.AddBinaryData("imgUploader", img, "photo.jpg", "image/jpeg");
 
-        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/Upload", form);
+        UnityWebRequest www = UnityWebRequest.Post("https://server.instant-sphere.com/api/Upload", form);
         www.SetRequestHeader("x-access-token", token);
 
         yield return www.SendWebRequest();
@@ -59,7 +59,7 @@ public class Sharing : MonoBehaviour
         form.AddField("mail", mail);
         form.AddField("token_img", token_img);
 
-        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/email", form);
+        UnityWebRequest www = UnityWebRequest.Post("https://server.instant-sphere.com/api/email", form);
         www.SetRequestHeader("x-access-token", token);
 
         yield return www.SendWebRequest();
@@ -81,7 +81,7 @@ public class Sharing : MonoBehaviour
 
         form.AddField("id_tablette", id_tablette);
 
-        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/enregistrement", form);
+        UnityWebRequest www = UnityWebRequest.Post("https://server.instant-sphere.com/enregistrement", form);
 
         yield return www.SendWebRequest();
 
@@ -112,7 +112,7 @@ public class Sharing : MonoBehaviour
 
         form.AddField("id_tablette", id_tablette);
 
-        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/demandetoken", form);
+        UnityWebRequest www = UnityWebRequest.Post("https://server.instant-sphere.com/api/demandetoken", form);
 
         yield return www.SendWebRequest();
 
