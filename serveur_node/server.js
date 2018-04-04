@@ -207,7 +207,7 @@ apiRoutes.post('/email', function (req, res, next) {
         text: "Découvrez votre photo à 360° en vous connectant sur le site d'Instant \
           Sphere: https://server.instant-sphere.com/" + req.body.token_img,
         html: "Découvrez votre photo à 360° en vous connectant sur le site d'Instant \
-          Sphere: https://server.instant-sphere.com/" + req.body.token_img
+          Sphere: <a href='https://server.instant-sphere.com/" + req.body.token_img + "'>https://server.instant-sphere.com/" + req.body.token_img + "</a>"
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
