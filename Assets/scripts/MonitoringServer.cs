@@ -72,13 +72,13 @@ public sealed class MonitoringServer : MonoBehaviour
 
         while (true)
         {
-            yield return new WaitForSeconds(10.0f/*600.0f*/);
+            yield return new WaitForSeconds(300.0f);
 
             string[] filenames = GetLogsFilesNames();
 
             foreach (string f in filenames)
             {
-                Debug.Log("Monitoring : treat file :" + f);
+                Debug.Log("Monitoring : treating file :" + f);
                 // Creates a form containing the data to send
                 WWWForm form = new WWWForm();
                 form.AddBinaryData("logUploader", Encoding.UTF8.GetBytes(GetFileContent(f)), f, "text/plain");
@@ -95,8 +95,8 @@ public sealed class MonitoringServer : MonoBehaviour
                 }
                 else
                 {
+                    Debug.Log("Monitoring has send: " + f);
                     File.Delete(Application.persistentDataPath + "/" + f);
-                    Debug.Log("SENDING LOG FILE : " + f);
                 }
             }
 

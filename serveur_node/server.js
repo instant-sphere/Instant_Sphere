@@ -1,8 +1,6 @@
 /* Set working directory for relative paths */
 const process = require('process');
-var scriptPath = process.argv[1];
-var scriptDirectory = scriptPath.substring(0, scriptPath.lastIndexOf('/'));
-process.chdir(scriptDirectory);
+process.chdir(process.env.PWD);
 
 /* Modules */
 const Express = require('express');
@@ -344,8 +342,8 @@ app.get('/assets/*', (req, res) => {
     res.sendFile(req.url, { root: './' })
 });
 
-// the server listen on localhost port 333
-app.listen(333, "127.0.0.1");
+// the server listen on localhost port 3333
+app.listen(3333, "127.0.0.1");
 
 
 // ====================================
@@ -465,7 +463,7 @@ function saveChoices(eventName, choices) {
 * Saves formatted logs for Kibana --> Camera battery and tablet battery per timestamp
 */
 function saveBattery(batteryLog) {
-    fs.appendFile(LOGS_KIBANA_DIR + 'battery/battery.log', batteryLog, function (err) {
+    fs.appendFile(LOGS_KIBANA_DIR + 'battery/battery.log', batteryLog + '\n', function (err) {
         if (err) throw err;
     });
 }
