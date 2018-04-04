@@ -73,8 +73,10 @@ public sealed class Logger
         {
             StreamWriter streamWriter = new StreamWriter(GetFilePathAndName(), true);
             streamWriter.WriteLine(mSB.ToString());
+            streamWriter.Flush();
             streamWriter.Close();
             mJsonWriter.Reset();
+            mSB.Remove(0, mSB.Length);
             mFileDateStr = null;
         }
         catch (Exception ex)
