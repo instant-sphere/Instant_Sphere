@@ -1,5 +1,8 @@
 var Express = require('express');
-
+const process = require('process');
+var scriptPath = process.argv[1];
+var scriptDirectory = scriptPath.substring(0, scriptPath.lastIndexOf('/'));
+process.chdir(scriptDirectory);
 var multer = require('multer');
 //const helmet = require('helmet');
 const fs = require('fs');
