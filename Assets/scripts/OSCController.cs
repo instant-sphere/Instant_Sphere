@@ -21,11 +21,13 @@ public sealed class OSCController : MonoBehaviour
     OSCStates mCurrentState;
 
     /* Actions associated with the method name */
-    enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, CAMERA_INFO, DELETE, LIVE_PREVIEW, CAMERA_STATE };
-    string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskCameraInfo", "AskDeletePhoto", "AskStartLivePreview", "AskCameraState" };
+    enum OSCActions { START_SESSION = 0, UPGRADE_API, SET_OPTIONS, TAKE_PICTURE, DOWNLOAD, PROGRESS_STATUS, DELETE, LIVE_PREVIEW, CAMERA_STATE };
+    string[] mActionsMethodName = { "AskStartSession", "AskUpgradeAPI", "AskSetOptions", "AskTakePicture", "AskDownloadPhoto", "AskProgressStatus", "AskDeletePhoto", "AskStartLivePreview", "AskCameraState" };
 
 
-    // Use this for initialization
+    /**
+     * Use this for initialization
+     **/
     private void Start()
     {
         Init();
@@ -115,14 +117,16 @@ public sealed class OSCController : MonoBehaviour
     }
 
     /**
-     *  Remove all actions waiting in the queue
+     * Remove all actions waiting in the queue
      **/
     private void ClearQueue()
     {
         mExecutionQueue.Clear();
     }
 
-    // Update is called once per frame
+    /**
+     * Issues enqueued commands and gets response
+     **/
     private void Update()
     {
         //Dequeue and invoke a new method if we are done with the previous request
@@ -229,6 +233,10 @@ public sealed class OSCController : MonoBehaviour
         }
     }
 
+    /**
+     * Passes the camera in API version 2 if it is in version 1
+     * then sets options
+     **/
     void ManageInit(JsonData jdata)
     {
         Debug.Log(jdata.ToString());
@@ -263,7 +271,7 @@ public sealed class OSCController : MonoBehaviour
     }
 
     /**
-     * LIVE PREVIEW: store the lastest image
+     * LIVE PREVIEW: store the latest image
      **/
     void ManageLivePreview()
     {
@@ -318,16 +326,7 @@ public sealed class OSCController : MonoBehaviour
     /* After this line all methods are actions to be enqueued */
 
     /**
-     * Recover camera information
-     **/
-    private void AskCameraInfo()
-    {
-        mHTTP.ChangeCommand(HttpRequest.Commands.GET_INFO);
-        mHTTP.Execute();
-    }
-
-    /**
-     * Start a new session
+     * Starts a new session
      **/
     private void AskStartSession()
     {
@@ -349,7 +348,7 @@ public sealed class OSCController : MonoBehaviour
     }
 
     /**
-     * Upgrade from API 2.0 to API 2.1
+     * Upgrades from API 2.0 to API 2.1
      **/
     private void AskUpgradeAPI()
     {
@@ -381,7 +380,7 @@ public sealed class OSCController : MonoBehaviour
     }
 
     /**
-     * Set camera options
+     * Sets camera options
      **/
     private void AskSetOptions()
     {
@@ -422,7 +421,7 @@ public sealed class OSCController : MonoBehaviour
     }
 
     /**
-     * Take a picture
+     * Takes a picture
      **/
     private void AskTakePicture()
     {
@@ -448,7 +447,7 @@ public sealed class OSCController : MonoBehaviour
     }
 
     /**
-     * Retrieve advancement of current operation
+     * Retrieves advancement of current operation
      **/
     private void AskProgressStatus()
     {
@@ -470,7 +469,7 @@ public sealed class OSCController : MonoBehaviour
     }
 
     /**
-     * Download a photo
+     * Downloads a photo
      **/
     private void AskDownloadPhoto()
     {
@@ -479,7 +478,7 @@ public sealed class OSCController : MonoBehaviour
     }
 
     /**
-     * Delete a photo
+     * Deletes a photo
      **/
     private void AskDeletePhoto()
     {
@@ -508,7 +507,7 @@ public sealed class OSCController : MonoBehaviour
     }
 
     /**
-     * Start live preview mode
+     * Starts live preview mode
      **/
     private void AskStartLivePreview()
     {
@@ -531,14 +530,15 @@ public sealed class OSCController : MonoBehaviour
         return sb.ToString();
     }
 
+    /**
+     * Gets camera current state
+     **/
     private void AskCameraState()
     {
         mHTTP.ChangeCommand(HttpRequest.Commands.POST_STATE);
         mHTTP.SetJSONData("{}");
         mHTTP.Execute();
     }
-
-
 }
 
 

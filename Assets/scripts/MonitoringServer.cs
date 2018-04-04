@@ -7,26 +7,38 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class MonitoringServer : MonoBehaviour
+/**
+ * This class sends the logs and other hardware data to the server
+ **/
+public sealed class MonitoringServer : MonoBehaviour
 {
     public CameraData mCamData;
+    public Sharing mSharingServer;
 
     BatteryManager mTabletBattery;
-    static string PORT = "334";
-    static string URL = "http://server.instant-sphere.com";
+    static string URL = "https://server.instant-sphere.com";
 
 
+    /**
+     * Returns the URL for the logs end point
+     **/
     private string GetLogURL()
     {
-        return URL + ":" + PORT + "/api/logs";
+        return URL + "/api/logs";
     }
 
+    /**
+     * Returns the URL for the hardware data end point
+     **/
     private string GetHardwareURL()
     {
-        return URL + ":" + PORT + "/api/hardware";
+        return URL + "/api/hardware";
     }
 
-    void Start()
+    /**
+     * Starts the coroutine that continuously sends data to the server
+     **/
+    private void Start()
     {
         mTabletBattery = new BatteryManager();
         StartCoroutine(SendRequest());
@@ -52,7 +64,7 @@ public class MonitoringServer : MonoBehaviour
     }
 
     /**
-	 * Coroutine sending log files and hardware values every [10 seconds]
+	 * Coroutine sending log files and hardware values every 10 minutes
 	 **/
     IEnumerator SendRequest()
     {
@@ -60,21 +72,26 @@ public class MonitoringServer : MonoBehaviour
 
         while (true)
         {
+            yield return new WaitForSeconds(10.0f/*600.0f*/);
+
             string[] filenames = GetLogsFilesNames();
 
             foreach (string f in filenames)
             {
+                Debug.Log("Monitoring : treat file :" + f);
                 // Creates a form containing the data to send
                 WWWForm form = new WWWForm();
                 form.AddBinaryData("logUploader", Encoding.UTF8.GetBytes(GetFileContent(f)), f, "text/plain");
+
                 UnityWebRequest www = UnityWebRequest.Post(GetLogURL(), form);
+                www.SetRequestHeader("x-access-token", mSharingServer.GetToken());
 
                 // Sends the request and yields until the send completes
                 yield return www.SendWebRequest();
 
                 if (www.isNetworkError || www.isHttpError)
                 {
-                    Debug.Log(www.error);
+                    Debug.Log("Monitoring server error :" + www.downloadHandler.text);
                 }
                 else
                 {
@@ -98,17 +115,19 @@ public class MonitoringServer : MonoBehaviour
             form2.AddField("data", sb.ToString());
 
             UnityWebRequest www2 = UnityWebRequest.Post(GetHardwareURL(), form2);
+            www2.SetRequestHeader("x-access-token", mSharingServer.GetToken());
             yield return www2.SendWebRequest();
 
             if (www2.isNetworkError || www2.isHttpError)
             {
                 Debug.Log(www2.error);
             }
-
-            yield return new WaitForSeconds(10.0f);
         }
     }
 
+    /**
+     * Returns the file content of the given file name
+     **/
     public static string GetFileContent(string filename)
     {
         StreamReader streamReader = new StreamReader(Application.persistentDataPath + "/" + filename);

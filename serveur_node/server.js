@@ -196,7 +196,7 @@ apiRoutes.post("/Upload", function(req, res) {
          console.log(req.files[0].filename);
 //          return res.render('affichage.ejs',{ fullUrl: req.protocol + '://' + req.get('host+ '/pictures/',
 // nom_fichier: req.files[0].filename});
-    return res.json({ status : 1, code : req.files[0].filename });
+    return res.json({ status : 1, code : req.files[0].filename.substring(0, req.files[0].filename.lastIndexOf('.')) });
      });
  });
 
@@ -406,7 +406,8 @@ function writeKibanaLogs() {
                 if (file.substring(file.length - 4) == ".log") {
                     var day = file.substring(0, 10);
                     var log = fs.readFileSync(dir + file, 'utf8');
-                    var logJSON = JSON.parse(log);
+		    console.log('going to parse' + dir + file);
+                    var logJSON = JSON.parse(log.trim());
 
                     var nbCaptures = countEventOccurrences(logJSON, "capture");
 

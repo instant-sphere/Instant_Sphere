@@ -177,6 +177,7 @@ public sealed class Logger
         mJsonWriter.WritePropertyName("time");
         mJsonWriter.Write(NewDate());
     }
+
     /**
      * Writes a visualize event with choice = abandon in the log
      **/

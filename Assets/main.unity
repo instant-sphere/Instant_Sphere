@@ -1126,13 +1126,13 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 432156642}
   m_TextComponent: {fileID: 1111249962}
   m_Placeholder: {fileID: 121385739}
-  m_ContentType: 0
+  m_ContentType: 6
   m_InputType: 0
   m_AsteriskChar: 42
-  m_KeyboardType: 0
+  m_KeyboardType: 7
   m_LineType: 0
   m_HideMobileInput: 0
-  m_CharacterValidation: 0
+  m_CharacterValidation: 5
   m_CharacterLimit: 0
   m_OnEndEdit:
     m_PersistentCalls:
@@ -2465,7 +2465,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 784969401}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -50, y: 50, z: 0}
+  m_LocalPosition: {x: -960.50134, y: 600.31335, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1988413803}
@@ -3691,6 +3691,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mCamData: {fileID: 204575473}
+  mSharingServer: {fileID: 1749817165}
 --- !u!4 &1496583922
 Transform:
   m_ObjectHideFlags: 0
@@ -4753,7 +4754,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1988413800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4819,7 +4820,7 @@ RectTransform:
   m_GameObject: {fileID: 1988413799}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 10}
-  m_LocalScale: {x: 0.02154292, y: 0.02154292, z: 0.02154292}
+  m_LocalScale: {x: 0.009617481, y: 0.009617481, z: 0.009617481}
   m_Children:
   - {fileID: 784969402}
   - {fileID: 432156640}
