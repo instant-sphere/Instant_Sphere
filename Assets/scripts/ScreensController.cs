@@ -531,6 +531,7 @@ public sealed class ScreensController : MonoBehaviour
 
             string mail_s = mail.text;
             mSharingServer.SendToServerMail(mail_s);
+            mail.text = "";
 
             mCurrentState = ScreensStates.GOODBYE;
             UpdateScreen();
