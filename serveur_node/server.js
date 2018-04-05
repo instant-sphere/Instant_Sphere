@@ -235,7 +235,7 @@ const LOGS_KIBANA_DIR = '/var/log/instant-sphere/logstash/';
 /* Stores log files send by tablets */
 var Storage_monitoring = multer.diskStorage({
     destination: function (req, file, callback) {
-        callback(null, '/var/log/instant-sphere/');
+        callback(null, LOGS_DIR);
     },
     filename: function (req, file, callback) {
         callback(null, file.originalname);
@@ -250,7 +250,7 @@ apiRoutes.post('/logs', function (req, res) {
             return res.end("Error uploading file " + req.file.filename + ": " + err);
         }
         res.end(req.file.filename + " is uploaded");
-        writeKibanaLogs();
+        writeKibanaLogs(req.file.filename);
     });
 });
 
@@ -374,19 +374,12 @@ function saveLogs(data) {
 /**
 * Generates formatted stats for Kibana
 */
-function writeKibanaLogs() {
+function writeKibanaLogs(file) {
     var captures = {};
     var shareActions = {};
     var visualizeActions = {};
 
     var dir = LOGS_DIR;
-    fs.readdir(dir, function (err, files) {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            for (var i in files) {
-                var file = files[i];
 
                 // Treats only logs files
                 if (file.substring(file.length - 4) == ".log") {
@@ -405,7 +398,6 @@ function writeKibanaLogs() {
                     shareActions[day] = countChoices(logJSON, "share", { "code,mail": 0, "facebook": 0, "abandon": 0 });
                     visualizeActions[day] = countChoices(logJSON, "visualize", { "share": 0, "restart": 0, "abandon": 0 });
                 }
-            }
 
             console.log("Captures: %j", captures);
             console.log("Share actions %j", shareActions);
@@ -414,8 +406,6 @@ function writeKibanaLogs() {
             saveCaptures(captures);
             saveChoices("visualize", visualizeActions);
             saveChoices("share", shareActions);
-        }
-    });
 }
 
 /**
@@ -450,13 +440,12 @@ function saveChoices(eventName, choices) {
                 res += '{ "' + eventName + '": "' + choice + '" }\n';
             }
         }
+
         var logFile = LOGS_KIBANA_DIR + eventName + '/' + day + '.log';
-        fs.writeFile(logFile, res, function (err) {
-            if (err) {
-                console.log(err);
-            }
-        });
-    }
+	var stream = fs.createWriteStream(logFile, {flags:'a'});
+        stream.write(res);
+	stream.end();
+   }
 }
 
 /**
