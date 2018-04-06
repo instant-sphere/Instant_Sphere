@@ -5,7 +5,7 @@ using LitJson;
 using System.Text;
 
 /**
-* This class handle logs
+* This class handle log system
 * It's a singleton
 **/
 public sealed class Logger
@@ -28,7 +28,7 @@ public sealed class Logger
     }
 
     /**
-     * Get the unique instance
+     * Gets the unique instance
      **/
     public static Logger Instance
     {
@@ -59,22 +59,24 @@ public sealed class Logger
     /**
      * Returns the full name (including path) of the current log file
      **/
-    private string GetFilePath()
+    private string GetFilePathAndName()
     {
         return Application.persistentDataPath + "/" + GetCurrentFileName() + ".log";
     }
 
     /**
-     * Write data from the JSON writer to the current log file
+     * Writes data from the JSON writer to the current log file
      **/
     private void WriteFile()
     {
         try
         {
-            StreamWriter streamWriter = new StreamWriter(GetFilePath(), true);
+            StreamWriter streamWriter = new StreamWriter(GetFilePathAndName(), true);
             streamWriter.WriteLine(mSB.ToString());
+            streamWriter.Flush();
             streamWriter.Close();
             mJsonWriter.Reset();
+            mSB.Remove(0, mSB.Length);
             mFileDateStr = null;
         }
         catch (Exception ex)
@@ -84,7 +86,7 @@ public sealed class Logger
     }
 
     /**
-     * Generate a new name for the current log file
+     * Generates a new name for the current log file
      **/
     private void NewFile()
     {
@@ -100,7 +102,7 @@ public sealed class Logger
     }
 
     /**
-     * Change the state to Real Time
+     * Changes the state to Real Time
      **/
     public void ChangeToRT()
     {
@@ -108,7 +110,7 @@ public sealed class Logger
     }
 
     /**
-     * Change the state to High Quality
+     * Changes the state to High Quality
      **/
     public void ChangeToHQ()
     {
@@ -116,7 +118,7 @@ public sealed class Logger
     }
 
     /**
-     * Write an error event in the log
+     * Writes an error event in the log
      **/
     public void WriteError(ScreensController.ScreensStates currentState)
     {
@@ -138,7 +140,7 @@ public sealed class Logger
     }
 
     /**
-     * Write a start event in the log
+     * Writes a start event in the log
      **/
     public void WriteStart()
     {
@@ -154,7 +156,7 @@ public sealed class Logger
     }
 
     /**
-     * Write a capture event in the log
+     * Writes a capture event in the log
      **/
     public void WriteCapture()
     {
@@ -167,15 +169,23 @@ public sealed class Logger
     }
 
     /**
-     * Write a visualize event with choice = abandon in the log
+     * Writes the common part of visualize events
      **/
-    public void WriteVisualizeAbandon()
+    private void WriteVisualizeCommon()
     {
         mJsonWriter.WriteObjectStart();
         mJsonWriter.WritePropertyName("event");
         mJsonWriter.Write("visualize");
         mJsonWriter.WritePropertyName("time");
         mJsonWriter.Write(NewDate());
+    }
+
+    /**
+     * Writes a visualize event with choice = abandon in the log
+     **/
+    public void WriteVisualizeAbandon()
+    {
+        WriteVisualizeCommon();
         mJsonWriter.WritePropertyName("choice");
         mJsonWriter.Write("abandon");
         mJsonWriter.WriteObjectEnd();
@@ -184,75 +194,67 @@ public sealed class Logger
     }
 
     /**
-     * Write a visualize event with choice = restart in the log
+     * Writes a visualize event with choice = restart in the log
      **/
     public void WriteVisualizeRestart()
     {
-        mJsonWriter.WriteObjectStart();
-        mJsonWriter.WritePropertyName("event");
-        mJsonWriter.Write("visualize");
-        mJsonWriter.WritePropertyName("time");
-        mJsonWriter.Write(NewDate());
+        WriteVisualizeCommon();
         mJsonWriter.WritePropertyName("choice");
         mJsonWriter.Write("restart");
         mJsonWriter.WriteObjectEnd();
     }
 
     /**
-     * Write a visualize event with choice = share in the log
+     * Writes a visualize event with choice = share in the log
      **/
     public void WriteVisualizeShare()
     {
-        mJsonWriter.WriteObjectStart();
-        mJsonWriter.WritePropertyName("event");
-        mJsonWriter.Write("visualize");
-        mJsonWriter.WritePropertyName("time");
-        mJsonWriter.Write(NewDate());
+        WriteVisualizeCommon();
         mJsonWriter.WritePropertyName("choice");
         mJsonWriter.Write("share");
         mJsonWriter.WriteObjectEnd();
     }
 
     /**
-     * Write a share event with choice = Facebook in the log
+     * Writes the common part of share events
      **/
-    public void WriteShareFacebook()
+    private void WriteShareCommon()
     {
         mJsonWriter.WriteObjectStart();
         mJsonWriter.WritePropertyName("event");
         mJsonWriter.Write("share");
         mJsonWriter.WritePropertyName("time");
         mJsonWriter.Write(NewDate());
+    }
+
+    /**
+     * Writes a share event with choice = Facebook in the log
+     **/
+    public void WriteShareFacebook()
+    {
+        WriteShareCommon();
         mJsonWriter.WritePropertyName("choice");
         mJsonWriter.Write("facebook");
         mJsonWriter.WriteObjectEnd();
     }
 
     /**
-     * Write a share event with choice = code,mail in the log
+     * Writes a share event with choice = code,mail in the log
      **/
     public void WriteShareCode()
     {
-        mJsonWriter.WriteObjectStart();
-        mJsonWriter.WritePropertyName("event");
-        mJsonWriter.Write("share");
-        mJsonWriter.WritePropertyName("time");
-        mJsonWriter.Write(NewDate());
+        WriteShareCommon();
         mJsonWriter.WritePropertyName("choice");
         mJsonWriter.Write("code,mail");
         mJsonWriter.WriteObjectEnd();
     }
 
     /**
-     * Write a share event with choice = abandon in the log
+     * Writes a share event with choice = abandon in the log
      **/
     public void WriteShareAbandon()
     {
-        mJsonWriter.WriteObjectStart();
-        mJsonWriter.WritePropertyName("event");
-        mJsonWriter.Write("share");
-        mJsonWriter.WritePropertyName("time");
-        mJsonWriter.Write(NewDate());
+        WriteShareCommon();
         mJsonWriter.WritePropertyName("choice");
         mJsonWriter.Write("abandon");
         mJsonWriter.WriteObjectEnd();
@@ -261,7 +263,7 @@ public sealed class Logger
     }
 
     /**
-     * Write a navigate event in the log
+     * Writes a navigate event in the log
      **/
     public void WriteNavigate()
     {
@@ -284,6 +286,34 @@ public sealed class Logger
         mJsonWriter.WriteObjectStart();
         mJsonWriter.WritePropertyName("event");
         mJsonWriter.Write("timeout");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WriteObjectEnd();
+        mJsonWriter.WriteArrayEnd();
+        WriteFile();
+    }
+
+    /**
+     * Write a facebook success share event in the log
+     **/
+    public void WriteFacebookSuccess()
+    {
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("facebook success");
+        mJsonWriter.WritePropertyName("time");
+        mJsonWriter.Write(NewDate());
+        mJsonWriter.WriteObjectEnd();
+    }
+
+    /**
+     * Write a goodbye event in the log
+     **/
+    public void WriteGoodbye()
+    {
+        mJsonWriter.WriteObjectStart();
+        mJsonWriter.WritePropertyName("event");
+        mJsonWriter.Write("goodbye");
         mJsonWriter.WritePropertyName("time");
         mJsonWriter.Write(NewDate());
         mJsonWriter.WriteObjectEnd();

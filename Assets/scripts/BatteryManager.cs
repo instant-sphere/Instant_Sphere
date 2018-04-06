@@ -3,7 +3,7 @@
 /**
  * This class is used to get information about the tablet battery
  **/
-public class BatteryManager
+public sealed class BatteryManager
 {
     AndroidJavaObject mBatteryCtrl;    //native Java code object used to manipulate battery settings
 
@@ -17,7 +17,7 @@ public class BatteryManager
     }
 
     /**
-     * Return the current battery level
+     * Return the current battery level or 0 in editor mode
      **/
     public int GetCurrentBatteryLevel()
     {

@@ -1,64 +1,100 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
+using LitJson;
+using System;
 
-public class Sharing : MonoBehaviour
+/**
+ * This class handles communication with the API
+ * For uploading photo, authenticate tablet, send email
+ **/
+public sealed class Sharing : MonoBehaviour
 {
-    private string token;
-    private string token_img;
-    private bool auth;
+    string mTabletToken;
+    string mImageToken;
+    bool mIsAuthenticated;
 
+    static string URL = "https://server.instant-sphere.com";
+
+    /**
+     * Uploads a photo to the server
+     **/
     public void SendToServer(byte[] img)
     {
         StartCoroutine(Upload(img));
     }
 
+    /**
+     * Asks the server to send a email
+     **/
     public void SendToServerMail(string mail)
     {
         StartCoroutine(Email(mail));
     }
 
-    public void SendToServerAuthentification(string android_id)
+    /**
+     * Communicates the tablet Android ID to the server
+     **/
+    public void SendToServerAuthentication(string androidID)
     {
-        StartCoroutine(Authentification(android_id));
+        StartCoroutine(Authentication(androidID));
     }
 
-    public void SendToServerDemandeToken(string android_id)
+    /**
+     * Asks the server our token
+     **/
+    public void SendToServerAskToken(string androidID)
     {
-        StartCoroutine(DemandeToken(android_id));
+        StartCoroutine(DemandeToken(androidID));
     }
 
-
+    /**
+     * Coroutine that uploads a photo on the server and retrieves the corresponding token
+     **/
     private IEnumerator Upload(byte[] img)
     {
         WWWForm form = new WWWForm();
-        form.AddField("token", token);
+
         form.AddBinaryData("imgUploader", img, "photo.jpg", "image/jpeg");
 
-        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/Upload", form);
+        UnityWebRequest www = UnityWebRequest.Post(URL + "/api/Upload", form);
+        www.SetRequestHeader("x-access-token", mTabletToken);
 
         yield return www.SendWebRequest();
 
         if (www.isNetworkError || www.isHttpError)
         {
-            Debug.Log(www.error);
-            token_img = null;
+            Debug.Log(www.error + www.downloadHandler.text);
+            mImageToken = null;
         }
         else
         {
             Debug.Log(www.downloadHandler.text);
-            token_img = www.downloadHandler.text.Substring(20, 5);
+            try
+            {
+                JsonData response = HttpRequest.JSONStringToDictionary(www.downloadHandler.text);
+                mImageToken = response["code"].ToString();
+            }
+            catch (Exception e)
+            {
+                Debug.Log("Error uploading photo :" + e.Message);
+                throw;
+            }
         }
     }
 
+    /**
+     * Coroutine that asks the server to send an email
+     **/
     private IEnumerator Email(string mail)
     {
         WWWForm form = new WWWForm();
 
-        form.AddField("token", token);
         form.AddField("mail", mail);
+        form.AddField("token_img", mImageToken);
 
-        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/email", form);
+        UnityWebRequest www = UnityWebRequest.Post(URL + "/api/email", form);
+        www.SetRequestHeader("x-access-token", mTabletToken);
 
         yield return www.SendWebRequest();
 
@@ -68,18 +104,24 @@ public class Sharing : MonoBehaviour
             Debug.Log(www.downloadHandler.text);
     }
 
-    public string GetToken_img()
+    /**
+     * Returns the photo token
+     **/
+    public string GetTokenImg()
     {
-        return token_img;
+        return mImageToken;
     }
 
-    private IEnumerator Authentification(string id_tablette)
+    /**
+     * Coroutine that registers the tablet on the server
+     **/
+    private IEnumerator Authentication(string idTablet)
     {
         WWWForm form = new WWWForm();
 
-        form.AddField("id_tablette", id_tablette);
+        form.AddField("id_tablette", idTablet);
 
-        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/enregistrement", form);
+        UnityWebRequest www = UnityWebRequest.Post(URL + "/enregistrement", form);
 
         yield return www.SendWebRequest();
 
@@ -87,30 +129,41 @@ public class Sharing : MonoBehaviour
             Debug.Log(www.error);
         else
         {
-            Debug.Log(www.downloadHandler.text);
-            if (www.downloadHandler.text.Substring(11, 4) == "true")
+            Debug.Log("Auth :" + www.downloadHandler.text);
+            try
             {
-                auth = true;
+                JsonData response = HttpRequest.JSONStringToDictionary(www.downloadHandler.text);
+                if (response["success"].ToString() == "True")
+                    mIsAuthenticated = true;
+                else
+                    mIsAuthenticated = false;
             }
-            else
+            catch (Exception e)
             {
-                auth = false;
+                mTabletToken = null;
+                Debug.Log("Error when authenticate :" + e.Message);
             }
         }
     }
 
+    /**
+     * Returns true if the tablet is authenticated
+     **/
     public bool GetAuth()
     {
-        return auth;
+        return mIsAuthenticated;
     }
 
-    private IEnumerator DemandeToken(string id_tablette)
+    /**
+     * Coroutine that asks the token to the server
+     **/
+    private IEnumerator DemandeToken(string idTablette)
     {
         WWWForm form = new WWWForm();
 
-        form.AddField("id_tablette", id_tablette);
+        form.AddField("id_tablette", idTablette);
 
-        UnityWebRequest www = UnityWebRequest.Post("http://server.instant-sphere.com:333/api/demandetoken", form);
+        UnityWebRequest www = UnityWebRequest.Post(URL + "/api/demandetoken", form);
 
         yield return www.SendWebRequest();
 
@@ -118,27 +171,36 @@ public class Sharing : MonoBehaviour
             Debug.Log(www.error);
         else
         {
-            Debug.Log(www.downloadHandler.text);
-            if (www.downloadHandler.text.Substring(11, 4) == "true")
+            Debug.Log("Token :" + www.downloadHandler.text);
+            try
             {
-                token = www.downloadHandler.text.Substring(59, 139);
-                Debug.Log(token);
+                JsonData response = HttpRequest.JSONStringToDictionary(www.downloadHandler.text);
+                if (response["success"].ToString() == "True")
+                    mTabletToken = response["token"].ToString();
+                else
+                    mTabletToken = null;
             }
-            else
+            catch(Exception e)
             {
-                token = null;
+                mTabletToken = null;
+                Debug.Log("Error when getting token :" + e.Message);
             }
         }
     }
 
+    /**
+     * Returns the tablet token
+     **/
     public string GetToken()
     {
-        return token;
+        return mTabletToken;
     }
 
-    public void SetToken(string _token)
+    /**
+     * Sets the tablet token
+     **/
+    public void SetToken(string token)
     {
-        token = _token;
+        mTabletToken = token;
     }
-
 }

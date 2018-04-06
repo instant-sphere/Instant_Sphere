@@ -3,11 +3,11 @@
 /**
  * This class is used to control wifi
  **/
-public class WifiManager
+public sealed class WifiManager
 {
     AndroidJavaObject mWifiCtrl;    //native Java code object used to manipulate Wifi settings
     string mSSID;                   //SSID of camera network
-    const float mWifiTimeout = 10;  //10 sec to wait wifi turning ON
+    const float mWifiTimeout = 10;  //10 sec to wait for wifi turning ON
 
     public WifiManager()
     {
@@ -19,8 +19,9 @@ public class WifiManager
     }
 
     /**
-     * Enable wifi and wait until it is up or timeout expires
+     * Enables wifi and waits until it is up or timeout expires
      * Returns true if wifi is enable and false otherwise
+     * Always returns true in editor mode
      **/
     public bool WaitForWifi()
     {
@@ -35,7 +36,7 @@ public class WifiManager
             Debug.Log("Waiting Wifi...");
             if(Time.realtimeSinceStartup - t > mWifiTimeout)
             {
-                Debug.Log("Can't enable wifi !");
+                Debug.Log("Can't activate wifi !");
                 return false;
             }
         }
@@ -44,7 +45,7 @@ public class WifiManager
     }
 
     /**
-     * Save the current SSID and disable wifi
+     * Saves the current SSID and disables wifi
      **/
     public void SaveAndShutdownWifi()
     {
@@ -55,7 +56,9 @@ public class WifiManager
     }
 
     /**
-     * Re-enable wifi and try to connect to the saved SSID
+     * Re-enables wifi and tries to connect to the saved SSID
+     * Returns true if the connection was successful, false otherwise
+     * Always returns true in editor mode
      **/
     public bool RestoreWifi()
     {

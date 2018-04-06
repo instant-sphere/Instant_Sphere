@@ -4,7 +4,7 @@
  * This class is used to add watermarking to a photo
  * It adds 4 watermarks at the bottom
  **/
-public class Watermark : MonoBehaviour
+public sealed class Watermark : MonoBehaviour
 {
     Texture2D mLogo;
     Texture2D mFinalPicture;
@@ -17,7 +17,7 @@ public class Watermark : MonoBehaviour
     public void CreateWatermark(byte[] picture)
     {
         // Creates a new texture for the final picture
-        if(mFinalPicture == null)
+        if (mFinalPicture == null)
             mFinalPicture = new Texture2D(2, 2);
         mFinalPicture.LoadImage(picture);
         mLogo = Resources.Load("logo_blanc") as Texture2D;

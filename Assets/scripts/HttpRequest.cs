@@ -22,7 +22,7 @@ public sealed class HttpRequest
     enum RequestType { GET, POST };
     List<KeyValuePair<string, RequestType>> mCommandsValues = new List<KeyValuePair<string, RequestType>>();    //hold API command string and request type, this list is indexed by 'Commands' enum
 
-    public enum Commands { POST_C_EXECUTE = 0, POST_C_STATUS, POST_STATE, POST_CHECK_UPDATE, GET_INFO, GET_URL };  //enumeration of all API commands
+    public enum Commands { POST_C_EXECUTE = 0, POST_C_STATUS, POST_STATE, GET_URL };  //enumeration of all API commands
 
     /**
      * Static method
@@ -39,8 +39,8 @@ public sealed class HttpRequest
      **/
     public HttpRequest()
     {
-        string[] tmpCommandString = { "/osc/commands/execute", "/osc/commands/status", "/osc/state", "/osc/checkForUpdates", "/osc/info", "" };
-        RequestType[] tmpCommandType = { RequestType.POST, RequestType.POST, RequestType.POST, RequestType.POST, RequestType.GET, RequestType.GET };
+        string[] tmpCommandString = { "/osc/commands/execute", "/osc/commands/status", "/osc/state", "" };
+        RequestType[] tmpCommandType = { RequestType.POST, RequestType.POST, RequestType.POST, RequestType.GET };
 
         for (int i = 0; i < tmpCommandString.Length; ++i)
         {

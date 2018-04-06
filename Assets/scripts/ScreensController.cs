@@ -22,7 +22,6 @@ public sealed class ScreensController : MonoBehaviour
     public Watermark mWatermarker;
     public Sharing mSharingServer;
     public PingTester mPingTester;
-
     public Text mail;
     public Text code;
 
@@ -55,7 +54,9 @@ public sealed class ScreensController : MonoBehaviour
 
     private DateTime timeStart = DateTime.Now.AddSeconds(-30);
 
-    /* Use this for initialization */
+    /**
+     * Use this for initialization
+     **/
     private void Start()
     {
         mWifi = new WifiManager();
@@ -72,7 +73,9 @@ public sealed class ScreensController : MonoBehaviour
         UpdateScreen();
     }
 
-    /* Update is called once per frame */
+    /**
+     * Update is called once per frame
+     **/
     private void Update()
     {
         if (!mOSCController.IsCameraOK())   //go to error state and stay inside
@@ -100,15 +103,13 @@ public sealed class ScreensController : MonoBehaviour
      **/
     public void TimeoutGoToWelcome()
     {
-        Logger.Instance.WriteTimeout();
         mOSCController.StopLivePreview();
         if (mTimeout != null)
             StopCoroutine(mTimeoutCoroutine);
+
         if (mCurrentState == ScreensStates.ERROR)
-        {
-            //mOSCController.RebootController();
             return;
-        }
+
         mSkyboxMng.ResetSkybox();
         mTimeout = new Timeout(mTimeoutValue, TimeoutGoToWelcome);
         mCamera.AutomaticRotation(mTimeout);
@@ -128,8 +129,11 @@ public sealed class ScreensController : MonoBehaviour
     {
         mTimeout.Reset();
         if (success)
+        {
+            Logger.Instance.WriteFacebookSuccess();
             mCurrentState = ScreensStates.GOODBYE;
-        UpdateScreen();
+            UpdateScreen();
+        }
     }
 
     /* Theses are public methods called when user presses the corresponding button */
@@ -174,7 +178,7 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * Memorize that button b has been triggered
+     * Memorizes that button b has been triggered
      **/
     private void SetButtonDown(InterfaceButtons b)
     {
@@ -182,7 +186,7 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * Return true if button b has been pressed since last buffer reset
+     * Returns true if button b has been pressed since last buffer reset
      **/
     private bool IsButtonDown(InterfaceButtons b)
     {
@@ -190,7 +194,7 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * Reset buttons buffer
+     * Resets buttons buffer
      **/
     private void ResetButtons()
     {
@@ -199,7 +203,7 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * Generate a QRcode texture from a string
+     * Generates a QRcode texture from a string
      **/
     private Texture2D GenerateQRcode(string data)
     {
@@ -212,7 +216,7 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * Change counter text on screen and set it to v
+     * Changes counter text on screen and set it to v
      **/
     private void UpdateCountDownText(int v)
     {
@@ -235,7 +239,7 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * Update the shown canvas according to current state
+     * Updates the shown canvas according to current state
      **/
     private void UpdateScreen()
     {
@@ -246,7 +250,7 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * Manage screens using internal state
+     * Manages screens using internal state
      **/
     private void ManageStates()
     {
@@ -344,7 +348,7 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * Start the countdown if it's not
+     * Starts the countdown if it's not
      * If the countdown is finished, ask camera to capture a photo and go to waiting screen
      **/
     private void ManageTakingPhotoScreen()
@@ -385,7 +389,7 @@ public sealed class ScreensController : MonoBehaviour
     }
 
     /**
-     * Wait until the OSC controller signal that the photo is ready
+     * Waits until the OSC controller signal that the photo is ready
      * Then retrieve the data, save them and go to display screen with automatic rotation
      **/
     private void ManageWaitingScreen()
@@ -494,12 +498,12 @@ public sealed class ScreensController : MonoBehaviour
             Logger.Instance.WriteShareCode();
 
             Destroy(mQRcode.sprite);
-            string token_img = mSharingServer.GetToken_img();
+            string token_img = mSharingServer.GetTokenImg();
             if (token_img == null)
                 mCurrentState = ScreensStates.SHARE_PHOTO;
             else
             {
-                Texture2D tex = GenerateQRcode("https://instant-sphere.com/" + token_img);
+                Texture2D tex = GenerateQRcode("https://server.instant-sphere.com/" + token_img);
                 mQRcode.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
                 code.text = token_img;
 
@@ -527,12 +531,18 @@ public sealed class ScreensController : MonoBehaviour
 
             string mail_s = mail.text;
             mSharingServer.SendToServerMail(mail_s);
+            mail.text = "";
 
             mCurrentState = ScreensStates.GOODBYE;
             UpdateScreen();
         }
     }
 
+    /**
+     * Checks if auth file exists, if not creates it
+     * If auth file is empty ask for our token to the server
+     * Else go to welcome screen
+     **/
     private void ManageRegistrationScreen()
     {
         mTimeout.Reset();
@@ -555,46 +565,43 @@ public sealed class ScreensController : MonoBehaviour
                         bool auth = mSharingServer.GetAuth();
 
                         if (auth == true)
-                        {
                             authentification_state = 1;
-                        }
-                        else{
-                          mSharingServer.SendToServerAuthentification(androidID);
-                        }
-
-
+                        else
+                            mSharingServer.SendToServerAuthentication(androidID);
                     }
                     catch (Exception e)
                     {
                         Debug.Log(e.Message);
                     }
-
                 }
                 else
                 {
                     string token = mSharingServer.GetToken();
-                    if (token != null){
-                      using (System.IO.StreamWriter outputFile = new System.IO.StreamWriter(Application.persistentDataPath + "/auth_file.txt"))
-                      {
-                          outputFile.WriteLine(token);
-                      }
-                      authentification_state = 2;
+                    if (token != null)
+                    {
+                        using (System.IO.StreamWriter outputFile = new System.IO.StreamWriter(Application.persistentDataPath + "/auth_file.txt"))
+                        {
+                            outputFile.WriteLine(token);
+                        }
+                        authentification_state = 2;
                     }
-                    else{
-                      mSharingServer.SendToServerDemandeToken(androidID);
+                    else
+                    {
+                        mSharingServer.SendToServerAskToken(androidID);
                     }
-                  }
                 }
-                else if (new System.IO.FileInfo(Application.persistentDataPath + "/auth_file.txt").Length != 0) {
+            }
+            else if (new System.IO.FileInfo(Application.persistentDataPath + "/auth_file.txt").Length != 0)
+            {
 
-                  System.IO.StreamReader file = new System.IO.StreamReader(Application.persistentDataPath + "/auth_file.txt");
-                  string line = file.ReadLine();
-                  Debug.Log(line);
-                  mSharingServer.SetToken(line);
-                  authentification_state = 3;
-                  mCurrentState = ScreensStates.WELCOME;
-                  UpdateScreen();
-                }
+                System.IO.StreamReader file = new System.IO.StreamReader(Application.persistentDataPath + "/auth_file.txt");
+                string line = file.ReadLine();
+                Debug.Log("Token :" + line);
+                mSharingServer.SetToken(line);
+                authentification_state = 3;
+                mCurrentState = ScreensStates.WELCOME;
+                UpdateScreen();
+            }
         }
     }
 
@@ -604,6 +611,7 @@ public sealed class ScreensController : MonoBehaviour
      **/
     private void ManageGoodbyeScreen()
     {
+        Logger.Instance.WriteGoodbye();
         Thread.Sleep(5000);
         TimeoutGoToWelcome();
     }

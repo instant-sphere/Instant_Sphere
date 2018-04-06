@@ -3,9 +3,9 @@
 /**
  * This class is used to get the Android unique ID
  **/
-public class AndroidSecureID
+public sealed class AndroidSecureID
 {
-    AndroidJavaObject mAndroidSID;    //native Java code object used to manipulate battery settings
+    AndroidJavaObject mAndroidSID;    //native Java code object
 
     public AndroidSecureID()
     {
@@ -18,6 +18,7 @@ public class AndroidSecureID
 
     /**
      * Return the Android SID
+     * or "mooc_SID" in editor mode
      **/
     public string GetSID()
     {
