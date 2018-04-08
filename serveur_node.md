@@ -1,7 +1,7 @@
 ## Installer Nodejs
-curl-sL https://deb.nodesource.com/setup_8.x |sudo-Ebash- 
+curl-sL https://deb.nodesource.com/setup_8.x |sudo-Ebash-
 sudo apt install -y nodejs
-
+sudo npm install
 
 ## Installer mongo databse ##
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
@@ -21,9 +21,9 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 // set up a mongoose model and pass it using module.exports
-module.exports = mongoose.model('Tablette', new Schema({ 
-    id_tablette: String, 
-    nom: String, 
+module.exports = mongoose.model('Tablette', new Schema({
+    id_tablette: String,
+    nom: String,
     already_given : Boolean,
     autorisee: Boolean
 }));
@@ -32,7 +32,7 @@ module.exports = mongoose.model('Tablette', new Schema({
 == Connexion à mongo ===
 revenir au dossier de l'application et créer config.js
 
-Code : 
+Code :
 module.exports = {
 
     'secret': 'clé_qui_servira_a_generer_token',
