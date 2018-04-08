@@ -31,7 +31,7 @@ app.use(bodyParser.json());
 ////
 
 /* For dev log */
-app.use(morgan('dev'));
+//app.use(morgan('dev'));
 
 app.enable('trust proxy');	// server is behind a Nginx reverse proxy
 
@@ -146,11 +146,22 @@ apiRoutes.use(function (req, res, next) {
             else {
                 // if everything is good, save to request for use in other routes
                 req.decoded = decoded;
-                console.log(req.decoded);
-                next();
-            }
-        });
-    }
+                console.log("****VRIF TOKEN*****")
+                console.log(decoded);
+                Tablette.findOne({
+                 id_tablette: req.decoded.id_tablette
+                    }, function (err, tablet) {
+                    if (tablet.autorisee){
+                     next();
+                 }
+                 else {
+                    return res.json({ success: false, message: 'Not allowed' });
+
+                 }
+            });
+        }
+    });
+}
     else {
         // if there is no token
         // return an error
@@ -168,28 +179,15 @@ apiRoutes.get('/users', function (req, res) {
     });
 });
 
-<<<<<<< HEAD
-
-apiRoutes.get('/users', function(req, res) {
-  Tablette.find({}, function(err, tablettes) {
-    res.json(tablettes);
-  });
-});  
-
-apiRoutes.post("/upload", function(req, res) {
-     upload(req, res, function(err) {
-         if (err) {
-=======
 apiRoutes.post("/Upload", function (req, res) {
     upload(req, res, function (err) {
         if (err) {
->>>>>>> 9fa7ac27518e7bf25ad0aa2ac7d77fd869aeccfe
-            console.log(req);
+            //console.log(req);
             return res.end("Something went wrong!");
         }
-        console.log(req);
+        //console.log(req);
         var filename = req.files[0].filename;
-        console.log(filename);
+        //console.log(filename);
 
         var fileNoExtension = filename.substring(0, filename.lastIndexOf('.'));
         return res.json({ status: 1, code: fileNoExtension });
@@ -335,7 +333,7 @@ app.post('/supprimer_img', limiter, function (req, res, next) {
     console.log('**************' + filename);
     fs.unlink('/home/isphere/NodeJs_isphere/pictures/' + filename, function (error) {
         if (error) {
-            console.log(req);
+            //console.log(req);
             return res.end("Something went wrong!");
         }
         console.log('Deleted ' + filename);

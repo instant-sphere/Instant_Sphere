@@ -1,4 +1,4 @@
-## Installer Nodejs
+## Installer Nodejs ##
 curl-sL https://deb.nodesource.com/setup_8.x |sudo-Ebash-
 sudo apt install -y nodejs
 sudo npm install
@@ -28,8 +28,19 @@ module.exports = mongoose.model('Tablette', new Schema({
     autorisee: Boolean
 }));
 
+## Installer Nginx ##
+sudo apt install nginx
 
-== Connexion à mongo ===
+##Installer la pile ELK##
+sudo apt install elasticsearch kibana logstash
+sudo systemctl enable elasticsearch
+sudo systemctl enable kibana
+sudo systemctl enable logstash
+
+Ne pas oublier de copier les fichiers de configuration qui sont dans le répertoire conf aux bons emplacements.
+
+
+== Connexion à mongo ==
 revenir au dossier de l'application et créer config.js
 
 Code :
