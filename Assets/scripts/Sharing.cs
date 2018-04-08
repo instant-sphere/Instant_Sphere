@@ -53,6 +53,7 @@ public sealed class Sharing : MonoBehaviour
      **/
     private IEnumerator Upload(byte[] img)
     {
+        mImageToken = null;
         WWWForm form = new WWWForm();
 
         form.AddBinaryData("imgUploader", img, "photo.jpg", "image/jpeg");
@@ -65,7 +66,6 @@ public sealed class Sharing : MonoBehaviour
         if (www.isNetworkError || www.isHttpError)
         {
             Debug.Log(www.error + www.downloadHandler.text);
-            mImageToken = null;
         }
         else
         {
