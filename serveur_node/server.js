@@ -168,9 +168,22 @@ apiRoutes.get('/users', function (req, res) {
     });
 });
 
+<<<<<<< HEAD
+
+apiRoutes.get('/users', function(req, res) {
+  Tablette.find({}, function(err, tablettes) {
+    res.json(tablettes);
+  });
+});  
+
+apiRoutes.post("/upload", function(req, res) {
+     upload(req, res, function(err) {
+         if (err) {
+=======
 apiRoutes.post("/Upload", function (req, res) {
     upload(req, res, function (err) {
         if (err) {
+>>>>>>> 9fa7ac27518e7bf25ad0aa2ac7d77fd869aeccfe
             console.log(req);
             return res.end("Something went wrong!");
         }
