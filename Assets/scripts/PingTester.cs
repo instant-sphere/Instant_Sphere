@@ -14,8 +14,8 @@ public class PingTester : MonoBehaviour
     // Use this for initialization
     private void Start()
     {
-        ResolveServerIP();
         mIsServerReachable = false;
+        ResolveServerIP();
         StartCoroutine(TestServer());
     }
 
