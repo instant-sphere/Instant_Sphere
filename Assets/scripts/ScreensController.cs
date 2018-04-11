@@ -45,7 +45,7 @@ public sealed class ScreensController : MonoBehaviour
 
     Timeout mTimeout;
     Coroutine mTimeoutCoroutine;
-    const float mTimeoutValue = 60.0f;
+    const float mTimeoutValue = 120.0f;
 
     // Logs
     int mErrorCount = 0;
