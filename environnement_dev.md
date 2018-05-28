@@ -12,5 +12,10 @@
    - `Android SDK Platform 25`
    - `Android SDK Platform 23`
    - `Android SDK Platform 22`
-10. Relancer Unity
-11. Dans `File` > `Build Settings` sélectionner `Android`
+10. Installer OpenSSL et l'ajouter au PATH
+11. Ajouter C:\Programmes\Java\bin au PATH pour trouver Keytool.exe
+12. Relancer Unity
+13. Dans `Facebook` > `Edit Settings`,  renseigner les champs `App Id`et `Client token` avec les informations de la page développeur de Facebook
+14. Regénérer l'Android Manifest
+15. Renseigner les informations de la section `Android Build Facebook Settings `dans la page développeur de Facebook
+16. Dans `File` > `Build Settings` sélectionner `Android` avec la tablette branchée comme `Run device`
