@@ -14,7 +14,8 @@ public sealed class Sharing : MonoBehaviour
     string mImageToken;
     bool mIsAuthenticated;
 
-    static string URL = "https://server.instant-sphere.com";
+    // static string URL = "https://server.instant-sphere.com";
+    static string URL = "http://127.0.0.1:3333";
 
     /**
      * Uploads a photo to the server

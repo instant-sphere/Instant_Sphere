@@ -102,12 +102,12 @@ apiRoutes.post('/demandetoken', function (req, res) {
         if (!tablet) {
             res.json({ success: false, message: 'Unregistered tablet.' });
         }
-        else if (!tablet.autorisee) {
-            res.json({ success: false, message: 'Unauthorized tablet. Contact the administrator to activate it.' });
-        }
-        else if (tablet.already_given) {
-            res.json({ success: false, message: 'Token already issued' });
-        }
+        // else if (!tablet.autorisee) {
+        //     res.json({ success: false, message: 'Unauthorized tablet. Contact the administrator to activate it.' });
+        // }
+        // else if (tablet.already_given) {
+        //     res.json({ success: false, message: 'Token already issued' });
+        // }
         else {
             const payload = {
                 id_tablette: req.body.id_tablette

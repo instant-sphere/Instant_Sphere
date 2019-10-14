@@ -16,8 +16,9 @@ public sealed class MonitoringServer : MonoBehaviour
     public Sharing mSharingServer;
 
     BatteryManager mTabletBattery;
-    static string URL = "https://server.instant-sphere.com";
-
+    // static string URL = "https://server.instant-sphere.com";
+    static string URL = "http://127.0.0.1:3333";
+    
 
     /**
      * Returns the URL for the logs end point

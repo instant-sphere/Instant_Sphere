@@ -7,7 +7,8 @@ using UnityEngine;
  **/
 public class PingTester : MonoBehaviour
 {
-    const string SERVER_ADDRESS = "server.instant-sphere.com";
+    const string SERVER_ADDRESS = "127.0.0.1:3333";
+    // const string SERVER_ADDRESS = "server.instant-sphere.com";
     bool mIsServerReachable;
     string mServerIP;
 
@@ -26,7 +27,7 @@ public class PingTester : MonoBehaviour
     {
         try
         {
-            mServerIP = Dns.GetHostAddresses(SERVER_ADDRESS)[0].ToString();
+            mServerIP = SERVER_ADDRESS; //Dns.GetHostAddresses(SERVER_ADDRESS)[0].ToString();
         }
         catch (System.Exception e)
         {
